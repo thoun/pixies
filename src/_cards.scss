@@ -1,0 +1,382 @@
+$MERMAID: 1;
+$PAIR: 2;
+$COLLECTION: 3;
+$MULTIPLIER: 4;
+$SPECIAL: 5;
+
+// Pair family
+$CRAB: 1;
+$BOAT: 2;
+$FISH: 3;
+$SWIMMER: 4;
+$SHARK: 5;
+$JELLYFISH: 6;
+$LOBSTER: 7;
+// Collection family
+$SHELL: 1;
+$OCTOPUS: 2;
+$PENGUIN: 3;
+$SAILOR: 4;
+// Multiplier family
+$LIGHTHOUSE: 1;
+$SHOAL_FISH: 2;
+$PENGUIN_COLONY: 3;
+$CAPTAIN: 4;
+$CAST_CRAB: 5;
+// Special family
+$STARFISH: 1;
+$SEAHORSE: 2;
+
+
+/*
+ * Colors
+ */
+$WHITE: 0;
+$DARK_BLUE: 1;
+$LIGHT_BLUE: 2;
+$BLACK: 3;
+$YELLOW: 4;
+$GREEN: 5;
+$PURPLE: 6;
+$GREY: 7;
+$LIGHT_ORANGE: 8;
+$PINK: 9;
+$ORANGE: 10;
+
+.card {
+    position: relative;
+    width: 149px;
+    height: 208px;
+    margin: 5px;
+    border-radius: 10px;
+
+    .card-sides {
+        .card-side {
+            border-radius: 8px;
+
+            &>* {
+                pointer-events: none;
+                user-select: none;
+            }
+
+            &.back {  
+                background-size: auto 100%;
+                background-image: url('img/card-back.jpg');
+            }
+
+            &.front {
+                background-size: auto 600%;
+                background-image: url('img/cards.jpg');
+
+                &[data-category="#{$MERMAID}"] {
+                    background-position-x: 0%;
+                    background-position-y: 0%;
+                }
+
+                &[data-category="#{$PAIR}"] {
+                    &[data-family="#{$CRAB}"] {
+                        @for $index from 0 through 1 {
+                            &[data-color="#{$DARK_BLUE}"][data-index="#{$index}"] {
+                                background-position-x: #{($index + 1) * 100% / 9};
+                                background-position-y: 0%;
+                            }
+                        }
+                        @for $index from 0 through 1 {
+                            &[data-color="#{$LIGHT_BLUE}"][data-index="#{$index}"] {
+                                background-position-x: #{($index + 3) * 100% / 9};
+                                background-position-y: 0%;
+                            }
+                        }
+                        &[data-color="#{$BLACK}"][data-index="0"] {
+                            background-position-x: #{5 * 100% / 9};
+                            background-position-y: 0%;
+                        }
+                        @for $index from 0 through 1 {
+                            &[data-color="#{$YELLOW}"][data-index="#{$index}"] { 
+                                background-position-x: #{($index + 6) * 100% / 9};
+                                background-position-y: 0%;
+                                
+                            }
+                        }
+                        &[data-color="#{$GREEN}"][data-index="0"] {
+                            background-position-x: #{8 * 100% / 9};
+                            background-position-y: 0%;
+                        }
+                        &[data-color="#{$GREY}"][data-index="0"] {
+                            background-position-x: #{9 * 100% / 9};
+                            background-position-y: 0%;
+                        }
+                    }
+                    &[data-family="#{$BOAT}"] {
+                        @for $index from 0 through 1 {
+                            &[data-color="#{$DARK_BLUE}"][data-index="#{$index}"] {
+                                background-position-x: #{$index * 100% / 9};
+                                background-position-y: 20%;
+                            }
+                        }
+                        @for $index from 0 through 1 {
+                            &[data-color="#{$LIGHT_BLUE}"][data-index="#{$index}"] {
+                                background-position-x: #{($index + 2) * 100% / 9};
+                                background-position-y: 20%;
+                            }
+                        }
+                        @for $index from 0 through 1 {
+                            &[data-color="#{$BLACK}"][data-index="#{$index}"] {
+                                background-position-x: #{($index + 4) * 100% / 9};
+                                background-position-y: 20%;
+                            }
+                        }
+                        @for $index from 0 through 1 {
+                            &[data-color="#{$YELLOW}"][data-index="#{$index}"] { 
+                                background-position-x: #{($index + 6) * 100% / 9};
+                                background-position-y: 20%;
+                            }
+                        }
+                    }
+                    &[data-family="#{$FISH}"] {
+                        @for $index from 0 through 1 {
+                            &[data-color="#{$DARK_BLUE}"][data-index="#{$index}"] {
+                                background-position-x: #{($index + 8) * 100% / 9};
+                                background-position-y: 20%;
+                            }
+                        }
+                        &[data-color="#{$LIGHT_BLUE}"][data-index="0"] {
+                            background-position-x: #{0 * 100% / 9};
+                            background-position-y: 40%;
+                        }
+                        @for $index from 0 through 1 {
+                            &[data-color="#{$BLACK}"][data-index="#{$index}"] {
+                                background-position-x: #{($index + 1) * 100% / 9};
+                                background-position-y: 40%;
+                            }
+                        }
+                        &[data-color="#{$YELLOW}"][data-index="0"] {
+                            background-position-x: #{3 * 100% / 9};
+                            background-position-y: 40%;
+                        }
+                        &[data-color="#{$GREEN}"][data-index="0"] {
+                            background-position-x: #{4 * 100% / 9};
+                            background-position-y: 40%;
+                        }
+                    }
+                    &[data-family="#{$SWIMMER}"] {
+                        &[data-color="#{$DARK_BLUE}"][data-index="0"] {
+                            background-position-x: #{5 * 100% / 9};
+                            background-position-y: 40%;
+                        }
+                        &[data-color="#{$LIGHT_BLUE}"][data-index="0"] {
+                            background-position-x: #{6 * 100% / 9};
+                            background-position-y: 40%;
+                        }
+                        &[data-color="#{$BLACK}"][data-index="0"] {
+                            background-position-x: #{7 * 100% / 9};
+                            background-position-y: 40%;
+                        }
+                        &[data-color="#{$YELLOW}"][data-index="0"] {
+                            background-position-x: #{8 * 100% / 9};
+                            background-position-y: 40%;
+                        }
+                        &[data-color="#{$LIGHT_ORANGE}"][data-index="0"] {
+                            background-position-x: #{9 * 100% / 9};
+                            background-position-y: 40%;
+                        }
+                    }
+                    &[data-family="#{$SHARK}"] {
+                        &[data-color="#{$DARK_BLUE}"][data-index="0"] {
+                            background-position-x: #{0 * 100% / 9};
+                            background-position-y: 60%;
+                        }
+                        &[data-color="#{$LIGHT_BLUE}"][data-index="0"] {
+                            background-position-x: #{1 * 100% / 9};
+                            background-position-y: 60%;
+                        }
+                        &[data-color="#{$BLACK}"][data-index="0"] {
+                            background-position-x: #{2 * 100% / 9};
+                            background-position-y: 60%;
+                        }
+                        &[data-color="#{$GREEN}"][data-index="0"] {
+                            background-position-x: #{3 * 100% / 9};
+                            background-position-y: 60%;
+                        }
+                        &[data-color="#{$PURPLE}"][data-index="0"] {
+                            background-position-x: #{4 * 100% / 9};
+                            background-position-y: 60%;
+                        }
+                    }
+                    &[data-family="#{$JELLYFISH}"] {
+                        background-image: url('img/cards-expansion.jpg');
+                        background-size: auto 100%;
+
+                        &[data-color="#{$PURPLE}"][data-index="0"] {
+                            background-position-x: #{0 * 100% / 7};
+                        }
+                        &[data-color="#{$PINK}"][data-index="0"] {
+                            background-position-x: #{1 * 100% / 7};
+                        }
+                    }
+                    &[data-family="#{$LOBSTER}"] {
+                        background-image: url('img/cards-expansion.jpg');
+                        background-size: auto 100%;
+                        
+                        &[data-color="#{$BLACK}"][data-index="0"] {
+                            background-position-x: #{2 * 100% / 7};
+                        }
+                    }
+                }
+                
+                &[data-category="#{$COLLECTION}"] {
+                    &[data-family="#{$SHELL}"] {
+                        &[data-color="#{$DARK_BLUE}"][data-index="0"] {
+                            background-position-x: #{5 * 100% / 9};
+                            background-position-y: 60%;
+                        }
+                        &[data-color="#{$LIGHT_BLUE}"][data-index="0"] {
+                            background-position-x: #{6 * 100% / 9};
+                            background-position-y: 60%;
+                        }
+                        &[data-color="#{$BLACK}"][data-index="0"] {
+                            background-position-x: #{7 * 100% / 9};
+                            background-position-y: 60%;
+                        }
+                        &[data-color="#{$YELLOW}"][data-index="0"] {
+                            background-position-x: #{8 * 100% / 9};
+                            background-position-y: 60%;
+                        }
+                        &[data-color="#{$GREEN}"][data-index="0"] {
+                            background-position-x: #{9 * 100% / 9};
+                            background-position-y: 60%;
+                        }
+                        &[data-color="#{$GREY}"][data-index="0"] {
+                            background-position-x: #{0 * 100% / 9};
+                            background-position-y: 80%;
+                        }
+                    }
+                    &[data-family="#{$OCTOPUS}"] {
+                        &[data-color="#{$LIGHT_BLUE}"][data-index="0"] {
+                            background-position-x: #{1 * 100% / 9};
+                            background-position-y: 80%;
+                        }
+                        &[data-color="#{$YELLOW}"][data-index="0"] {
+                            background-position-x: #{2 * 100% / 9};
+                            background-position-y: 80%;
+                        }
+                        &[data-color="#{$GREEN}"][data-index="0"] {
+                            background-position-x: #{3 * 100% / 9};
+                            background-position-y: 80%;
+                        }
+                        &[data-color="#{$PURPLE}"][data-index="0"] {
+                            background-position-x: #{4 * 100% / 9};
+                            background-position-y: 80%;
+                        }
+                        &[data-color="#{$GREY}"][data-index="0"] {
+                            background-position-x: #{5 * 100% / 9};
+                            background-position-y: 80%;
+                        }
+                    }
+                    &[data-family="#{$PENGUIN}"] {
+                        &[data-color="#{$PURPLE}"][data-index="0"] {
+                            background-position-x: #{6 * 100% / 9};
+                            background-position-y: 80%;
+                        }
+                        &[data-color="#{$LIGHT_ORANGE}"][data-index="0"] {
+                            background-position-x: #{7 * 100% / 9};
+                            background-position-y: 80%;
+                        }
+                        &[data-color="#{$PINK}"][data-index="0"] {
+                            background-position-x: #{8 * 100% / 9};
+                            background-position-y: 80%;
+                        }
+                    }
+                    &[data-family="#{$SAILOR}"] {
+                        &[data-color="#{$PINK}"][data-index="0"] {
+                            background-position-x: #{9 * 100% / 9};
+                            background-position-y: 80%;
+                        }
+                        &[data-color="#{$ORANGE}"][data-index="0"] {
+                            background-position-x: #{0 * 100% / 9};
+                            background-position-y: 100%;
+                        }
+                    }
+                }
+                
+                &[data-category="#{$MULTIPLIER}"] {
+                    &[data-family="#{$LIGHTHOUSE}"] {
+                        background-position-x: #{1 * 100% / 9};
+                        background-position-y: 100%;
+                    }
+                    &[data-family="#{$SHOAL_FISH}"] {
+                        background-position-x: #{2 * 100% / 9};
+                        background-position-y: 100%;
+                    }
+                    &[data-family="#{$PENGUIN_COLONY}"] {
+                        background-position-x: #{3 * 100% / 9};
+                        background-position-y: 100%;
+                    }
+                    &[data-family="#{$CAPTAIN}"] {
+                        background-position-x: #{4 * 100% / 9};
+                        background-position-y: 100%;
+                    }
+                    &[data-family="#{$CAST_CRAB}"] {
+                        background-image: url('img/cards-expansion.jpg');
+                        background-size: auto 100%;
+                        
+                        //&[data-color="#{$GREEN}"] {
+                            background-position-x: #{3 * 100% / 7};
+                        //}
+                    }
+                }
+            }
+
+            &[data-category="#{$SPECIAL}"] {
+                background-image: url('img/cards-expansion.jpg');
+                background-size: auto 100%;
+                
+                &[data-family="#{$STARFISH}"] {
+                    &[data-color="#{$DARK_BLUE}"] {
+                        background-position-x: #{4 * 100% / 7};
+                    }
+                    &[data-color="#{$LIGHT_BLUE}"] {
+                        background-position-x: #{5 * 100% / 7};
+                    }
+                    &[data-color="#{$YELLOW}"] {
+                        background-position-x: #{6 * 100% / 7};
+                    }
+                }
+                &[data-family="#{$SEAHORSE}"] {
+                    //&[data-color="#{$WHITE}"] {
+                        background-position-x: #{7 * 100% / 7};
+                    //}
+                }
+            }
+        }
+    }    
+
+    &.bga-cards_selectable-card:not(.bga-cards_disabled-card) {
+        &:not(.bga-cards_selected-card) {
+            animation: selectable-card-animation 1s alternate infinite ease-in-out;
+        }
+
+        .card-side {
+            box-shadow: unset;
+        }
+    }    
+
+    &.bga-cards_selected-card:not(.bga-cards_disabled-card) {
+        box-shadow: 0 0 5px 8px orange;
+
+        .card-side {
+            box-shadow: unset;
+        }
+    }
+}
+
+@keyframes selectable-card-animation {
+    0% { 
+      //background: var(--background-lighter);
+      box-shadow: 0 0 3px 2px #FFFFFF;
+    }
+    100% { 
+      //background: var(--background-darker);
+      box-shadow: 0 0 5px 3px #FFFFFF;
+    }
+  }

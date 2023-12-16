@@ -22,47 +22,148 @@
  */
   
   
-  class action_pixies extends APP_GameAction
-  { 
+  class action_pixies extends APP_GameAction { 
     // Constructor: please do not modify
-   	public function __default()
-  	{
-  	    if( self::isArg( 'notifwindow') )
-  	    {
+   	public function __default() {
+  	    if( self::isArg( 'notifwindow') ) {
             $this->view = "common_notifwindow";
   	        $this->viewArgs['table'] = self::getArg( "table", AT_posint, true );
-  	    }
-  	    else
-  	    {
+  	    } else {
             $this->view = "pixies_pixies";
             self::trace( "Complete reinitialization of board game" );
       }
   	} 
   	
-  	// TODO: defines your action entry points there
+  	// define your action entry points there
 
+    public function takeCardsFromDeck() {
+        self::setAjaxMode();
 
-    /*
-    
-    Example:
-  	
-    public function myAction()
-    {
-        self::setAjaxMode();     
+        $this->game->takeCardsFromDeck();
 
-        // Retrieve arguments
-        // Note: these arguments correspond to what has been sent through the javascript "ajaxcall" method
-        $arg1 = self::getArg( "myArgument1", AT_posint, true );
-        $arg2 = self::getArg( "myArgument2", AT_posint, true );
-
-        // Then, call the appropriate method in your game logic, like "playCard" or "myAction"
-        $this->game->myAction( $arg1, $arg2 );
-
-        self::ajaxResponse( );
+        self::ajaxResponse();
     }
-    
-    */
 
-  }
-  
+    public function takeCardFromDiscard() {
+        self::setAjaxMode();
 
+        $discardNumber = self::getArg("discardNumber", AT_posint, true);
+
+        $this->game->takeCardFromDiscard($discardNumber);
+
+        self::ajaxResponse();
+    }
+
+    public function chooseCard() {
+        self::setAjaxMode();
+
+        $id = self::getArg("id", AT_posint, true);
+
+        $this->game->chooseCard($id);
+
+        self::ajaxResponse();
+    }
+
+    public function putDiscardPile() {
+        self::setAjaxMode();
+
+        $discardNumber = self::getArg("discardNumber", AT_posint, true);
+
+        $this->game->putDiscardPile($discardNumber);
+
+        self::ajaxResponse();
+    }
+
+    public function playCards() {
+        self::setAjaxMode();
+
+        $cardId1 = self::getArg("id1", AT_posint, true);
+        $cardId2 = self::getArg("id2", AT_posint, true);
+
+        $this->game->playCards($cardId1, $cardId2);
+
+        self::ajaxResponse();
+    }
+
+    public function playCardsTrio() {
+        self::setAjaxMode();
+
+        $cardId1 = self::getArg("id1", AT_posint, true);
+        $cardId2 = self::getArg("id2", AT_posint, true);
+        $starfishCardId = self::getArg("starfishId", AT_posint, true);
+
+        $this->game->playCardsTrio($cardId1, $cardId2, $starfishCardId);
+
+        self::ajaxResponse();
+    }
+
+    public function endTurn() {
+        self::setAjaxMode();
+
+        $this->game->endTurn();
+
+        self::ajaxResponse();
+    }
+
+    public function endRound() {
+        self::setAjaxMode();
+
+        $this->game->endRound();
+
+        self::ajaxResponse();
+    }
+
+    public function immediateEndRound() {
+        self::setAjaxMode();
+
+        $this->game->immediateEndRound();
+
+        self::ajaxResponse();
+    }
+
+    public function endGameWithMermaids() {
+        self::setAjaxMode();
+
+        $this->game->endGameWithMermaids();
+
+        self::ajaxResponse();
+    }
+
+    public function chooseDiscardPile() {
+        self::setAjaxMode();
+
+        $discardNumber = self::getArg("discardNumber", AT_posint, true);
+
+        $this->game->chooseDiscardPile($discardNumber);
+
+        self::ajaxResponse();
+    }
+
+    public function chooseDiscardCard() {
+        self::setAjaxMode();
+
+        $id = self::getArg("id", AT_posint, true);
+
+        $this->game->chooseDiscardCard($id);
+
+        self::ajaxResponse();
+    }
+
+    public function chooseOpponent() {
+        self::setAjaxMode();
+
+        $id = self::getArg("id", AT_posint, true);
+
+        $this->game->chooseOpponent($id);
+
+        self::ajaxResponse();
+    }
+
+    public function seen() {
+        self::setAjaxMode();
+
+        $this->game->seen();
+
+        self::ajaxResponse();
+    }
+}

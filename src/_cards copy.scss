@@ -1,0 +1,305 @@
+$SIREN: 1;
+$PAIR: 2;
+$COLLECTION: 3;
+$MULTIPLIER: 4;
+
+// Pair family
+$CRAB: 1;
+$BOAT: 2;
+$FISH: 3;
+$SWIMMER: 4;
+$SHARK: 5;
+// Collection family
+$SHELL: 1;
+$OCTOPUS: 2;
+$PENGUIN: 3;
+$SAILOR: 4;
+// Multiplier family
+$LIGHTHOUSE: 1;
+$SHOAL_FISH: 2;
+$PENGUIN_COLONY: 3;
+$CAPTAIN: 4;
+
+
+/*
+ * Colors
+ */
+$DARK_BLUE: 1;
+$LIGHT_BLUE: 2;
+$BLACK: 3;
+$YELLOW: 4;
+$GREEN: 5;
+$PURPLE: 6;
+$GREY: 7;
+$LIGHT_ORANGE: 8;
+$PINK: 9;
+$ORANGE: 10;
+
+#deck {
+    display: inline-block;
+    position: relative;
+    width: 149px;
+    height: 208px;
+    margin: 5px;
+    border-radius: 10px;
+    background-image: url('img/card-back.jpg');
+    background-size: auto 100%;
+    box-shadow: 3px 3px 0px 0px #333, 5px 5px 3px black;
+}
+
+.card {
+    display: inline-block;
+    position: relative;
+    width: 149px;
+    height: 208px;
+    margin: 5px;
+    border-radius: 10px;
+    text-align: center;
+
+    &[data-side="back"] {
+        .card-sides { 
+            transform: rotateY(180deg);
+        }
+    }
+
+    .card-sides {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        transform-style: preserve-3d;
+        transition: transform 0.5s;
+
+        .card-side {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            transform-style: preserve-3d;      
+            -webkit-backface-visibility: hidden; /* Safari */
+            backface-visibility: hidden;
+            transform-origin: center center;
+            border-radius: 5px;
+            box-shadow: 1px 1px 2px 1px rgba(0,0,0,0.5);
+            
+            background-size: auto 100%;
+
+            &.front {
+                background-image: url('img/cards.jpg');
+
+                &>* {
+                    pointer-events: none;
+                    user-select: none;
+                }
+            } 
+            
+            &.back {                
+                background-image: url('img/card-back.jpg');
+                transform: rotateY(180deg);
+            }
+        }
+    }    
+
+    &.selectable {
+        cursor: pointer;
+        box-shadow: 0 0 10px 10px white;
+
+        .card-side {
+            box-shadow: unset;
+        }
+    }    
+
+    &.selected {
+        box-shadow: 0 0 10px 10px orange;
+
+        .card-side {
+            box-shadow: unset;
+        }
+    } 
+
+    &[data-category="#{$SIREN}"] .front {
+        background-position-x: 0%;
+    }
+
+    &[data-category="#{$PAIR}"] {
+        &[data-family="#{$CRAB}"] {
+            @for $index from 0 through 1 {
+                &[data-color="#{$DARK_BLUE}"][data-index="#{$index}"] .front {
+                    background-position-x: #{($index + 1) * 100% / 54};
+                }
+            }
+            @for $index from 0 through 1 {
+                &[data-color="#{$LIGHT_BLUE}"][data-index="#{$index}"] .front {
+                    background-position-x: #{($index + 3) * 100% / 54};
+                }
+            }
+            &[data-color="#{$BLACK}"][data-index="0"] .front {
+                background-position-x: #{5 * 100% / 54};
+            }
+            @for $index from 0 through 1 {
+                &[data-color="#{$YELLOW}"][data-index="#{$index}"] .front { 
+                    background-position-x: #{($index + 6) * 100% / 54};
+                }
+            }
+            &[data-color="#{$GREEN}"][data-index="0"] .front {
+                background-position-x: #{8 * 100% / 54};
+            }
+            &[data-color="#{$GREY}"][data-index="0"] .front {
+                background-position-x: #{9 * 100% / 54};
+            }
+        }
+        &[data-family="#{$BOAT}"] {
+            @for $index from 0 through 1 {
+                &[data-color="#{$DARK_BLUE}"][data-index="#{$index}"] .front {
+                    background-position-x: #{($index + 10) * 100% / 54};
+                }
+            }
+            @for $index from 0 through 1 {
+                &[data-color="#{$LIGHT_BLUE}"][data-index="#{$index}"] .front {
+                    background-position-x: #{($index + 12) * 100% / 54};
+                }
+            }
+            @for $index from 0 through 1 {
+                &[data-color="#{$BLACK}"][data-index="#{$index}"] .front {
+                    background-position-x: #{($index + 14) * 100% / 54};
+                }
+            }
+            @for $index from 0 through 1 {
+                &[data-color="#{$YELLOW}"][data-index="#{$index}"] .front { 
+                    background-position-x: #{($index + 16) * 100% / 54};
+                }
+            }
+        }
+        &[data-family="#{$FISH}"] {
+            @for $index from 0 through 1 {
+                &[data-color="#{$DARK_BLUE}"][data-index="#{$index}"] .front {
+                    background-position-x: #{($index + 18) * 100% / 54};
+                }
+            }
+            &[data-color="#{$LIGHT_BLUE}"][data-index="0"] .front {
+                background-position-x: #{20 * 100% / 54};
+            }
+            @for $index from 0 through 1 {
+                &[data-color="#{$BLACK}"][data-index="#{$index}"] .front {
+                    background-position-x: #{($index + 21) * 100% / 54};
+                }
+            }
+            &[data-color="#{$YELLOW}"][data-index="0"] .front {
+                background-position-x: #{23 * 100% / 54};
+            }
+            &[data-color="#{$GREEN}"][data-index="0"] .front {
+                background-position-x: #{24 * 100% / 54};
+            }
+        }
+        &[data-family="#{$SWIMMER}"] {
+            &[data-color="#{$DARK_BLUE}"][data-index="0"] .front {
+                background-position-x: #{25 * 100% / 54};
+            }
+            &[data-color="#{$LIGHT_BLUE}"][data-index="0"] .front {
+                background-position-x: #{26 * 100% / 54};
+            }
+            &[data-color="#{$BLACK}"][data-index="0"] .front {
+                background-position-x: #{27 * 100% / 54};
+            }
+            &[data-color="#{$YELLOW}"][data-index="0"] .front {
+                background-position-x: #{28 * 100% / 54};
+            }
+            &[data-color="#{$LIGHT_ORANGE}"][data-index="0"] .front {
+                background-position-x: #{29 * 100% / 54};
+            }
+        }
+        &[data-family="#{$SHARK}"] {
+            &[data-color="#{$DARK_BLUE}"][data-index="0"] .front {
+                background-position-x: #{30 * 100% / 54};
+            }
+            &[data-color="#{$LIGHT_BLUE}"][data-index="0"] .front {
+                background-position-x: #{31 * 100% / 54};
+            }
+            &[data-color="#{$BLACK}"][data-index="0"] .front {
+                background-position-x: #{32 * 100% / 54};
+            }
+            &[data-color="#{$GREEN}"][data-index="0"] .front {
+                background-position-x: #{33 * 100% / 54};
+            }
+            &[data-color="#{$PURPLE}"][data-index="0"] .front {
+                background-position-x: #{34 * 100% / 54};
+            }
+        }
+    }
+    
+    &[data-category="#{$COLLECTION}"] {
+        &[data-family="#{$SHELL}"] {
+            &[data-color="#{$DARK_BLUE}"][data-index="0"] .front {
+                background-position-x: #{35 * 100% / 54};
+            }
+            &[data-color="#{$LIGHT_BLUE}"][data-index="0"] .front {
+                background-position-x: #{36 * 100% / 54};
+            }
+            &[data-color="#{$BLACK}"][data-index="0"] .front {
+                background-position-x: #{37 * 100% / 54};
+            }
+            &[data-color="#{$YELLOW}"][data-index="0"] .front {
+                background-position-x: #{38 * 100% / 54};
+            }
+            &[data-color="#{$GREEN}"][data-index="0"] .front {
+                background-position-x: #{39 * 100% / 54};
+            }
+            &[data-color="#{$GREY}"][data-index="0"] .front {
+                background-position-x: #{40 * 100% / 54};
+            }
+        }
+        &[data-family="#{$OCTOPUS}"] {
+            &[data-color="#{$LIGHT_BLUE}"][data-index="0"] .front {
+                background-position-x: #{41 * 100% / 54};
+            }
+            &[data-color="#{$YELLOW}"][data-index="0"] .front {
+                background-position-x: #{42 * 100% / 54};
+            }
+            &[data-color="#{$GREEN}"][data-index="0"] .front {
+                background-position-x: #{43 * 100% / 54};
+            }
+            &[data-color="#{$PURPLE}"][data-index="0"] .front {
+                background-position-x: #{44 * 100% / 54};
+            }
+            &[data-color="#{$GREY}"][data-index="0"] .front {
+                background-position-x: #{45 * 100% / 54};
+            }
+        }
+        &[data-family="#{$PENGUIN}"] {
+            &[data-color="#{$PURPLE}"][data-index="0"] .front {
+                background-position-x: #{46 * 100% / 54};
+            }
+            &[data-color="#{$LIGHT_ORANGE}"][data-index="0"] .front {
+                background-position-x: #{47 * 100% / 54};
+            }
+            &[data-color="#{$PINK}"][data-index="0"] .front {
+                background-position-x: #{48 * 100% / 54};
+            }
+        }
+        &[data-family="#{$SAILOR}"] {
+            &[data-color="#{$PINK}"][data-index="0"] .front {
+                background-position-x: #{49 * 100% / 54};
+            }
+            &[data-color="#{$ORANGE}"][data-index="0"] .front {
+                background-position-x: #{50 * 100% / 54};
+            }
+        }
+    }
+    
+    &[data-category="#{$MULTIPLIER}"] {
+        &[data-family="#{$LIGHTHOUSE}"] .front {
+            background-position-x: #{51 * 100% / 54};
+        }
+        &[data-family="#{$SHOAL_FISH}"] .front {
+            background-position-x: #{52 * 100% / 54};
+        }
+        &[data-family="#{$PENGUIN_COLONY}"] .front {
+            background-position-x: #{53 * 100% / 54};
+        }
+        &[data-family="#{$CAPTAIN}"] .front {
+            background-position-x: #{54 * 100% / 54};
+        }
+    }
+}

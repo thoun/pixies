@@ -1,0 +1,21 @@
+{
+  "name": "pixies",
+  "version": "1.0.0",
+  "description": "",
+  "main": "pixies.js",
+  "scripts": {
+    "build:ts": "tsc",
+    "build:scss": "sass --no-source-map src/pixies.scss pixies.css"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bga-animations": "thoun/bga-animations#1.1.0",
+    "bga-cards": "thoun/bga-cards#3.0.0",
+    "bga-zoom": "thoun/bga-zoom#1.0.2"
+  },
+  "devDependencies": {
+    "sass": "^1.32.6",
+    "typescript": "^5.0.4"
+  }
+}
