@@ -698,7 +698,7 @@ var AnimationManager = /** @class */ (function () {
                         settings = animation.settings;
                         (_a = settings.animationStart) === null || _a === void 0 ? void 0 : _a.call(settings, animation);
                         (_b = settings.element) === null || _b === void 0 ? void 0 : _b.classList.add((_c = settings.animationClass) !== null && _c !== void 0 ? _c : 'bga-animations_animated');
-                        animation.settings = __assign(__assign({}, animation.settings), { duration: (_g = (_e = (_d = animation.settings) === null || _d === void 0 ? void 0 : _d.duration) !== null && _e !== void 0 ? _e : (_f = this.settings) === null || _f === void 0 ? void 0 : _f.duration) !== null && _g !== void 0 ? _g : 500, scale: (_l = (_j = (_h = animation.settings) === null || _h === void 0 ? void 0 : _h.scale) !== null && _j !== void 0 ? _j : (_k = this.zoomManager) === null || _k === void 0 ? void 0 : _k.zoom) !== null && _l !== void 0 ? _l : undefined });
+                        animation.settings = __assign({ duration: (_g = (_e = (_d = animation.settings) === null || _d === void 0 ? void 0 : _d.duration) !== null && _e !== void 0 ? _e : (_f = this.settings) === null || _f === void 0 ? void 0 : _f.duration) !== null && _g !== void 0 ? _g : 500, scale: (_l = (_j = (_h = animation.settings) === null || _h === void 0 ? void 0 : _h.scale) !== null && _j !== void 0 ? _j : (_k = this.zoomManager) === null || _k === void 0 ? void 0 : _k.zoom) !== null && _l !== void 0 ? _l : undefined }, animation.settings);
                         _r = animation;
                         return [4 /*yield*/, animation.animationFunction(this, animation)];
                     case 1:
@@ -804,6 +804,8 @@ var AnimationManager = /** @class */ (function () {
  */
 var CardStock = /** @class */ (function () {
     /**
+     * Creates the stock and register it on the manager.
+     *
      * @param manager the card manager
      * @param element the stock element (should be an empty HTML Element)
      */
@@ -819,6 +821,14 @@ var CardStock = /** @class */ (function () {
         this.bindClick();
         this.sort = settings === null || settings === void 0 ? void 0 : settings.sort;
     }
+    /**
+     * Removes the stock and unregister it on the manager.
+     */
+    CardStock.prototype.remove = function () {
+        var _a;
+        this.manager.removeStock(this);
+        (_a = this.element) === null || _a === void 0 ? void 0 : _a.remove();
+    };
     /**
      * @returns the cards on the stock
      */
@@ -908,8 +918,12 @@ var CardStock = /** @class */ (function () {
             }
         }
         if (needsCreation) {
-            var element = this.manager.createCardElement(card, ((_d = settingsWithIndex === null || settingsWithIndex === void 0 ? void 0 : settingsWithIndex.visible) !== null && _d !== void 0 ? _d : this.manager.isCardVisible(card)));
-            promise = this.moveFromElement(card, element, animation, settingsWithIndex);
+            var element = this.getCardElement(card);
+            if (needsCreation && element) {
+                console.warn("Card ".concat(this.manager.getId(card), " already exists, not re-created."));
+            }
+            var newElement = element !== null && element !== void 0 ? element : this.manager.createCardElement(card, ((_d = settingsWithIndex === null || settingsWithIndex === void 0 ? void 0 : settingsWithIndex.visible) !== null && _d !== void 0 ? _d : this.manager.isCardVisible(card)));
+            promise = this.moveFromElement(card, newElement, animation, settingsWithIndex);
         }
         if (settingsWithIndex.index !== null && settingsWithIndex.index !== undefined) {
             this.cards.splice(index, 0, card);
@@ -1116,9 +1130,13 @@ var CardStock = /** @class */ (function () {
      * @param settings a `RemoveCardSettings` object
      */
     CardStock.prototype.removeAll = function (settings) {
-        var _this = this;
-        var cards = this.getCards(); // use a copy of the array as we iterate and modify it at the same time
-        cards.forEach(function (card) { return _this.removeCard(card, settings); });
+        return __awaiter(this, void 0, void 0, function () {
+            var cards;
+            return __generator(this, function (_a) {
+                cards = this.getCards();
+                return [2 /*return*/, this.removeCards(cards, settings)];
+            });
+        });
     };
     /**
      * Set if the stock is selectable, and if yes if it can be multiple.
@@ -1388,9 +1406,8 @@ var SlideAndBackAnimation = /** @class */ (function (_super) {
 var Deck = /** @class */ (function (_super) {
     __extends(Deck, _super);
     function Deck(manager, element, settings) {
-        var _this = this;
         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
-        _this = _super.call(this, manager, element) || this;
+        var _this = _super.call(this, manager, element) || this;
         _this.manager = manager;
         _this.element = element;
         element.classList.add('deck');
@@ -1456,9 +1473,17 @@ var Deck = /** @class */ (function (_super) {
     Deck.prototype.setCardNumber = function (cardNumber, topCard) {
         var _this = this;
         if (topCard === void 0) { topCard = undefined; }
-        var promise = topCard === null || cardNumber == 0 ?
-            Promise.resolve(false) :
-            _super.prototype.addCard.call(this, topCard || this.getFakeCard(), undefined, { autoUpdateCardNumber: false });
+        var promise = Promise.resolve(false);
+        var oldTopCard = this.getTopCard();
+        if (topCard !== null && cardNumber > 0) {
+            var newTopCard = topCard || this.getFakeCard();
+            if (!oldTopCard || this.manager.getId(newTopCard) != this.manager.getId(oldTopCard)) {
+                promise = this.addCard(newTopCard, undefined, { autoUpdateCardNumber: false });
+            }
+        }
+        else if (cardNumber == 0 && oldTopCard) {
+            promise = this.removeCard(oldTopCard, { autoUpdateCardNumber: false });
+        }
         this.cardNumber = cardNumber;
         this.element.dataset.empty = (this.cardNumber == 0).toString();
         var thickness = 0;
@@ -1495,6 +1520,19 @@ var Deck = /** @class */ (function (_super) {
             this.setCardNumber(this.cardNumber - 1);
         }
         _super.prototype.cardRemoved.call(this, card, settings);
+    };
+    Deck.prototype.removeAll = function (settings) {
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function () {
+            var promise;
+            return __generator(this, function (_c) {
+                promise = _super.prototype.removeAll.call(this, __assign(__assign({}, settings), { autoUpdateCardNumber: (_a = settings === null || settings === void 0 ? void 0 : settings.autoUpdateCardNumber) !== null && _a !== void 0 ? _a : false }));
+                if ((_b = settings === null || settings === void 0 ? void 0 : settings.autoUpdateCardNumber) !== null && _b !== void 0 ? _b : true) {
+                    this.setCardNumber(0, null);
+                }
+                return [2 /*return*/, promise];
+            });
+        });
     };
     Deck.prototype.getTopCard = function () {
         var cards = this.getCards();
@@ -1576,9 +1614,8 @@ var LineStock = /** @class */ (function (_super) {
      * @param settings a `LineStockSettings` object
      */
     function LineStock(manager, element, settings) {
-        var _this = this;
         var _a, _b, _c, _d;
-        _this = _super.call(this, manager, element, settings) || this;
+        var _this = _super.call(this, manager, element, settings) || this;
         _this.manager = manager;
         _this.element = element;
         element.classList.add('line-stock');
@@ -1666,6 +1703,12 @@ var CardManager = /** @class */ (function () {
     };
     CardManager.prototype.addStock = function (stock) {
         this.stocks.push(stock);
+    };
+    CardManager.prototype.removeStock = function (stock) {
+        var index = this.stocks.indexOf(stock);
+        if (index !== -1) {
+            this.stocks.splice(index, 1);
+        }
     };
     /**
      * @param card the card informations
