@@ -100,8 +100,6 @@ class Pixies extends Table {
         $this->setGameStateInitialValue(BET_RESULT, 0);
         $this->setGameStateInitialValue(FORCE_TAKE_ONE, 0);
         $this->setGameStateInitialValue(LOBSTER_POWER, 0);
-
-        $isExpansion = $this->isExpansion();
         
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -111,10 +109,6 @@ class Pixies extends Table {
             $this->initStat($statType, 'takeCardFromDeck', 0);
             $this->initStat($statType, 'takeFromDiscard', 0);
             $this->initStat($statType, 'playedDuoCards', 0);
-            $possiblePowers = $isExpansion ? [1,2,3,4,5,6] : [1,2,3,4];
-            foreach($possiblePowers as $number) {
-                $this->initStat($statType, 'playedDuoCards'.$number, 0);
-            }
             $this->initStat($statType, 'announce', 0);
             $this->initStat($statType, 'announceStop', 0);
             $this->initStat($statType, 'announceLastChance', 0);
@@ -127,7 +121,7 @@ class Pixies extends Table {
         }
 
         // setup the initial game situation here
-        $this->setupCards($isExpansion);
+        $this->setupCards();
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
@@ -240,9 +234,6 @@ class Pixies extends Table {
             $result['discardTopCard'.$number] = $this->getCardFromDb($this->cards->getCardOnTop('discard'.$number));
             $result['remainingCardsInDiscard'.$number] = $this->getRemainingCardsInDiscard($number);
         }
-
-        $result['expansion'] = $this->isExpansion();
-        $result['doublePoints'] = $this->isDoublePoints();
   
         return $result;
     }
@@ -258,7 +249,7 @@ class Pixies extends Table {
         (see states.inc.php)
     */
     function getGameProgression() {
-        $maxScore = $this->getMaxScore();
+        $maxScore = 100; // TODO
         $topScore = $this->getPlayerTopScore();
 
         return min(100, 100 * $topScore / $maxScore);

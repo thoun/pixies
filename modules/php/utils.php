@@ -68,46 +68,22 @@ trait UtilTrait {
         return intval(self::getUniqueValueFromDB("SELECT max(player_score) FROM player"));
     }
 
-    function isExpansion() {
-        return intval($this->getGameStateValue(EXPANSION)) == 2;
-    }
-
-    function isDoublePoints() {
-        return intval($this->getGameStateValue(DOUBLE_POINTS)) == 2;
-    }
-
-    function getMaxScore() {
-        $maxScore = $this->END_GAME_POINTS[count($this->getPlayersIds())];
-
-        if ($this->isDoublePoints()) {
-            $maxScore *= 2;
-        }
-
-        return $maxScore;
-    }
-
     function getCardFromDb(/*array|null*/ $dbCard) {
         if ($dbCard == null) {
             return null;
         }
-        return new Card($dbCard, $this->ALL_CARDS);
+        return new Card($dbCard, $this->CARDS);
     }
 
     function getCardsFromDb(array $dbCards) {
         return array_map(fn($dbCard) => $this->getCardFromDb($dbCard), array_values($dbCards));
     }
 
-    function setupCards(bool $isExpansion) {
+    function setupCards() {
         $cards = [];
-        $cardsTypes = $this->CARDS;
-        if ($isExpansion) {
-            $cardsTypes = array_merge($cardsTypes, $this->EXPANSION_CARDS);
-        }
-        foreach ($cardsTypes as $cardType) {
-            for ($index = 0; $index < $cardType->number; $index++) {
-                $type = $cardType->category * 10 + $cardType->family;
-                $typeArg = $cardType->color * 10 + $index;
-                $cards[] = [ 'type' => $type, 'type_arg' => $typeArg, 'nbr' => 1 ];
+        foreach ($this->CARDS as $color => $cardsTypes) {
+            foreach ($cardsTypes as $index => $cardType) {
+                $cards[] = [ 'type' => $color, 'type_arg' => $index, 'nbr' => 1 ];
             }
         }
         $this->cards->createCards($cards, 'deck');
@@ -143,15 +119,6 @@ trait UtilTrait {
             'cardsPoints' => $cardsPointsObj->totalPoints,
             'detailledPoints' => $cardsPointsObj->detailledPoints,
         ]);
-    }
-
-    function getPlayerMermaids(int $playerId) {
-        $tableCards = $this->getPlayerCards($playerId, 'table', false);
-        $handCards = $this->getPlayerCards($playerId, 'hand', true);
-        $playerCards = array_merge($tableCards, $handCards);
-        $mermaidCards = array_values(array_filter($playerCards, fn($card) => $card->category == MERMAID));
-
-        return $mermaidCards;
     }
 
     function revealHand(int $playerId) {
@@ -265,45 +232,7 @@ trait UtilTrait {
     }
 
     function getCardName(Card $card) {
-        switch ($card->category) {
-            case MERMAID: return clienttranslate('Mermaid');
-            case PAIR:
-                switch ($card->family) {
-                    case CRAB: return clienttranslate('Crab');
-                    case BOAT: return clienttranslate('Boat');
-                    case FISH: return clienttranslate('Fish');
-                    case SWIMMER: return clienttranslate('Swimmer');
-                    case SHARK: return clienttranslate('Shark');
-                    case JELLYFISH: return clienttranslate('Jellyfish');
-                    case LOBSTER: return clienttranslate('Lobster');
-                }
-                break;
-            case COLLECTION:
-                switch ($card->family) {
-                    case SHELL: return clienttranslate('Shell');
-                    case OCTOPUS: return clienttranslate('Octopus');
-                    case PENGUIN: return clienttranslate('Penguin');
-                    case SAILOR: return clienttranslate('Sailor');
-                }
-                break;
-            case MULTIPLIER:
-                switch ($card->family) {
-                    case LIGHTHOUSE: return clienttranslate('The lighthouse');
-                    case SHOAL_FISH: return clienttranslate('The shoal of fish');
-                    case PENGUIN_COLONY: return clienttranslate('The penguin colony');
-                    case CAPTAIN: return clienttranslate('The captain');
-                    case CAST_CRAB: return clienttranslate('The cast of crabs');
-                }
-                break;
-            case SPECIAL:
-                switch ($card->family) {
-                    case STARFISH: return clienttranslate('Starfish');
-                    case SEAHORSE: return clienttranslate('Seahorse');
-                }
-                break;
-        }
-
-        return '';
+        return ''; // TODO remove
     }
 
     function getRemainingCardsInDeck() {

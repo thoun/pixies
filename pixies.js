@@ -1949,111 +1949,36 @@ var CardsManager = /** @class */ (function (_super) {
     __extends(CardsManager, _super);
     function CardsManager(game) {
         var _this = _super.call(this, game, {
-            getId: function (card) { return "ssp-card-".concat(card.id); },
+            getId: function (card) { return "card-".concat(card.id); },
             setupDiv: function (card, div) {
                 div.dataset.cardId = '' + card.id;
             },
             setupFrontDiv: function (card, div) { return _this.setupFrontDiv(card, div); },
-            isCardVisible: function (card) { return Boolean(card.category); },
+            isCardVisible: function (card) { return Boolean(card.index); },
             animationManager: game.animationManager,
             cardWidth: 149,
             cardHeight: 208,
         }) || this;
         _this.game = game;
         _this.COLORS = [
-            _('White'),
-            _('Dark blue'),
-            _('Light blue'),
-            _('Black'),
-            _('Yellow'),
+            _('Multicolor'),
+            _('Blue'),
             _('Green'),
-            _('Purple'),
-            _('Gray'),
-            _('Light orange'),
-            _('Pink'),
-            _('Orange'),
+            _('Yellow'),
+            _('Red'),
         ];
         return _this;
     }
     CardsManager.prototype.setupFrontDiv = function (card, div, ignoreTooltip) {
         if (ignoreTooltip === void 0) { ignoreTooltip = false; }
-        div.dataset.category = '' + card.category;
-        div.dataset.family = '' + card.family;
         div.dataset.color = '' + card.color;
         div.dataset.index = '' + card.index;
         if (!ignoreTooltip) {
-            this.game.setTooltip(div.id, this.getTooltip(card.category, card.family) + "<br><br><i>".concat(this.COLORS[card.color], "</i>"));
+            this.game.setTooltip(div.id, this.getTooltip(card) + "<br><i>".concat(this.COLORS[card.color], "</i>"));
         }
     };
-    CardsManager.prototype.getTooltip = function (category, family /*, withCount: boolean = false*/) {
-        var withCount = true;
-        switch (category) {
-            case 1:
-                return "\n                <div><strong>".concat(_("Mermaid"), "</strong> ").concat(withCount ? '(x4)' : '', "</div>\n                ").concat(_("1 point for each card of the color the player has the most of. If they have more mermaid cards, they must look at which of the other colors they have more of. The same color cannot be counted for more than one mermaid card."), "\n                <br><br>\n                <strong>").concat(_("Effect: If they place 4 mermaid cards, the player immediately wins the game."), "</strong>");
-            case 2:
-                var swimmerSharkEffect = _("The player steals a random card from another player and adds it to their hand.");
-                var swimmerJellyfishEffect = _("On their next turn, opposing players can only draw the first card from the deck. They cannot play any cards nor end the round.");
-                var crabLobsterEffect = _("The player takes the first five cards from the deck, adds one of them to their hand, then returns the other four to the deck and shuffles it.");
-                var duoCards = [
-                    [_('Crab'), [
-                            [_('Crab'), _("The player chooses a discard pile, consults it without shuffling it, and chooses a card from it to add to their hand. They do not have to show it to the other players.")],
-                        ], 9],
-                    [_('Boat'), [
-                            [_('Boat'), _("The player immediately takes another turn.")]
-                        ], 8],
-                    [_('Fish'), [
-                            [_('Fish'), _("The player adds the top card from the deck to their hand.")]
-                        ], 7],
-                    [_('Swimmer'), [
-                            [_('Shark'), swimmerSharkEffect]
-                        ], 5],
-                    [_('Shark'), [
-                            [_('Swimmer'), swimmerSharkEffect]
-                        ], 5],
-                ];
-                if (this.game.isExpansion()) {
-                    duoCards[0][1].push([_('Lobster'), crabLobsterEffect]);
-                    duoCards[3][1].push([_('Jellyfish'), swimmerJellyfishEffect]);
-                    duoCards.push([_('Jellyfish'), [
-                            [_('Swimmer'), swimmerJellyfishEffect]
-                        ], 2], [_('Lobster'), [
-                            [_('Crab'), crabLobsterEffect]
-                        ], 1]);
-                }
-                var duo_1 = duoCards[family - 1];
-                var html_1 = "<div><strong>".concat(duo_1[0], "</strong> ").concat(withCount ? "(x".concat(duo_1[2], ")") : '', "</div>\n                <div>").concat(_("1 point for each valid pair of cards."), "</div><br>\n                <div>").concat(_("Effect:"), "</div><div>");
-                duo_1[1].forEach(function (possiblePair) {
-                    html_1 += "<div><i>".concat((possiblePair[0] == duo_1[0] ? _("With another ${card_type}:") : _("With a ${card_type}:")).replace('${card_type}', possiblePair[0]), "</i> ").concat(possiblePair[1], "</div>");
-                });
-                html_1 += "</div>";
-                return html_1;
-            case 3:
-                var collectorCards = [
-                    ['0, 2, 4, 6, 8, 10', '1, 2, 3, 4, 5, 6', _('Shell')],
-                    ['0, 3, 6, 9, 12', '1, 2, 3, 4, 5', _('Octopus')],
-                    ['1, 3, 5', '1, 2, 3', _('Penguin')],
-                    ['0, 5', '1,  2', _('Sailor')],
-                ];
-                var collector = collectorCards[family - 1];
-                return "<div><strong>".concat(collector[2], "</strong> ").concat(withCount ? "(x".concat(collector[0].split(',').length, ")") : '', "</div>\n                <div>").concat(_("${points} points depending on whether the player has ${numbers} ${card} cards.").replace('${points}', collector[0]).replace('${numbers}', collector[1]).replace('${card}', collector[2]), "</div>");
-            case 4:
-                var multiplierCards = [
-                    [_('The lighthouse'), _('Boat'), 1],
-                    [_('The shoal of fish'), _('Fish'), 1],
-                    [_('The penguin colony'), _('Penguin'), 2],
-                    [_('The captain'), _('Sailor'), 3],
-                    [_('The cast of crabs'), _('Crab'), 1],
-                ];
-                var multiplier = multiplierCards[family - 1];
-                return "<div><strong>".concat(multiplier[0], "</strong> (x1)</div>\n                <div>").concat(_("${points} point(s) per ${card} card.").replace('${points}', multiplier[2]).replace('${card}', multiplier[1]), "</div>\n                <div>").concat(_("This card does not count as a ${card} card.").replace('${card}', multiplier[1]), "</div>");
-            case 5:
-                var specialCards = [
-                    [_('Starfish'), 3, _("If a player has a duo and a starfish card in their hand, they can form a trio and place these three cards in front of them. The starfish adds 2 points to the duo (so the trio is worth 3 points). Cancels the effect of the duo cards placed with the starfish.")],
-                    [_('Seahorse'), 1, _("The player can use the seahorse to replace a missing Collector card (octopus, shell, penguin or sailor). They must have at least one card for that collection in their hand. They cannot gain more points than the maximum indicated on the matching Collector card.")],
-                ];
-                var special = specialCards[family - 1];
-                return "<div><strong>".concat(special[0], "</strong> (x").concat(special[1], ")</div>\n            <div>").concat(special[2], "</div>");
-        }
+    CardsManager.prototype.getTooltip = function (card) {
+        return "\n        <div><strong>".concat(_("Spirals:"), "</strong> ").concat(card.spirals == -1 ? _("1 per ${color}".replace('${color}', this.COLORS[card.color])) : card.spirals, "</div>\n        <div><strong>").concat(_("Crosses:"), "</strong> ").concat(card.crosses, "</div>");
     };
     CardsManager.prototype.setForHelp = function (card, divId) {
         var div = document.getElementById(divId);
@@ -2602,9 +2527,6 @@ var Pixies = /** @class */ (function () {
                 case 'playCards':
                     var playCardsArgs = args;
                     this.addActionButton("playCards_button", _("Play selected cards"), function () { return _this.playSelectedCards(); });
-                    if (playCardsArgs.hasFourMermaids) {
-                        this.addActionButton("endGameWithMermaids_button", _("Play the four Mermaids"), function () { return _this.endGameWithMermaids(); }, null, true, 'red');
-                    }
                     this.addActionButton("endTurn_button", _("End turn"), function () { return _this.endTurn(); });
                     if (playCardsArgs.canCallEndRound) {
                         this.addActionButton("endRound_button", _('End round') + ' ("' + _('LAST CHANCE') + '")', function () { return _this.endRound(); }, null, null, 'red');
@@ -2644,9 +2566,6 @@ var Pixies = /** @class */ (function () {
     };
     Pixies.prototype.setTooltipToClass = function (className, html) {
         this.addTooltipHtmlToClass(className, html, this.TOOLTIP_DELAY);
-    };
-    Pixies.prototype.isExpansion = function () {
-        return this.gamedatas.expansion;
     };
     Pixies.prototype.getPlayerId = function () {
         return Number(this.player_id);
@@ -2824,9 +2743,6 @@ var Pixies = /** @class */ (function () {
             3, 2,
             1,
         ];
-        if (this.isExpansion()) {
-            [6, 9, 2, 4, 0, 1, 3, 5].forEach(function (index) { return quantities[index] += 1; });
-        }
         var labels = [
             _('Dark blue'),
             _('Light blue'),
@@ -2850,25 +2766,20 @@ var Pixies = /** @class */ (function () {
         var helpDialog = new ebg.popindialog();
         helpDialog.create('pixiesHelpDialog');
         helpDialog.setTitle(_("Card details").toUpperCase());
-        var expansion = this.isExpansion();
-        var duoCardsNumbers = expansion ? [1, 2, 3, 4, 5, 6, 7] : [1, 2, 3, 4, 5];
-        var multiplierNumbers = expansion ? [1, 2, 3, 4, 5] : [1, 2, 3, 4];
+        var duoCardsNumbers = [1, 2, 3, 4, 5];
+        var multiplierNumbers = [1, 2, 3, 4];
         var duoCards = duoCardsNumbers.map(function (family) { return "\n        <div class=\"help-section\">\n            <div id=\"help-pair-".concat(family, "\"></div>\n            <div>").concat(_this.cardsManager.getTooltip(2, family), "</div>\n        </div>\n        "); }).join('');
         var duoSection = "\n        ".concat(duoCards, "\n        ").concat(_("Note: The points for duo cards count whether the cards have been played or not. However, the effect is only applied when the player places the two cards in front of them."));
         var mermaidSection = "\n        <div class=\"help-section\">\n            <div id=\"help-mermaid\"></div>\n            <div>".concat(this.cardsManager.getTooltip(1), "</div>\n        </div>");
         var collectorSection = [1, 2, 3, 4].map(function (family) { return "\n        <div class=\"help-section\">\n            <div id=\"help-collector-".concat(family, "\"></div>\n            <div>").concat(_this.cardsManager.getTooltip(3, family), "</div>\n        </div>\n        "); }).join('');
         var multiplierSection = multiplierNumbers.map(function (family) { return "\n        <div class=\"help-section\">\n            <div id=\"help-multiplier-".concat(family, "\"></div>\n            <div>").concat(_this.cardsManager.getTooltip(4, family), "</div>\n        </div>\n        "); }).join('');
         var html = "\n        <div id=\"help-popin\">\n            ".concat(_("<strong>Important:</strong> When it is said that the player counts or scores the points on their cards, it means both those in their hand and those in front of them."), "\n\n            <h1>").concat(_("Duo cards"), "</h1>\n            ").concat(duoSection, "\n            <h1>").concat(_("Mermaid cards"), "</h1>\n            ").concat(mermaidSection, "\n            <h1>").concat(_("Collector cards"), "</h1>\n            ").concat(collectorSection, "\n            <h1>").concat(_("Point Multiplier cards"), "</h1>\n            ").concat(multiplierSection, "\n        ");
-        if (expansion) {
-            var specialSection = [1, 2].map(function (family) { return "\n            <div class=\"help-section\">\n                <div id=\"help-special-".concat(family, "\"></div>\n                <div>").concat(_this.cardsManager.getTooltip(5, family), "</div>\n            </div>\n            "); }).join('');
-            html += "\n                <h1>".concat(_("Special cards"), "</h1>\n                ").concat(specialSection, "\n            ");
-        }
         html += "\n        </div>\n        ";
         // Show the dialog
         helpDialog.setContent(html);
         helpDialog.show();
         // pair
-        var duoCardsPairs = expansion ? [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 3]] : [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]];
+        var duoCardsPairs = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]];
         duoCardsPairs.forEach(function (_a) {
             var family = _a[0], color = _a[1];
             return _this.cardsManager.setForHelp({ id: 1020 + family, category: 2, family: family, color: color, index: 0 }, "help-pair-".concat(family));
@@ -2882,13 +2793,6 @@ var Pixies = /** @class */ (function () {
         });
         // multiplier
         multiplierNumbers.forEach(function (family) { return _this.cardsManager.setForHelp({ id: 1040 + family, category: 4, family: family }, "help-multiplier-".concat(family)); });
-        if (expansion) {
-            // special
-            [[1, 1], [2, 0]].forEach(function (_a) {
-                var family = _a[0], color = _a[1];
-                return _this.cardsManager.setForHelp({ id: 1050 + family, category: 5, family: family, color: color }, "help-special-".concat(family));
-            });
-        }
     };
     Pixies.prototype.takeCardsFromDeck = function () {
         if (!this.checkAction('takeCardsFromDeck')) {
@@ -2968,12 +2872,6 @@ var Pixies = /** @class */ (function () {
             return;
         }
         this.takeAction('endTurn');
-    };
-    Pixies.prototype.endGameWithMermaids = function () {
-        if (!this.checkAction('endGameWithMermaids')) {
-            return;
-        }
-        this.takeAction('endGameWithMermaids');
     };
     Pixies.prototype.endRound = function () {
         if (!this.checkAction('endRound')) {

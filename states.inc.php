@@ -140,7 +140,6 @@ $playerActionsGameStates = [
         "possibleactions" => [ 
             "playCards",
             "playCardsTrio",
-            "endGameWithMermaids",
             "endTurn",
             "endRound",
             "immediateEndRound",

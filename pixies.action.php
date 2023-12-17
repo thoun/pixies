@@ -121,14 +121,6 @@
         self::ajaxResponse();
     }
 
-    public function endGameWithMermaids() {
-        self::setAjaxMode();
-
-        $this->game->endGameWithMermaids();
-
-        self::ajaxResponse();
-    }
-
     public function chooseDiscardPile() {
         self::setAjaxMode();
 

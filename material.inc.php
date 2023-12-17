@@ -21,107 +21,100 @@
 
 require_once('modules/php/objects/card.php');
 
-$this->END_GAME_POINTS = [
-  2 => 40,
-  3 => 35,
-  4 => 30,
-];
-
-$this->ANNOUNCEMENTS = [
-  LAST_CHANCE => clienttranslate('LAST CHANCE'),
-  STOP => clienttranslate('STOP'),
-];
-
 $this->COLORS = [
-  clienttranslate('White'),
-  clienttranslate('Dark blue'),
-  clienttranslate('Light blue'),
-  clienttranslate('Black'),
-  clienttranslate('Yellow'),
+  clienttranslate('Multicolor'),
+  clienttranslate('Blue'),
   clienttranslate('Green'),
-  clienttranslate('Purple'),
-  clienttranslate('Gray'),
-  clienttranslate('Light orange'),
-  clienttranslate('Pink'),
-  clienttranslate('Orange'),
+  clienttranslate('Yellow'),
+  clienttranslate('Red'),
 ];
 
 $this->CARDS = [
-  new MermaidCard(),
+  0 => [
+    1 => new CardType(2),
+    2 => new CardType(3),
+    3 => new CardType(4),
+    4 => new CardType(6),
+    5 => new CardType(7),
+    6 => new CardType(8),
+  ],
 
-  new CrabPairCard(DARK_BLUE, 2),
-  new CrabPairCard(LIGHT_BLUE, 2),
-  new CrabPairCard(BLACK),
-  new CrabPairCard(YELLOW, 2),
-  new CrabPairCard(GREEN),
-  new CrabPairCard(GREY),
+  1 => [
+    1 => new CardType(1, 6),
+    2 => new CardType(2, 4),
+    3 => new CardType(3, 3),
+    4 => new CardType(3, 1),
+    5 => new CardType(4, 1),
+    6 => new CardType(4, -1),
+    7 => new CardType(4),
+    8 => new CardType(5),
+    9 => new CardType(5, 0, 2),
+    10 => new CardType(5, -1),
+    11 => new CardType(6, 1),
+    12 => new CardType(6, 0, 1),
+    13 => new CardType(7, 0, 3),
+    14 => new CardType(8, 0, 3),
+    15 => new CardType(9, 0, 6),
+    16 => new CardType(9, 0, 1),
+  ],
 
-  new BoatPairCard(DARK_BLUE, 2),
-  new BoatPairCard(LIGHT_BLUE, 2),
-  new BoatPairCard(BLACK, 2),
-  new BoatPairCard(YELLOW, 2),
+  2 => [
+    1 => new CardType(1, 5),
+    2 => new CardType(2, 3),
+    3 => new CardType(3, 2),
+    4 => new CardType(3, -1),
+    5 => new CardType(4, 4),
+    6 => new CardType(4, 0, 1),
+    7 => new CardType(5),
+    8 => new CardType(5, 0, 1),
+    9 => new CardType(5, -1),
+    10 => new CardType(6, 0, 4),
+    11 => new CardType(6, 0, 1),
+    12 => new CardType(6, 1),
+    13 => new CardType(7, 0, 2),
+    14 => new CardType(7),
+    15 => new CardType(8, 0, 2),
+    16 => new CardType(9, 0, 4),
+  ],
 
-  new FishPairCard(DARK_BLUE, 2),
-  new FishPairCard(LIGHT_BLUE),
-  new FishPairCard(BLACK, 2),
-  new FishPairCard(YELLOW),
-  new FishPairCard(GREEN),
+  3 => [
+    1 => new CardType(1, 4),
+    2 => new CardType(2, 2),
+    3 => new CardType(2, -1),
+    4 => new CardType(3, 5),
+    5 => new CardType(3),
+    6 => new CardType(4, 3),
+    7 => new CardType(4, 0, 1),
+    8 => new CardType(5, 0, 2),
+    9 => new CardType(5),
+    10 => new CardType(5, 1),
+    11 => new CardType(6, 0, 3),
+    12 => new CardType(6),
+    13 => new CardType(7, 0, 5),
+    14 => new CardType(7, 1),
+    15 => new CardType(8, 0, 1),
+    16 => new CardType(9, 0, 2),
+  ],
 
-  new SwimmerPairCard(DARK_BLUE),
-  new SwimmerPairCard(LIGHT_BLUE),
-  new SwimmerPairCard(BLACK),
-  new SwimmerPairCard(YELLOW),
-  new SwimmerPairCard(LIGHT_ORANGE),
-
-  new SharkPairCard(DARK_BLUE),
-  new SharkPairCard(LIGHT_BLUE),
-  new SharkPairCard(BLACK),
-  new SharkPairCard(GREEN),
-  new SharkPairCard(PURPLE),
-
-  new CollectionCard(SHELL, DARK_BLUE),
-  new CollectionCard(SHELL, LIGHT_BLUE),
-  new CollectionCard(SHELL, BLACK),
-  new CollectionCard(SHELL, YELLOW),
-  new CollectionCard(SHELL, GREEN),
-  new CollectionCard(SHELL, GREY),
-
-  new CollectionCard(OCTOPUS, LIGHT_BLUE),
-  new CollectionCard(OCTOPUS, YELLOW),
-  new CollectionCard(OCTOPUS, GREEN),
-  new CollectionCard(OCTOPUS, PURPLE),
-  new CollectionCard(OCTOPUS, GREY),
-
-  new CollectionCard(PENGUIN, PURPLE),
-  new CollectionCard(PENGUIN, LIGHT_ORANGE),
-  new CollectionCard(PENGUIN, PINK),
-
-  new CollectionCard(SAILOR, PINK),
-  new CollectionCard(SAILOR, ORANGE),
-  
-  new MultiplierCard(LIGHTHOUSE, PAIR, BOAT, PURPLE, 1),
-  new MultiplierCard(SHOAL_FISH, PAIR, FISH, GREY, 1),
-  new MultiplierCard(PENGUIN_COLONY, COLLECTION, PENGUIN, GREEN, 2),
-  new MultiplierCard(CAPTAIN, COLLECTION, SAILOR, LIGHT_ORANGE, 3),
+  4 => [
+    1 => new CardType(1, 3),
+    2 => new CardType(1, -1),
+    3 => new CardType(2, 5),
+    4 => new CardType(3, 4),
+    5 => new CardType(4, 2),
+    6 => new CardType(4),
+    7 => new CardType(5, 0, 1),
+    8 => new CardType(5, -1),
+    9 => new CardType(5),
+    10 => new CardType(6, 0, 2),
+    11 => new CardType(6),
+    12 => new CardType(7, 0, 4),
+    13 => new CardType(7, 0, 1),
+    14 => new CardType(8, 0, 5),
+    15 => new CardType(8),
+    16 => new CardType(9),
+  ],
 ];
-
-$this->EXPANSION_CARDS = [
-  new JellyfishPairCard(PURPLE),
-  new JellyfishPairCard(PINK),
-
-  new LobsterPairCard(BLACK),
-
-  new MultiplierCard(CAST_CRAB, PAIR, CRAB, GREEN, 1),
-
-  new SpecialCard(STARFISH, DARK_BLUE),
-  new SpecialCard(STARFISH, LIGHT_BLUE),
-  new SpecialCard(STARFISH, YELLOW),
-
-  new SpecialCard(SEAHORSE, WHITE),
-];
-
-$this->ALL_CARDS = array_merge($this->CARDS, $this->EXPANSION_CARDS);
-
 
 
 

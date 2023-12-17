@@ -469,24 +469,12 @@ trait ActionTrait {
         $this->checkAction('endTurn'); 
 
         $playerId = intval($this->getActivePlayerId());
-
-        $mermaids = $this->getPlayerMermaids($playerId);
-        if (count($mermaids) == 4) {
-            $this->endGameWithMermaids($playerId);
-            return;
-        }
         
         $this->gamestate->nextState('endTurn');
     }
 
     private function applyEndRound(int $type, string $announcement) {
         $playerId = intval($this->getActivePlayerId());
-
-        $mermaids = $this->getPlayerMermaids($playerId);
-        if (count($mermaids) == 4) {
-            $this->endGameWithMermaids($playerId);
-            return;
-        }
 
         $this->setGameStateValue(END_ROUND_TYPE, $type);
 
@@ -547,29 +535,6 @@ trait ActionTrait {
         $this->setGameStateValue(CHOSEN_DISCARD, $discardNumber);
 
         $this->gamestate->nextState('chooseCard');
-    }
-
-    public function endGameWithMermaids(/*int | null*/$playerId = null) {
-        if ($playerId === null) {
-            $playerId = intval($this->getActivePlayerId());
-        }
-
-        $mermaids = $this->getPlayerMermaids($playerId);
-        if (count($mermaids) == 4) {
-            $count = intval($this->cards->countCardInLocation('table'.$playerId));
-            foreach($mermaids as $card) {
-                $this->cards->moveCard($card->id, 'table'.$playerId, ++$count);
-            }
-
-            $this->notifyAllPlayers('playCards', '', [
-                'playerId' => $playerId,
-                'cards' => $mermaids,
-            ]);
-
-            $this->gamestate->nextState('mermaids');
-        } else {
-            throw new BgaUserException("You need the four Mermaids");
-        }
     }
 
     public function chooseDiscardCard(int $cardId) {

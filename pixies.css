@@ -301,9 +301,6 @@ body > .card {
   display: none;
 }
 
-/*
- * Colors
- */
 .card {
   position: relative;
   width: 149px;
@@ -313,275 +310,238 @@ body > .card {
 }
 .card .card-sides .card-side {
   border-radius: 8px;
+  background-size: auto 100%;
 }
 .card .card-sides .card-side > * {
   pointer-events: none;
   user-select: none;
 }
 .card .card-sides .card-side.back {
-  background-size: auto 100%;
   background-image: url("img/card-back.jpg");
 }
-.card .card-sides .card-side.front {
-  background-size: auto 600%;
-  background-image: url("img/cards.jpg");
+.card .card-sides .card-side.front[data-color="0"] {
+  background-image: url("img/cards0.jpg");
 }
-.card .card-sides .card-side.front[data-category="1"] {
+.card .card-sides .card-side.front[data-color="0"][data-index="1"] {
   background-position-x: 0%;
-  background-position-y: 0%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="1"][data-color="1"][data-index="0"] {
-  background-position-x: 11.1111111111%;
-  background-position-y: 0%;
+.card .card-sides .card-side.front[data-color="0"][data-index="2"] {
+  background-position-x: 20%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="1"][data-color="1"][data-index="1"] {
-  background-position-x: 22.2222222222%;
-  background-position-y: 0%;
+.card .card-sides .card-side.front[data-color="0"][data-index="3"] {
+  background-position-x: 40%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="1"][data-color="2"][data-index="0"] {
-  background-position-x: 33.3333333333%;
-  background-position-y: 0%;
+.card .card-sides .card-side.front[data-color="0"][data-index="4"] {
+  background-position-x: 60%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="1"][data-color="2"][data-index="1"] {
-  background-position-x: 44.4444444444%;
-  background-position-y: 0%;
+.card .card-sides .card-side.front[data-color="0"][data-index="5"] {
+  background-position-x: 80%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="1"][data-color="3"][data-index="0"] {
-  background-position-x: 55.5555555556%;
-  background-position-y: 0%;
-}
-.card .card-sides .card-side.front[data-category="2"][data-family="1"][data-color="4"][data-index="0"] {
-  background-position-x: 66.6666666667%;
-  background-position-y: 0%;
-}
-.card .card-sides .card-side.front[data-category="2"][data-family="1"][data-color="4"][data-index="1"] {
-  background-position-x: 77.7777777778%;
-  background-position-y: 0%;
-}
-.card .card-sides .card-side.front[data-category="2"][data-family="1"][data-color="5"][data-index="0"] {
-  background-position-x: 88.8888888889%;
-  background-position-y: 0%;
-}
-.card .card-sides .card-side.front[data-category="2"][data-family="1"][data-color="7"][data-index="0"] {
+.card .card-sides .card-side.front[data-color="0"][data-index="6"] {
   background-position-x: 100%;
-  background-position-y: 0%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="2"][data-color="1"][data-index="0"] {
+.card .card-sides .card-side.front[data-color="1"] {
+  background-image: url("img/cards1.jpg");
+}
+.card .card-sides .card-side.front[data-color="1"][data-index="1"] {
   background-position-x: 0%;
-  background-position-y: 20%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="2"][data-color="1"][data-index="1"] {
-  background-position-x: 11.1111111111%;
-  background-position-y: 20%;
+.card .card-sides .card-side.front[data-color="1"][data-index="2"] {
+  background-position-x: 6.6666666667%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="2"][data-color="2"][data-index="0"] {
-  background-position-x: 22.2222222222%;
-  background-position-y: 20%;
+.card .card-sides .card-side.front[data-color="1"][data-index="3"] {
+  background-position-x: 13.3333333333%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="2"][data-color="2"][data-index="1"] {
+.card .card-sides .card-side.front[data-color="1"][data-index="4"] {
+  background-position-x: 20%;
+}
+.card .card-sides .card-side.front[data-color="1"][data-index="5"] {
+  background-position-x: 26.6666666667%;
+}
+.card .card-sides .card-side.front[data-color="1"][data-index="6"] {
   background-position-x: 33.3333333333%;
-  background-position-y: 20%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="2"][data-color="3"][data-index="0"] {
-  background-position-x: 44.4444444444%;
-  background-position-y: 20%;
+.card .card-sides .card-side.front[data-color="1"][data-index="7"] {
+  background-position-x: 40%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="2"][data-color="3"][data-index="1"] {
-  background-position-x: 55.5555555556%;
-  background-position-y: 20%;
+.card .card-sides .card-side.front[data-color="1"][data-index="8"] {
+  background-position-x: 46.6666666667%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="2"][data-color="4"][data-index="0"] {
+.card .card-sides .card-side.front[data-color="1"][data-index="9"] {
+  background-position-x: 53.3333333333%;
+}
+.card .card-sides .card-side.front[data-color="1"][data-index="10"] {
+  background-position-x: 60%;
+}
+.card .card-sides .card-side.front[data-color="1"][data-index="11"] {
   background-position-x: 66.6666666667%;
-  background-position-y: 20%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="2"][data-color="4"][data-index="1"] {
-  background-position-x: 77.7777777778%;
-  background-position-y: 20%;
+.card .card-sides .card-side.front[data-color="1"][data-index="12"] {
+  background-position-x: 73.3333333333%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="3"][data-color="1"][data-index="0"] {
-  background-position-x: 88.8888888889%;
-  background-position-y: 20%;
+.card .card-sides .card-side.front[data-color="1"][data-index="13"] {
+  background-position-x: 80%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="3"][data-color="1"][data-index="1"] {
+.card .card-sides .card-side.front[data-color="1"][data-index="14"] {
+  background-position-x: 86.6666666667%;
+}
+.card .card-sides .card-side.front[data-color="1"][data-index="15"] {
+  background-position-x: 93.3333333333%;
+}
+.card .card-sides .card-side.front[data-color="1"][data-index="16"] {
   background-position-x: 100%;
-  background-position-y: 20%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="3"][data-color="2"][data-index="0"] {
+.card .card-sides .card-side.front[data-color="2"] {
+  background-image: url("img/cards2.jpg");
+}
+.card .card-sides .card-side.front[data-color="2"][data-index="1"] {
   background-position-x: 0%;
-  background-position-y: 40%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="3"][data-color="3"][data-index="0"] {
-  background-position-x: 11.1111111111%;
-  background-position-y: 40%;
+.card .card-sides .card-side.front[data-color="2"][data-index="2"] {
+  background-position-x: 6.6666666667%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="3"][data-color="3"][data-index="1"] {
-  background-position-x: 22.2222222222%;
-  background-position-y: 40%;
+.card .card-sides .card-side.front[data-color="2"][data-index="3"] {
+  background-position-x: 13.3333333333%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="3"][data-color="4"][data-index="0"] {
+.card .card-sides .card-side.front[data-color="2"][data-index="4"] {
+  background-position-x: 20%;
+}
+.card .card-sides .card-side.front[data-color="2"][data-index="5"] {
+  background-position-x: 26.6666666667%;
+}
+.card .card-sides .card-side.front[data-color="2"][data-index="6"] {
   background-position-x: 33.3333333333%;
-  background-position-y: 40%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="3"][data-color="5"][data-index="0"] {
-  background-position-x: 44.4444444444%;
-  background-position-y: 40%;
+.card .card-sides .card-side.front[data-color="2"][data-index="7"] {
+  background-position-x: 40%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="4"][data-color="1"][data-index="0"] {
-  background-position-x: 55.5555555556%;
-  background-position-y: 40%;
+.card .card-sides .card-side.front[data-color="2"][data-index="8"] {
+  background-position-x: 46.6666666667%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="4"][data-color="2"][data-index="0"] {
+.card .card-sides .card-side.front[data-color="2"][data-index="9"] {
+  background-position-x: 53.3333333333%;
+}
+.card .card-sides .card-side.front[data-color="2"][data-index="10"] {
+  background-position-x: 60%;
+}
+.card .card-sides .card-side.front[data-color="2"][data-index="11"] {
   background-position-x: 66.6666666667%;
-  background-position-y: 40%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="4"][data-color="3"][data-index="0"] {
-  background-position-x: 77.7777777778%;
-  background-position-y: 40%;
+.card .card-sides .card-side.front[data-color="2"][data-index="12"] {
+  background-position-x: 73.3333333333%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="4"][data-color="4"][data-index="0"] {
-  background-position-x: 88.8888888889%;
-  background-position-y: 40%;
+.card .card-sides .card-side.front[data-color="2"][data-index="13"] {
+  background-position-x: 80%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="4"][data-color="8"][data-index="0"] {
+.card .card-sides .card-side.front[data-color="2"][data-index="14"] {
+  background-position-x: 86.6666666667%;
+}
+.card .card-sides .card-side.front[data-color="2"][data-index="15"] {
+  background-position-x: 93.3333333333%;
+}
+.card .card-sides .card-side.front[data-color="2"][data-index="16"] {
   background-position-x: 100%;
-  background-position-y: 40%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="5"][data-color="1"][data-index="0"] {
+.card .card-sides .card-side.front[data-color="3"] {
+  background-image: url("img/cards3.jpg");
+}
+.card .card-sides .card-side.front[data-color="3"][data-index="1"] {
   background-position-x: 0%;
-  background-position-y: 60%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="5"][data-color="2"][data-index="0"] {
-  background-position-x: 11.1111111111%;
-  background-position-y: 60%;
+.card .card-sides .card-side.front[data-color="3"][data-index="2"] {
+  background-position-x: 6.6666666667%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="5"][data-color="3"][data-index="0"] {
-  background-position-x: 22.2222222222%;
-  background-position-y: 60%;
+.card .card-sides .card-side.front[data-color="3"][data-index="3"] {
+  background-position-x: 13.3333333333%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="5"][data-color="5"][data-index="0"] {
+.card .card-sides .card-side.front[data-color="3"][data-index="4"] {
+  background-position-x: 20%;
+}
+.card .card-sides .card-side.front[data-color="3"][data-index="5"] {
+  background-position-x: 26.6666666667%;
+}
+.card .card-sides .card-side.front[data-color="3"][data-index="6"] {
   background-position-x: 33.3333333333%;
-  background-position-y: 60%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="5"][data-color="6"][data-index="0"] {
-  background-position-x: 44.4444444444%;
-  background-position-y: 60%;
+.card .card-sides .card-side.front[data-color="3"][data-index="7"] {
+  background-position-x: 40%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="6"] {
-  background-image: url("img/cards-expansion.jpg");
-  background-size: auto 100%;
+.card .card-sides .card-side.front[data-color="3"][data-index="8"] {
+  background-position-x: 46.6666666667%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="6"][data-color="6"][data-index="0"] {
-  background-position-x: 0%;
+.card .card-sides .card-side.front[data-color="3"][data-index="9"] {
+  background-position-x: 53.3333333333%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="6"][data-color="9"][data-index="0"] {
-  background-position-x: 14.2857142857%;
+.card .card-sides .card-side.front[data-color="3"][data-index="10"] {
+  background-position-x: 60%;
 }
-.card .card-sides .card-side.front[data-category="2"][data-family="7"] {
-  background-image: url("img/cards-expansion.jpg");
-  background-size: auto 100%;
-}
-.card .card-sides .card-side.front[data-category="2"][data-family="7"][data-color="3"][data-index="0"] {
-  background-position-x: 28.5714285714%;
-}
-.card .card-sides .card-side.front[data-category="3"][data-family="1"][data-color="1"][data-index="0"] {
-  background-position-x: 55.5555555556%;
-  background-position-y: 60%;
-}
-.card .card-sides .card-side.front[data-category="3"][data-family="1"][data-color="2"][data-index="0"] {
+.card .card-sides .card-side.front[data-color="3"][data-index="11"] {
   background-position-x: 66.6666666667%;
-  background-position-y: 60%;
 }
-.card .card-sides .card-side.front[data-category="3"][data-family="1"][data-color="3"][data-index="0"] {
-  background-position-x: 77.7777777778%;
-  background-position-y: 60%;
+.card .card-sides .card-side.front[data-color="3"][data-index="12"] {
+  background-position-x: 73.3333333333%;
 }
-.card .card-sides .card-side.front[data-category="3"][data-family="1"][data-color="4"][data-index="0"] {
-  background-position-x: 88.8888888889%;
-  background-position-y: 60%;
+.card .card-sides .card-side.front[data-color="3"][data-index="13"] {
+  background-position-x: 80%;
 }
-.card .card-sides .card-side.front[data-category="3"][data-family="1"][data-color="5"][data-index="0"] {
+.card .card-sides .card-side.front[data-color="3"][data-index="14"] {
+  background-position-x: 86.6666666667%;
+}
+.card .card-sides .card-side.front[data-color="3"][data-index="15"] {
+  background-position-x: 93.3333333333%;
+}
+.card .card-sides .card-side.front[data-color="3"][data-index="16"] {
   background-position-x: 100%;
-  background-position-y: 60%;
 }
-.card .card-sides .card-side.front[data-category="3"][data-family="1"][data-color="7"][data-index="0"] {
+.card .card-sides .card-side.front[data-color="4"] {
+  background-image: url("img/cards4.jpg");
+}
+.card .card-sides .card-side.front[data-color="4"][data-index="1"] {
   background-position-x: 0%;
-  background-position-y: 80%;
 }
-.card .card-sides .card-side.front[data-category="3"][data-family="2"][data-color="2"][data-index="0"] {
-  background-position-x: 11.1111111111%;
-  background-position-y: 80%;
+.card .card-sides .card-side.front[data-color="4"][data-index="2"] {
+  background-position-x: 6.6666666667%;
 }
-.card .card-sides .card-side.front[data-category="3"][data-family="2"][data-color="4"][data-index="0"] {
-  background-position-x: 22.2222222222%;
-  background-position-y: 80%;
+.card .card-sides .card-side.front[data-color="4"][data-index="3"] {
+  background-position-x: 13.3333333333%;
 }
-.card .card-sides .card-side.front[data-category="3"][data-family="2"][data-color="5"][data-index="0"] {
+.card .card-sides .card-side.front[data-color="4"][data-index="4"] {
+  background-position-x: 20%;
+}
+.card .card-sides .card-side.front[data-color="4"][data-index="5"] {
+  background-position-x: 26.6666666667%;
+}
+.card .card-sides .card-side.front[data-color="4"][data-index="6"] {
   background-position-x: 33.3333333333%;
-  background-position-y: 80%;
 }
-.card .card-sides .card-side.front[data-category="3"][data-family="2"][data-color="6"][data-index="0"] {
-  background-position-x: 44.4444444444%;
-  background-position-y: 80%;
+.card .card-sides .card-side.front[data-color="4"][data-index="7"] {
+  background-position-x: 40%;
 }
-.card .card-sides .card-side.front[data-category="3"][data-family="2"][data-color="7"][data-index="0"] {
-  background-position-x: 55.5555555556%;
-  background-position-y: 80%;
+.card .card-sides .card-side.front[data-color="4"][data-index="8"] {
+  background-position-x: 46.6666666667%;
 }
-.card .card-sides .card-side.front[data-category="3"][data-family="3"][data-color="6"][data-index="0"] {
+.card .card-sides .card-side.front[data-color="4"][data-index="9"] {
+  background-position-x: 53.3333333333%;
+}
+.card .card-sides .card-side.front[data-color="4"][data-index="10"] {
+  background-position-x: 60%;
+}
+.card .card-sides .card-side.front[data-color="4"][data-index="11"] {
   background-position-x: 66.6666666667%;
-  background-position-y: 80%;
 }
-.card .card-sides .card-side.front[data-category="3"][data-family="3"][data-color="8"][data-index="0"] {
-  background-position-x: 77.7777777778%;
-  background-position-y: 80%;
+.card .card-sides .card-side.front[data-color="4"][data-index="12"] {
+  background-position-x: 73.3333333333%;
 }
-.card .card-sides .card-side.front[data-category="3"][data-family="3"][data-color="9"][data-index="0"] {
-  background-position-x: 88.8888888889%;
-  background-position-y: 80%;
+.card .card-sides .card-side.front[data-color="4"][data-index="13"] {
+  background-position-x: 80%;
 }
-.card .card-sides .card-side.front[data-category="3"][data-family="4"][data-color="9"][data-index="0"] {
-  background-position-x: 100%;
-  background-position-y: 80%;
+.card .card-sides .card-side.front[data-color="4"][data-index="14"] {
+  background-position-x: 86.6666666667%;
 }
-.card .card-sides .card-side.front[data-category="3"][data-family="4"][data-color="10"][data-index="0"] {
-  background-position-x: 0%;
-  background-position-y: 100%;
+.card .card-sides .card-side.front[data-color="4"][data-index="15"] {
+  background-position-x: 93.3333333333%;
 }
-.card .card-sides .card-side.front[data-category="4"][data-family="1"] {
-  background-position-x: 11.1111111111%;
-  background-position-y: 100%;
-}
-.card .card-sides .card-side.front[data-category="4"][data-family="2"] {
-  background-position-x: 22.2222222222%;
-  background-position-y: 100%;
-}
-.card .card-sides .card-side.front[data-category="4"][data-family="3"] {
-  background-position-x: 33.3333333333%;
-  background-position-y: 100%;
-}
-.card .card-sides .card-side.front[data-category="4"][data-family="4"] {
-  background-position-x: 44.4444444444%;
-  background-position-y: 100%;
-}
-.card .card-sides .card-side.front[data-category="4"][data-family="5"] {
-  background-image: url("img/cards-expansion.jpg");
-  background-size: auto 100%;
-  background-position-x: 42.8571428571%;
-}
-.card .card-sides .card-side[data-category="5"] {
-  background-image: url("img/cards-expansion.jpg");
-  background-size: auto 100%;
-}
-.card .card-sides .card-side[data-category="5"][data-family="1"][data-color="1"] {
-  background-position-x: 57.1428571429%;
-}
-.card .card-sides .card-side[data-category="5"][data-family="1"][data-color="2"] {
-  background-position-x: 71.4285714286%;
-}
-.card .card-sides .card-side[data-category="5"][data-family="1"][data-color="4"] {
-  background-position-x: 85.7142857143%;
-}
-.card .card-sides .card-side[data-category="5"][data-family="2"] {
+.card .card-sides .card-side.front[data-color="4"][data-index="16"] {
   background-position-x: 100%;
 }
 .card.bga-cards_selectable-card:not(.bga-cards_disabled-card):not(.bga-cards_selected-card) {

@@ -4,11 +4,11 @@
 
 interface Card {
     id: number;
-    category: number;
-    family: number;
     color: number;
     index: number;
-    matchFamilies?: number[];
+    value: number;
+    spirals: number;
+    crosses: number;
 }
 
 interface ScoreDetails {
@@ -59,7 +59,6 @@ interface PixiesGame extends Game {
     animationManager: AnimationManager;
     cardsManager: CardsManager;
 
-    isExpansion(): boolean;
     getPlayerId(): number;
     getPlayerColor(playerId: number): string;
 

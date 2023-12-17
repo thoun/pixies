@@ -276,9 +276,6 @@ class Pixies implements PixiesGame {
                 case 'playCards':
                     const playCardsArgs = args as EnteringPlayCardsArgs;
                     (this as any).addActionButton(`playCards_button`, _("Play selected cards"), () => this.playSelectedCards());
-                    if (playCardsArgs.hasFourMermaids) {
-                        (this as any).addActionButton(`endGameWithMermaids_button`, _("Play the four Mermaids"), () => this.endGameWithMermaids(), null, true, 'red');
-                    }
                     (this as any).addActionButton(`endTurn_button`, _("End turn"), () => this.endTurn());
                     if (playCardsArgs.canCallEndRound) {
                         (this as any).addActionButton(`endRound_button`, _('End round') + ' ("' + _('LAST CHANCE') + '")', () => this.endRound(), null, null, 'red');
@@ -326,10 +323,6 @@ class Pixies implements PixiesGame {
     }
     public setTooltipToClass(className: string, html: string) {
         (this as any).addTooltipHtmlToClass(className, html, this.TOOLTIP_DELAY);
-    }
-
-    public isExpansion(): boolean {
-        return this.gamedatas.expansion;
     }
 
     public getPlayerId(): number {
@@ -533,10 +526,6 @@ class Pixies implements PixiesGame {
             1,
         ];
 
-        if (this.isExpansion()) {
-            [6, 9, 2, 4, 0, 1, 3, 5].forEach(index => quantities[index] += 1);
-        }
-
         let labels = [
             _('Dark blue'),
             _('Light blue'),
@@ -567,10 +556,8 @@ class Pixies implements PixiesGame {
         helpDialog.create('pixiesHelpDialog');
         helpDialog.setTitle(_("Card details").toUpperCase());
 
-        const expansion = this.isExpansion();
-
-        const duoCardsNumbers = expansion ? [1, 2, 3, 4, 5, 6, 7] : [1, 2, 3, 4, 5];
-        const multiplierNumbers = expansion ? [1, 2, 3, 4, 5] : [1, 2, 3, 4];
+        const duoCardsNumbers = [1, 2, 3, 4, 5];
+        const multiplierNumbers = [1, 2, 3, 4];
 
         const duoCards = duoCardsNumbers.map(family => `
         <div class="help-section">
@@ -616,21 +603,7 @@ class Pixies implements PixiesGame {
             <h1>${_("Point Multiplier cards")}</h1>
             ${multiplierSection}
         `;
-
-        if (expansion) {
-            const specialSection = [1, 2].map(family => `
-            <div class="help-section">
-                <div id="help-special-${family}"></div>
-                <div>${this.cardsManager.getTooltip(5, family)}</div>
-            </div>
-            `).join('');
-
-            html += `
-                <h1>${_("Special cards")}</h1>
-                ${specialSection}
-            `;
-
-        }
+        
         html += `
         </div>
         `;
@@ -641,7 +614,7 @@ class Pixies implements PixiesGame {
         helpDialog.show();
 
         // pair
-        const duoCardsPairs = expansion ? [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 3]] : [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]];
+        const duoCardsPairs = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]];
         duoCardsPairs.forEach(([family, color]) => this.cardsManager.setForHelp({id: 1020 + family, category: 2, family, color, index: 0 } as any, `help-pair-${family}`));
         // mermaid
         this.cardsManager.setForHelp({id: 1010, category: 1 } as any, `help-mermaid`);
@@ -649,10 +622,6 @@ class Pixies implements PixiesGame {
         [[1, 1], [2, 2], [3, 6], [4, 9]].forEach(([family, color]) => this.cardsManager.setForHelp({id: 1030 + family, category: 3, family, color, index: 0 } as any, `help-collector-${family}`));
         // multiplier
         multiplierNumbers.forEach(family => this.cardsManager.setForHelp({id: 1040 + family, category: 4, family } as any, `help-multiplier-${family}`));
-        if (expansion) {
-            // special
-            [[1, 1], [2, 0]].forEach(([family, color]) => this.cardsManager.setForHelp({id: 1050 + family, category: 5, family, color } as any, `help-special-${family}`));
-        }
     }
 
     public takeCardsFromDeck() {
@@ -752,14 +721,6 @@ class Pixies implements PixiesGame {
         }
 
         this.takeAction('endTurn');
-    }
-
-    public endGameWithMermaids() {
-        if(!(this as any).checkAction('endGameWithMermaids')) {
-            return;
-        }
-
-        this.takeAction('endGameWithMermaids');
     }
 
     public endRound() {

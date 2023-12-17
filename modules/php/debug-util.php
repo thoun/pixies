@@ -11,7 +11,7 @@ trait DebugUtilTrait {
             return;
         } 
 
-        $this->debugFillHands();
+        //$this->debugFillHands();
         //$this->debugFillTable();
         //$this->debugSetMermaids();
         //$this->debugSetMermaidOnDeckTop();

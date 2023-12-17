@@ -45,12 +45,6 @@ trait StateTrait {
     }    
 
     function stPlayCards() {
-        /*$playerId = intval($this->getActivePlayerId());        
-
-        $mermaids = $this->getPlayerMermaids($playerId);
-        if (count($mermaids) == 4) {
-            $this->endGameWithMermaids($playerId);
-        }*/
     }
 
     function stNextPlayer() {
@@ -212,7 +206,7 @@ trait StateTrait {
     }
 
     function isLastRound() {
-        $maxScore = $this->getMaxScore();
+        $maxScore = 100;
         $topScore = $this->getPlayerTopScore();
 
         return $topScore >= $maxScore;
@@ -249,13 +243,6 @@ trait StateTrait {
         $playersIds = $this->getPlayersIds();
 
         foreach ($playersIds as $playerId) {
-            $mermaids = $this->getPlayerMermaids($playerId);
-            if (count($mermaids) == 4) {
-                $this->setPlayerScore($playerId, 100, clienttranslate('${player_name} placed 4 mermaid cards and immediately wins the game!'), []);
-
-                $this->setStat(1, 'winWithMermaids');
-                $this->setStat(1, 'winWithMermaids', $playerId);
-            }
         }
 
         $this->gamestate->nextState('endGame');
