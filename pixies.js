@@ -2018,249 +2018,50 @@ var Stacks = /** @class */ (function () {
     function Stacks(game, gamedatas) {
         var _this = this;
         this.game = game;
-        this.discardStocks = [];
-        [1, 2].forEach(function (number) {
-            var discardDiv = document.getElementById("discard".concat(number));
-            var cardNumber = gamedatas["remainingCardsInDiscard".concat(number)];
-            _this.discardStocks[number] = new Deck(_this.game.cardsManager, discardDiv, {
-                autoUpdateCardNumber: false,
-                cardNumber: cardNumber,
-                topCard: gamedatas["discardTopCard".concat(number)],
-                counter: {
-                    extraClasses: 'pile-counter',
-                }
-            });
-            discardDiv.addEventListener('click', function () { return _this.game.onDiscardPileClick(number); });
-            // this.discardStocks[number].onCardClick = () => this.game.onDiscardPileClick(number);
-        });
-        this.pickStock = new LineStock(this.game.cardsManager, document.getElementById('pick'), {
-            gap: '0px',
-        });
-        this.pickStock.onCardClick = function (card) { return _this.game.onCardClick(card); };
+        var tableCardsDiv = document.getElementById("table-cards");
+        this.tableCards = new LineStock(this.game.cardsManager, tableCardsDiv);
+        this.tableCards.onCardClick = function (card) { return _this.game.onTableCardClick(card); };
+        this.tableCards.addCards(gamedatas.tableCards);
         this.deck = new Deck(this.game.cardsManager, document.getElementById('deck'), {
-            topCard: gamedatas.deckTopCard,
             cardNumber: gamedatas.remainingCardsInDeck,
             counter: {
                 extraClasses: 'pile-counter',
             }
         });
-        this.deck.onCardClick = function () { return _this.game.takeCardsFromDeck(); };
     }
-    Stacks.prototype.makeDeckSelectable = function (selectable) {
-        this.deck.setSelectionMode(selectable ? 'single' : 'none');
-    };
-    Stacks.prototype.makeDiscardSelectable = function (selectable) {
-        var _this = this;
-        [1, 2].forEach(function (number) { return _this.discardStocks[number].setSelectionMode(selectable ? 'single' : 'none'); });
-    };
-    Stacks.prototype.makePickSelectable = function (selectable) {
-        this.pickStock.setSelectionMode(selectable ? 'single' : 'none');
-    };
-    Stacks.prototype.showPickCards = function (show, cards, currentPlayer) {
-        var _this = this;
-        if (currentPlayer === void 0) { currentPlayer = false; }
-        document.getElementById('pick').dataset.visible = show.toString();
-        cards === null || cards === void 0 ? void 0 : cards.forEach(function (card) {
-            var _a, _b;
-            if (((_b = (_a = document.getElementById("ssp-card-".concat(card.id))) === null || _a === void 0 ? void 0 : _a.parentElement) === null || _b === void 0 ? void 0 : _b.id) !== 'pick') {
-                _this.pickStock.addCard(card, {
-                    fromElement: document.getElementById('deck')
-                }, {
-                    visible: false, // start hidden
-                });
-                // set card informations
-                if (currentPlayer) {
-                    _this.pickStock.setCardVisible(card, true, { updateData: true, updateFront: true, updateBack: true, });
-                }
-            }
-        });
-        this.game.updateTableHeight();
-    };
-    Stacks.prototype.setDiscardCard = function (discardNumber, card, newCount, from) {
-        if (newCount === void 0) { newCount = null; }
-        if (from === void 0) { from = undefined; }
-        if (card) {
-            this.discardStocks[discardNumber].addCard(card, { fromElement: from });
-            this.discardStocks[discardNumber].setCardVisible(card, true);
-        }
-        if (newCount !== null) {
-            this.discardStocks[discardNumber].setCardNumber(newCount, card);
-        }
-    };
-    Stacks.prototype.getDiscardCards = function () {
-        var _this = this;
-        return [1, 2].map(function (discardNumber) { return _this.discardStocks[discardNumber].getCards(); }).flat();
-    };
-    Stacks.prototype.cleanDiscards = function () {
-        var _this = this;
-        [1, 2].forEach(function (discardNumber) { return _this.discardStocks[discardNumber].setCardNumber(0); });
-    };
-    Stacks.prototype.getDiscardDeck = function (discardNumber) {
-        return this.discardStocks[discardNumber];
+    Stacks.prototype.makeCardsSelectable = function (selectable) {
+        this.tableCards.setSelectionMode(selectable ? 'single' : 'none');
     };
     return Stacks;
 }());
 var isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
 ;
 var log = isDebug ? console.log.bind(window.console) : function () { };
-var CATEGORY_ORDER = [null, 4, 1, 2, 3];
-var PAIR = 2;
-var SPECIAL = 5;
-var STARFISH = 1;
-function sortCards(a, b) {
-    return (CATEGORY_ORDER[a.category] * 100 + a.family * 10 + a.color) - (CATEGORY_ORDER[b.category] * 100 + b.family * 10 + b.color);
-}
 var PlayerTable = /** @class */ (function () {
     function PlayerTable(game, player) {
-        var _this = this;
         this.game = game;
+        this.tableCards = [];
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
-        var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\">\n            <div id=\"player-table-").concat(this.playerId, "-hand-cards\" class=\"hand cards\" data-player-id=\"").concat(this.playerId, "\" data-current-player=\"").concat(this.currentPlayer.toString(), "\" data-my-hand=\"").concat(this.currentPlayer.toString(), "\" data-animated=\"false\"></div>\n            <div class=\"name-wrapper\">\n                <span class=\"name\" style=\"color: #").concat(player.color, ";\">").concat(player.name, "</span>\n                <div class=\"bubble-wrapper\">\n                    <div id=\"player-table-").concat(this.playerId, "-discussion-bubble\" class=\"discussion_bubble\" data-visible=\"false\"></div>\n                </div>\n        ");
-        if (this.currentPlayer) {
-            html += "<span class=\"counter\" id=\"cards-points-tooltip\">\n                    (".concat(_('Cards points:'), "&nbsp;<span id=\"cards-points-counter\"></span>)\n                </span>");
+        var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"border-color: #").concat(player.color, ";\">\n            <div class=\"name-wrapper\">\n                <span class=\"name\" style=\"color: #").concat(player.color, ";\">").concat(player.name, "</span>\n            </div>\n            <div id=\"player-table-").concat(this.playerId, "-cards\" class=\"player-cards\">");
+        for (var i = 1; i <= 9; i++) {
+            html += "\n                <div id=\"player-table-".concat(this.playerId, "-cards-").concat(i, "\" class=\"table cards\"></div>");
         }
-        html += "</div>\n            <div id=\"player-table-".concat(this.playerId, "-table-cards\" class=\"table cards\">\n            </div>\n        </div>\n        ");
-        dojo.place(html, document.getElementById('tables'));
-        if (this.currentPlayer) {
-            this.cardsPointsCounter = new ebg.counter();
-            this.cardsPointsCounter.create("cards-points-counter");
-            this.cardsPointsCounter.setValue(player.cardsPoints);
-            this.setHandPoints(player.cardsPoints, player.detailledPoints);
-        }
+        html += "\n            </div>\n        </div>";
+        document.getElementById('tables').insertAdjacentHTML('beforeend', html);
         var stockSettings = {
             gap: '0px',
-            sort: sortCards,
         };
-        this.handCards = new LineStock(this.game.cardsManager, document.getElementById("player-table-".concat(this.playerId, "-hand-cards")), __assign(__assign({}, stockSettings), { wrap: this.currentPlayer ? 'wrap' : 'nowrap' }));
-        this.handCards.onCardClick = function (card) { return _this.game.onCardClick(card); };
-        this.tableCards = new LineStock(this.game.cardsManager, document.getElementById("player-table-".concat(this.playerId, "-table-cards")), stockSettings);
-        this.addCardsToHand(player.handCards);
-        this.addCardsToTable(player.tableCards);
-        if (player.endCall) {
-            var args = {
-                announcement: player.endCall.announcement,
-                result: player.endCall.betResult,
-            };
-            this.game.format_string_recursive('log', args);
-            this.showAnnouncement(args.announcement);
-            this.showAnnouncementPoints(player.endCall.cardsPoints);
-            if (player.endCall.betResult) {
-                this.showAnnouncementBetResult(args.result);
-            }
-        }
-        else if (player.endRoundPoints) {
-            this.showAnnouncementPoints(player.endRoundPoints.cardsPoints);
-        }
-        if (player.scoringDetail) {
-            this.showScoreDetails(player.scoringDetail);
+        for (var i = 1; i <= 9; i++) {
+            this.tableCards[i] = new LineStock(this.game.cardsManager, document.getElementById("player-table-".concat(this.playerId, "-cards-").concat(i)), stockSettings);
+            this.tableCards[i].addCards(player.cards[i]);
         }
     }
-    PlayerTable.prototype.addCardsToHand = function (cards, fromDeck) {
-        var _this = this;
-        if (fromDeck === void 0) { fromDeck = false; }
-        var promises = [];
-        var handDiv = document.getElementById("player-table-".concat(this.playerId, "-hand-cards"));
-        handDiv.dataset.animated = 'true';
-        cards.forEach(function (card) {
-            promises.push(_this.handCards.addCard(card, {
-                fromElement: fromDeck ? document.getElementById('deck') : undefined,
-            }).then(function () {
-                return handDiv.dataset.animated = 'false';
-            }));
-            if (_this.currentPlayer) {
-                _this.game.cardsManager.setCardVisible(card, true);
-            }
-        });
-        //this.tableCards.addCards(cards);
-        this.game.updateTableHeight();
-        return Promise.all(promises);
-    };
-    PlayerTable.prototype.addStolenCard = function (card, stealerId, opponentId) {
-        var _this = this;
-        if (this.game.cardsManager.animationsActive()) {
-            var opponentHandDiv_1 = document.getElementById("player-table-".concat(opponentId, "-hand-cards"));
-            var cardDiv_1 = this.game.cardsManager.getCardElement(card);
-            cardDiv_1.style.zIndex = '20';
-            opponentHandDiv_1.dataset.animated = 'true';
-            if (this.game.getPlayerId() == stealerId) {
-                this.game.cardsManager.updateCardInformations(card);
-            }
-            return this.game.animationManager.play(new BgaCumulatedAnimation({
-                animations: [
-                    new BgaShowScreenCenterAnimation({ element: cardDiv_1, transitionTimingFunction: 'ease-in-out' }),
-                    new BgaPauseAnimation({}),
-                ]
-            })).then(function () {
-                cardDiv_1.style.removeProperty('z-index');
-                opponentHandDiv_1.dataset.animated = 'false';
-                return _this.addCardsToHand([_this.game.getPlayerId() == opponentId ? { id: card.id } : card]);
-            });
-        }
-        else {
-            return this.addCardsToHand([this.game.getPlayerId() == opponentId ? { id: card.id } : card]);
-        }
-    };
-    PlayerTable.prototype.addCardsToTable = function (cards) {
-        var _this = this;
-        cards.forEach(function (card) { return _this.game.cardsManager.setCardVisible(card, true, { updateData: true, updateFront: true, updateBack: false }); });
-        var promise = this.tableCards.addCards(cards);
-        this.game.updateTableHeight();
-        return promise;
-    };
     PlayerTable.prototype.getAllCards = function () {
-        return __spreadArray(__spreadArray([], this.tableCards.getCards(), true), this.handCards.getCards(), true);
-    };
-    PlayerTable.prototype.setHandPoints = function (cardsPoints, detailledPoints) {
-        this.cardsPointsCounter.toValue(cardsPoints);
-        this.game.setTooltip("cards-points-tooltip", "\n            <div>".concat(_('Mermaid points:'), " <strong>").concat(detailledPoints[0], "</strong></div>\n            <div>").concat(_('Pair points:'), " <strong>").concat(detailledPoints[1], "</strong></div>\n            <div>").concat(_('Collection points:'), " <strong>").concat(detailledPoints[2], "</strong></div>\n            <div>").concat(_('Multiplier points:'), " <strong>").concat(detailledPoints[3], "</strong></div>\n        "));
-    };
-    PlayerTable.prototype.showAnnouncementPoints = function (playerPoints) {
-        var bubble = document.getElementById("player-table-".concat(this.playerId, "-discussion-bubble"));
-        bubble.innerHTML += _('I got ${points} points.').replace('${points}', playerPoints) + ' ';
-        bubble.dataset.visible = 'true';
-    };
-    PlayerTable.prototype.showAnnouncement = function (announcement) {
-        var bubble = document.getElementById("player-table-".concat(this.playerId, "-discussion-bubble"));
-        bubble.innerHTML += _('I announce ${announcement}!').replace('${announcement}', _(announcement)) + ' ';
-        bubble.dataset.visible = 'true';
-    };
-    PlayerTable.prototype.clearAnnouncement = function () {
-        var bubble = document.getElementById("player-table-".concat(this.playerId, "-discussion-bubble"));
-        bubble.innerHTML = '';
-        bubble.dataset.visible = 'false';
-    };
-    PlayerTable.prototype.showAnnouncementBetResult = function (result) {
-        var bubble = document.getElementById("player-table-".concat(this.playerId, "-discussion-bubble"));
-        bubble.innerHTML += "<div>".concat(_('I ${result} my bet!').replace('${result}', _(result)), "</div>");
-        bubble.dataset.visible = 'true';
-    };
-    PlayerTable.prototype.showEmptyDeck = function () {
-        var bubble = document.getElementById("player-table-".concat(this.playerId, "-discussion-bubble"));
-        bubble.innerHTML += "<div>".concat(_('I score no points, because deck is empty and no one called the end of the round'), "</div>");
-        bubble.dataset.visible = 'true';
-    };
-    PlayerTable.prototype.showScoreDetails = function (scoreDetails) {
-        if (scoreDetails.cardsPoints === null && scoreDetails.colorBonus === null) {
-            this.showEmptyDeck();
-            return;
-        }
-        var scoreDetailStr = '<div class="bubble-score">';
-        if (scoreDetails.cardsPoints !== null && scoreDetails.colorBonus !== null) {
-            scoreDetailStr += _('I score my ${cardPoints} card points plus my color bonus of ${colorBonus}.').replace('${cardPoints}', scoreDetails.cardsPoints).replace('${colorBonus}', scoreDetails.colorBonus);
-        }
-        else if (scoreDetails.cardsPoints === null && scoreDetails.colorBonus !== null) {
-            scoreDetailStr += _('I only score my color bonus of ${colorBonus}.').replace('${colorBonus}', scoreDetails.colorBonus);
-        }
-        else if (scoreDetails.cardsPoints !== null && scoreDetails.colorBonus === null) {
-            scoreDetailStr += _('I score my ${cardPoints} card points.').replace('${cardPoints}', scoreDetails.cardsPoints);
-        }
-        var bubble = document.getElementById("player-table-".concat(this.playerId, "-discussion-bubble"));
-        bubble.innerHTML += scoreDetailStr + "</div>";
-        bubble.dataset.visible = 'true';
+        return this.tableCards.getCards();
     };
     PlayerTable.prototype.setSelectable = function (selectable) {
-        this.handCards.setSelectionMode(selectable ? 'multiple' : 'none');
+        this.tableCards.setSelectionMode(selectable ? 'multiple' : 'none');
     };
     PlayerTable.prototype.updateDisabledPlayCards = function (selectedCards, selectedStarfishCards, playableDuoCardFamilies) {
         if (!this.game.isCurrentPlayerActive()) {
@@ -2268,27 +2069,17 @@ var PlayerTable = /** @class */ (function () {
         }
         var selectableCards = this.handCards.getCards().filter(function (card) {
             var disabled = false;
-            if (card.category != PAIR) {
-                if (card.category == SPECIAL && card.family == STARFISH) {
-                    disabled = !playableDuoCardFamilies.length || (selectedStarfishCards.length > 0 && !selectedStarfishCards.some(function (c) { return c.id == card.id; }));
+            if (playableDuoCardFamilies.includes(card.family)) {
+                if (selectedCards.length >= 2) {
+                    disabled = !selectedCards.some(function (c) { return c.id == card.id; });
                 }
-                else {
-                    disabled = true;
+                else if (selectedCards.length == 1) {
+                    var matchFamilies = selectedCards[0].matchFamilies;
+                    disabled = card.id != selectedCards[0].id && !matchFamilies.includes(card.family);
                 }
             }
             else {
-                if (playableDuoCardFamilies.includes(card.family)) {
-                    if (selectedCards.length >= 2) {
-                        disabled = !selectedCards.some(function (c) { return c.id == card.id; });
-                    }
-                    else if (selectedCards.length == 1) {
-                        var matchFamilies = selectedCards[0].matchFamilies;
-                        disabled = card.id != selectedCards[0].id && !matchFamilies.includes(card.family);
-                    }
-                }
-                else {
-                    disabled = true;
-                }
+                disabled = true;
             }
             return !disabled;
         });
@@ -2299,7 +2090,6 @@ var PlayerTable = /** @class */ (function () {
 var ANIMATION_MS = 500;
 var ACTION_TIMER_DURATION = 5;
 var LOCAL_STORAGE_ZOOM_KEY = 'Pixies-zoom';
-var POINTS_FOR_PLAYERS = [null, null, 40, 35, 30];
 var Pixies = /** @class */ (function () {
     function Pixies() {
         this.playersTables = [];
@@ -2321,19 +2111,11 @@ var Pixies = /** @class */ (function () {
     Pixies.prototype.setup = function (gamedatas) {
         var _this = this;
         log("Starting game setup");
-        if (gamedatas.expansion) {
-            this.dontPreloadImage('background.jpg');
-            document.getElementsByTagName('html')[0].classList.add('expansion');
-        }
-        else {
-            this.dontPreloadImage('background-expansion.jpg');
-        }
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
         this.animationManager = new AnimationManager(this);
         this.cardsManager = new CardsManager(this);
         this.stacks = new Stacks(this, this.gamedatas);
-        this.createPlayerPanels(gamedatas);
         this.createPlayerTables(gamedatas);
         this.zoomManager = new ZoomManager({
             element: document.getElementById('full-table'),
@@ -2392,16 +2174,8 @@ var Pixies = /** @class */ (function () {
     };
     Pixies.prototype.onEnteringTakeCards = function (argsRoot) {
         var args = argsRoot.args;
-        this.clearLogs(argsRoot.active_player);
-        if (args.forceTakeOne) {
-            this.setGamestateDescription('ForceTakeOne');
-        }
-        else if (!args.canTakeFromDiscard.length) {
-            this.setGamestateDescription('NoDiscard');
-        }
         if (this.isCurrentPlayerActive()) {
-            this.stacks.makeDeckSelectable(args.canTakeFromDeck);
-            this.stacks.makeDiscardSelectable(!args.forceTakeOne);
+            this.stacks.makeCardsSelectable(args.canTakeFromDeck);
         }
     };
     Pixies.prototype.onEnteringChooseCard = function (args) {
@@ -2421,7 +2195,7 @@ var Pixies = /** @class */ (function () {
         var _a, _b;
         var currentPlayer = this.isCurrentPlayerActive();
         this.stacks.showPickCards(true, (_b = (_a = args._private) === null || _a === void 0 ? void 0 : _a.cards) !== null && _b !== void 0 ? _b : args.cards, currentPlayer);
-        this.stacks.makeDiscardSelectable(currentPlayer);
+        this.stacks.makeCardsSelectable(currentPlayer);
     };
     Pixies.prototype.onEnteringPlayCards = function () {
         var _a;
@@ -2434,7 +2208,7 @@ var Pixies = /** @class */ (function () {
         }
     };
     Pixies.prototype.onEnteringChooseDiscardPile = function () {
-        this.stacks.makeDiscardSelectable(this.isCurrentPlayerActive());
+        this.stacks.makeCardsSelectable(this.isCurrentPlayerActive());
     };
     Pixies.prototype.onEnteringChooseDiscardCard = function (args) {
         var _this = this;
@@ -2487,14 +2261,13 @@ var Pixies = /** @class */ (function () {
         }
     };
     Pixies.prototype.onLeavingTakeCards = function () {
-        this.stacks.makeDeckSelectable(false);
-        this.stacks.makeDiscardSelectable(false);
+        this.stacks.makeCardsSelectable(false);
     };
     Pixies.prototype.onLeavingChooseCard = function () {
         this.stacks.makePickSelectable(false);
     };
     Pixies.prototype.onLeavingPutDiscardPile = function () {
-        this.stacks.makeDiscardSelectable(false);
+        this.stacks.makeCardsSelectable(false);
     };
     Pixies.prototype.onLeavingPlayCards = function () {
         var _a;
@@ -2625,25 +2398,6 @@ var Pixies = /** @class */ (function () {
         var orderedPlayers = playerIndex > 0 ? __spreadArray(__spreadArray([], players.slice(playerIndex), true), players.slice(0, playerIndex), true) : players;
         return orderedPlayers;
     };
-    Pixies.prototype.createPlayerPanels = function (gamedatas) {
-        var _this = this;
-        var endPoints = POINTS_FOR_PLAYERS[Object.keys(gamedatas.players).length];
-        if (gamedatas.doublePoints) {
-            endPoints *= 2;
-        }
-        Object.values(gamedatas.players).forEach(function (player) {
-            var playerId = Number(player.id);
-            // show end game points
-            dojo.place("<span class=\"end-game-points\">&nbsp;/&nbsp;".concat(endPoints, "</span>"), "player_score_".concat(playerId), 'after');
-            // hand cards counter
-            dojo.place("<div class=\"counters\">\n                <div id=\"playerhand-counter-wrapper-".concat(player.id, "\" class=\"playerhand-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"playerhand-counter-").concat(player.id, "\"></span>\n                </div>\n            </div>"), "player_board_".concat(player.id));
-            var handCounter = new ebg.counter();
-            handCounter.create("playerhand-counter-".concat(playerId));
-            handCounter.setValue(player.handCards.length);
-            _this.handCounters[playerId] = handCounter;
-        });
-        this.setTooltipToClass('playerhand-counter', _('Number of cards in hand'));
-    };
     Pixies.prototype.createPlayerTables = function (gamedatas) {
         var _this = this;
         var orderedPlayers = this.getOrderedPlayers(gamedatas);
@@ -2660,58 +2414,13 @@ var Pixies = /** @class */ (function () {
         (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.updateDisabledPlayCards(this.selectedCards, this.selectedStarfishCards, this.gamedatas.gamestate.args.playableDuoCards);
         (_b = document.getElementById("playCards_button")) === null || _b === void 0 ? void 0 : _b.classList.toggle("disabled", this.selectedCards.length != 2 || this.selectedStarfishCards.length > 1);
     };
-    Pixies.prototype.onCardClick = function (card) {
-        var _a;
-        var cardDiv = (_a = document.getElementById("card-".concat(card.id))) !== null && _a !== void 0 ? _a : document.getElementById("ssp-card-".concat(card.id));
-        var parentDiv = cardDiv.parentElement;
-        if (cardDiv.classList.contains('bga-cards_disabled-card')) {
-            return;
-        }
-        switch (this.gamedatas.gamestate.name) {
-            case 'takeCards':
-                if (parentDiv.dataset.discard) {
-                    this.takeCardFromDiscard(Number(parentDiv.dataset.discard));
-                }
-                break;
-            case 'chooseCard':
-                if (parentDiv.id == 'pick') {
-                    this.chooseCard(card.id);
-                }
-                break;
-            case 'playCards':
-                if (parentDiv.dataset.myHand == "true") {
-                    var array = card.category == SPECIAL && card.family == STARFISH ? this.selectedStarfishCards : this.selectedCards;
-                    if (array.some(function (c) { return c.id == card.id; })) {
-                        array.splice(array.findIndex(function (c) { return c.id == card.id; }), 1);
-                        cardDiv.classList.remove('bga-cards_selected-card');
-                    }
-                    else {
-                        array.push(card);
-                        cardDiv.classList.add('bga-cards_selected-card');
-                    }
-                    this.updateDisabledPlayCards();
-                }
-                break;
-            case 'chooseDiscardCard':
-                if (parentDiv.id == 'discard-pick') {
-                    this.chooseDiscardCard(card.id);
-                }
-                break;
-            case 'chooseOpponent':
-                var chooseOpponentArgs = this.gamedatas.gamestate.args;
-                if (parentDiv.dataset.currentPlayer == 'false') {
-                    var stealPlayerId = Number(parentDiv.dataset.playerId);
-                    if (chooseOpponentArgs.playersIds.includes(stealPlayerId)) {
-                        this.chooseOpponent(stealPlayerId);
-                    }
-                }
-                break;
-        }
+    Pixies.prototype.onTableCardClick = function (card) {
+        this.takeCard(card.id);
     };
     Pixies.prototype.onDiscardPileClick = function (number) {
         switch (this.gamedatas.gamestate.name) {
             case 'takeCards':
-                this.takeCardFromDiscard(number);
+                this.takeCard(number);
                 break;
             case 'putDiscardPile':
                 this.putDiscardPile(number);
@@ -2800,12 +2509,12 @@ var Pixies = /** @class */ (function () {
         }
         this.takeAction('takeCardsFromDeck');
     };
-    Pixies.prototype.takeCardFromDiscard = function (discardNumber) {
-        if (!this.checkAction('takeCardFromDiscard')) {
+    Pixies.prototype.takeCard = function (id) {
+        if (!this.checkAction('takeCard')) {
             return;
         }
-        this.takeAction('takeCardFromDiscard', {
-            discardNumber: discardNumber
+        this.takeAction('takeCard', {
+            id: id
         });
     };
     Pixies.prototype.chooseCard = function (id) {
@@ -2935,7 +2644,6 @@ var Pixies = /** @class */ (function () {
     Pixies.prototype.setupNotifications = function () {
         //log( 'notifications subscriptions setup' );
         var _this = this;
-        dojo.connect(this.notifqueue, 'addToLog', function () { return _this.addLogClass(); });
         var notifs = [
             ['cardInDiscardFromDeck', ANIMATION_MS],
             ['cardInHandFromDiscard', ANIMATION_MS],
@@ -2945,7 +2653,6 @@ var Pixies = /** @class */ (function () {
             ['cardInDiscardFromPick', ANIMATION_MS],
             ['cardsInDeckFromPick', ANIMATION_MS],
             ['playCards', undefined],
-            ['stealCard', undefined],
             ['revealHand', ANIMATION_MS * 2],
             ['announceEndRound', ANIMATION_MS * 2],
             ['betResult', ANIMATION_MS * 2],
@@ -2974,11 +2681,6 @@ var Pixies = /** @class */ (function () {
         this.notifqueue.setIgnoreNotificationCheck('cardInHandFromDiscardCrab', function (notif) {
             return notif.args.playerId == _this.getPlayerId() && !notif.args.card.category;
         });
-        this.notifqueue.setIgnoreNotificationCheck('stealCard', function (notif) {
-            return [notif.args.playerId, notif.args.opponentId].includes(_this.getPlayerId()) && !notif.args.cardName;
-        });
-        this.addLogClass();
-        this.clearLogsInit(this.gamedatas.gamestate.active_player);
     };
     Pixies.prototype.onPlaceLogOnChannel = function (msg) {
         var currentLogId = this.notifqueue.next_log_id;
@@ -2988,21 +2690,6 @@ var Pixies = /** @class */ (function () {
             msg: msg,
         };
         return res;
-    };
-    Pixies.prototype.addLogClass = function () {
-        if (this.lastNotif == null) {
-            return;
-        }
-        var notif = this.lastNotif;
-        var elem = document.getElementById("log_".concat(notif.logId));
-        if (elem) {
-            var type = notif.msg.type;
-            if (type == 'history_history')
-                type = notif.msg.args.originalType;
-            if (notif.msg.args.actionPlayerId) {
-                elem.dataset.playerId = '' + notif.msg.args.actionPlayerId;
-            }
-        }
     };
     Pixies.prototype.notif_cardInDiscardFromDeck = function (args) {
         this.stacks.setDiscardCard(args.discardId, args.card, 1, document.getElementById('deck'));
@@ -3081,15 +2768,6 @@ var Pixies = /** @class */ (function () {
         this.notif_playCards(args);
         this.handCounters[playerId].toValue(0);
     };
-    Pixies.prototype.notif_stealCard = function (args) {
-        var stealerId = args.playerId;
-        var opponentId = args.opponentId;
-        var card = args.card;
-        this.getPlayerTable(opponentId).setSelectable(false);
-        this.handCounters[opponentId].incValue(-1);
-        this.handCounters[stealerId].incValue(1);
-        return this.getPlayerTable(stealerId).addStolenCard(card, stealerId, opponentId);
-    };
     Pixies.prototype.notif_announceEndRound = function (args) {
         this.getPlayerTable(args.playerId).showAnnouncement(args.announcement);
     };
@@ -3140,30 +2818,6 @@ var Pixies = /** @class */ (function () {
             });
         });
     };
-    Pixies.prototype.clearLogs = function (activePlayer) {
-        var _this = this;
-        var logDivs = Array.from(document.getElementById('logs').getElementsByClassName('log'));
-        var hide = false;
-        logDivs.forEach(function (logDiv) {
-            var _a;
-            if (!hide && logDiv.dataset.playerId == activePlayer) {
-                hide = true;
-            }
-            if (hide) {
-                logDiv.style.display = 'none';
-                (_a = document.querySelector("#chatwindowlogs_zone_tablelog_".concat(_this.table_id, " #docked").concat(logDiv.id))) === null || _a === void 0 ? void 0 : _a.classList.add('hidden-log-action');
-            }
-        });
-    };
-    Pixies.prototype.clearLogsInit = function (activePlayer) {
-        var _this = this;
-        if (this.log_history_loading_status.downloaded && this.log_history_loading_status.loaded >= this.log_history_loading_status.total) {
-            this.clearLogs(activePlayer);
-        }
-        else {
-            setTimeout(function () { return _this.clearLogsInit(activePlayer); }, 100);
-        }
-    };
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */
     Pixies.prototype.format_string_recursive = function (log, args) {
@@ -3171,9 +2825,6 @@ var Pixies = /** @class */ (function () {
             if (log && args && !args.processed) {
                 if (args.announcement && args.announcement[0] != '<') {
                     args.announcement = "<strong style=\"color: darkred;\">".concat(_(args.announcement), "</strong>");
-                }
-                if (args.call && args.call.length && args.call[0] != '<') {
-                    args.call = "<strong class=\"title-bar-call\">".concat(_(args.call), "</strong>");
                 }
                 ['discardNumber', 'roundPoints', 'cardsPoints', 'colorBonus', 'cardName', 'cardName1', 'cardName2', 'cardName3', 'cardColor', 'cardColor1', 'cardColor2', 'cardColor3', 'points', 'result'].forEach(function (field) {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {

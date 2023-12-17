@@ -13,8 +13,6 @@ trait ArgsTrait {
     */
    
     function argTakeCards() {
-        $forceTakeOne = intval($this->getGameStateValue(FORCE_TAKE_ONE)) > 0;
-
         $canTakeFromDeck = intval($this->cards->countCardInLocation('deck')) > 0;
         $canTakeFromDiscard = [];
         foreach([1, 2] as $discardNumber) {
@@ -25,9 +23,8 @@ trait ArgsTrait {
         $endRound = intval($this->getGameStateValue(END_ROUND_TYPE));
     
         return [
-            'forceTakeOne' => $forceTakeOne,
-            'canTakeFromDeck' => !$forceTakeOne && $canTakeFromDeck,
-            'canTakeFromDiscard' => $forceTakeOne ? [] : $canTakeFromDiscard,
+            'canTakeFromDeck' => $canTakeFromDeck,
+            'canTakeFromDiscard' => $canTakeFromDiscard,
             'call' => in_array($endRound, [LAST_CHANCE, STOP]) ? $this->ANNOUNCEMENTS[$endRound] : '',
         ];
     }
@@ -35,7 +32,7 @@ trait ArgsTrait {
     function argChooseCard() {        
         $playerId = intval($this->getActivePlayerId());
 
-        $cards = $this->getCardsFromDb($this->cards->getCardsInLocation('pick'));
+        $cards = $this->getCardsFromDb($this->cards->getCardsInLocation('table'));
         $maskedCards = Card::onlyIds($cards);
     
         return [
@@ -53,12 +50,12 @@ trait ArgsTrait {
     function argPlayCards() {
         $playerId = intval($this->getActivePlayerId());
 
-        $totalPoints = $this->getCardsPoints($playerId)->totalPoints;
+        $totalPoints = 0;
         $playableDuoCards = $this->playableDuoCards($playerId);
         $canCallEndRound = $totalPoints >= 7 && intval($this->getGameStateValue(END_ROUND_TYPE)) == 0;
     
         return [
-            'canDoAction' => count($playableDuoCards) > 0 || $canCallEndRound || $hasFourMermaids,
+            'canDoAction' => count($playableDuoCards) > 0 || $canCallEndRound,
             'playableDuoCards' => $playableDuoCards,
             'canCallEndRound' => $canCallEndRound,
         ];

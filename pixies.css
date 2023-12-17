@@ -567,25 +567,13 @@ body > .card {
 }
 #table-center {
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  border: 2px solid #60c2cb;
+  gap: 20px;
   padding: 5px;
-  border-radius: 15px;
-  background: rgba(96, 194, 203, 0.4);
   min-width: 505px;
 }
-#table-center #deck-and-discards {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-#table-center #deck-and-discards #deck[data-empty=true] {
-  background: rgba(96, 194, 203, 0.4);
-  box-shadow: 5px 5px 3px rgba(96, 194, 203, 0.4);
-}
-#table-center #deck-and-discards .discard-stack {
+#table-center .discard-stack {
   display: inline-block;
   position: relative;
   width: 159px;
@@ -594,64 +582,6 @@ body > .card {
   border-radius: 10px;
   border: 1px solid white;
   background-color: rgba(255, 255, 255, 0.4);
-}
-#table-center #pick {
-  position: relative;
-  background-color: #60c2cb;
-  border-radius: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 350px;
-  min-height: 230px;
-  margin-top: 10px;
-  transition: background-color 0.5s;
-}
-#table-center #pick[data-visible=false] {
-  background-color: transparent;
-}
-#table-center #pick[data-visible=false]::before {
-  border-color: transparent;
-}
-#table-center #pick::before {
-  transition: border-color 0.5s;
-  top: -12px;
-  border-width: 0 12px 12px 12px;
-  border-color: #60c2cb transparent;
-  border-style: solid;
-  content: "";
-  display: block;
-  left: 7px;
-  position: absolute;
-  width: 0;
-}
-
-html.expansion #table-center {
-  border-color: #1a5b93;
-  background: rgba(26, 91, 147, 0.4);
-}
-html.expansion #table-center #deck-and-discards #deck[data-empty=true] {
-  background: rgba(26, 91, 147, 0.4);
-  box-shadow: 5px 5px 3px rgba(26, 91, 147, 0.4);
-}
-html.expansion #table-center #pick[data-visible=true] {
-  background-color: #1a5b93;
-}
-html.expansion #table-center #pick[data-visible=true]::before {
-  border-color: #1a5b93 transparent;
-}
-
-#discard-pick {
-  background: rgba(255, 255, 255, 0.4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
-  padding: 5px;
-}
-#discard-pick[data-visible=false] {
-  display: none;
 }
 
 .cards-stack {
@@ -682,10 +612,6 @@ html.expansion #table-center #pick[data-visible=true]::before {
   background: white !important;
 }
 
-.end-game-points {
-  font-size: 80%;
-}
-
 .counters {
   display: flex;
   align-items: center;
@@ -693,16 +619,6 @@ html.expansion #table-center #pick[data-visible=true]::before {
 }
 .counters .icon {
   margin-right: 5px;
-}
-
-.player-hand-card {
-  display: inline-block;
-  width: 32px;
-  height: 32px;
-  background-image: url("img/cards.svg");
-  background-size: contain;
-  background-repeat: no-repeat;
-  vertical-align: bottom;
 }
 
 .player-table {
@@ -715,7 +631,6 @@ html.expansion #table-center #pick[data-visible=true]::before {
 .player-table .name-wrapper {
   position: relative;
   display: flex;
-  background: rgba(255, 255, 255, 0.6666666667);
   padding: 5px;
   justify-content: center;
   align-items: center;
@@ -724,33 +639,10 @@ html.expansion #table-center #pick[data-visible=true]::before {
   font-size: 20pt;
   font-weight: bold;
 }
-.player-table .name-wrapper .bubble-wrapper {
-  position: absolute;
-  bottom: 110%;
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  pointer-events: none;
-}
-.player-table .name-wrapper .bubble-wrapper .discussion_bubble {
-  position: unset;
-  white-space: nowrap;
-  display: unset;
-  opacity: 0;
-  transition: opacity 0.5s;
-  bottom: 110%;
-}
-.player-table .name-wrapper .bubble-wrapper .discussion_bubble[data-visible=true] {
-  opacity: 1;
-}
-.player-table .name-wrapper .bubble-wrapper .discussion_bubble .bubble-score {
-  margin-top: 8px;
-}
-.player-table .name-wrapper .bubble-wrapper .discussion_bubble::after {
-  left: calc(50% - 15px);
-}
-.player-table .name-wrapper .counter {
-  margin-left: 8px;
+.player-table .player-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
 }
 .player-table .cards {
   display: flex;
@@ -951,15 +843,9 @@ html, .mode_3d #game_play_area_background {
 #full-table #centered-table {
   display: flex;
   justify-content: center;
+  flex-direction: column;
 }
-#full-table #tables-and-center {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: start;
-  gap: 20px;
-}
-#full-table #tables-and-center #tables {
+#full-table #tables {
   position: relative;
   display: flex;
   justify-content: center;
@@ -968,29 +854,6 @@ html, .mode_3d #game_play_area_background {
   gap: 20px;
 }
 
-@media (max-width: 1165px) {
-  #tables-and-center {
-    flex-wrap: wrap;
-  }
-}
 .log p, .hidden-log-action {
   display: none !important;
-}
-
-.title-bar-call {
-  background: #8B0000;
-  color: white;
-  padding: 5px 8px;
-  margin-left: 8px;
-  border-radius: 8px;
-  animation: title-bar-call-animation 1s alternate infinite ease-in-out;
-}
-
-@keyframes title-bar-call-animation {
-  0% {
-    box-shadow: 0 0 6px 2px #8B0000;
-  }
-  100% {
-    box-shadow: 0 0 6px 2px rgba(139, 0, 0, 0.5333333333);
-  }
 }

@@ -94,50 +94,6 @@ trait UtilTrait {
         return 6 - count($this->getPlayersIds());
     }
 
-    // includeTableHandCards are cards from the hand that have been revealed on table, but never played
-    function getPlayerCards(int $playerId, string $from /*'hand' | 'table'*/, bool $includeTableHandCards) {
-        $cards = $this->getCardsFromDb($this->cards->getCardsInLocation($from.$playerId));
-
-        if ($includeTableHandCards) {
-            $cards = array_merge($cards, $this->getCardsFromDb($this->cards->getCardsInLocation('tablehand'.$playerId)));
-        }
-
-        return $cards;
-    }
-
-    function getCardsPoints(int $playerId) {
-        $tableCards = $this->getPlayerCards($playerId, 'table', false);
-        $handCards = $this->getPlayerCards($playerId, 'hand', true);
-
-        $cardsScore = new CardsPoints($tableCards, $handCards);
-        return $cardsScore;
-    }
-
-    function updateCardsPoints(int $playerId) {
-        $cardsPointsObj = $this->getCardsPoints($playerId);
-        $this->notifyPlayer($playerId, 'updateCardsPoints', '', [
-            'cardsPoints' => $cardsPointsObj->totalPoints,
-            'detailledPoints' => $cardsPointsObj->detailledPoints,
-        ]);
-    }
-
-    function revealHand(int $playerId) {
-        $handCards = $this->getPlayerCards($playerId, 'hand', false);
-
-        if (count($handCards) > 0) {
-            $this->cards->moveAllCardsInLocation('hand'.$playerId, 'tablehand'.$playerId);
-
-            $playerPoints = $this->getCardsPoints($playerId)->totalPoints;
-            $this->notifyAllPlayers('revealHand', clienttranslate('${player_name} reveals a hand worth ${points} points'), [
-                'playerId' => $playerId,
-                'player_name' => $this->getPlayerName($playerId),
-                'cards' => $this->getPlayerCards($playerId, 'table', true),
-                'points' => $playerPoints,
-                'playerPoints' => $playerPoints,
-            ]);
-        }
-    }
-
     function getPlayerScore(int $playerId) {
         return intval($this->getUniqueValueFromDB("SELECT player_score FROM player where `player_id` = $playerId"));
     }
@@ -172,50 +128,10 @@ trait UtilTrait {
         ));
     }
 
-    function applySteal(int $stealerId, int $robbedPlayerId) {
-
-        $cardsInHand = $this->getPlayerCards($robbedPlayerId, 'hand', false);
-        $card = null;
-        $cardsNumber = count($cardsInHand);
-        if ($cardsNumber > 0) {
-            $card = $cardsInHand[bga_rand(1, $cardsNumber) - 1];
-            $this->cards->moveCard($card->id, 'hand'.$stealerId);
-            $this->cardCollected($stealerId, $card);
-
-            $args = [
-                'playerId' => $stealerId,
-                'opponentId' => $robbedPlayerId,
-                'player_name' => $this->getPlayerName($stealerId),
-                'player_name2' => $this->getPlayerName($robbedPlayerId),
-                'preserve' => ['actionPlayerId'],
-                'actionPlayerId' => $stealerId,
-            ];
-            $argCardName = [
-                'cardName' => $this->getCardName($card),
-                'cardColor' => $this->COLORS[$card->color],
-                'i18n' => ['cardName', 'cardColor'],
-            ];
-            $argCard = [
-                'card' => $card,
-            ];
-            $argMaskedCard = [
-                'card' => Card::onlyId($card),
-            ];
-
-            $this->notifyAllPlayers('stealCard', clienttranslate('${player_name} steals a card from ${player_name2} hand'), $args + $argMaskedCard);
-            $this->notifyPlayer($robbedPlayerId, 'stealCard', clienttranslate('Card ${cardColor} ${cardName} was stolen from your hand'), $args + $argCardName + $argMaskedCard);
-            $this->notifyPlayer($stealerId, 'stealCard', clienttranslate('Card ${cardColor} ${cardName} was picked from ${player_name2} hand'), $args + $argCardName + $argCard);
-
-            $this->updateCardsPoints($stealerId);
-            $this->updateCardsPoints($robbedPlayerId);
-        }
-    }
-
     function playableDuoCards(int $playerId) {
         $familyPairs = [];
-        $handCards = $this->getPlayerCards($playerId, 'hand', false);
-        $pairCards = array_values(array_filter($handCards, fn($card) => $card->category == PAIR));
-        for ($family = CRAB; $family <= LOBSTER; $family++) {
+        $pairCards = array_values(array_filter([], fn($card) => $card->category == PAIR));
+        for ($family = CRAB; $family <= CRAB; $family++) {
             $familyCards = array_values(array_filter($pairCards, fn($card) => $card->family == $family));
             if (count($familyCards) > 0) {
                 $matchFamilies = $familyCards[0]->matchFamilies;

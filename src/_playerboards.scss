@@ -10,10 +10,6 @@
   }
 }
 
-.end-game-points {
-  font-size: 80%;
-}
-
 .counters {
   display: flex;
   align-items: center;
@@ -22,14 +18,4 @@
   .icon {
     margin-right: 5px;
   }
-}
-
-.player-hand-card {
-  display: inline-block;
-  width: 32px;
-  height: 32px;
-  background-image: url('img/cards.svg');
-  background-size: contain;
-  background-repeat: no-repeat;
-  vertical-align: bottom;
 }

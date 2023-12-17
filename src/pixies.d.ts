@@ -11,24 +11,9 @@ interface Card {
     crosses: number;
 }
 
-interface ScoreDetails {
-    cardsPoints: number | null;
-    colorBonus: number | null;
-}
-
 interface PixiesPlayer extends Player {
     playerNo: number;
-    handCards: Card[];
-    tableCards: Card[];
-    cardsPoints?: number;
-    detailledPoints?: number[];
-    endCall?: {
-        announcement: string;
-        cardsPoints: number;
-        betResult?: string;
-    };
-    endRoundPoints?: NotifUpdateCardsPointsArgs;
-    scoringDetail?: ScoreDetails;
+    cards: { [slot: number]: Card[] };
 }
 
 interface PixiesGamedatas {
@@ -44,15 +29,8 @@ interface PixiesGamedatas {
     tablespeed: string;
 
     // Add here variables you set up in getAllDatas
-    deckTopCard?: Card;
     remainingCardsInDeck: number;
-    discardTopCard1: Card;
-    discardTopCard2: Card;
-    remainingCardsInDiscard1: number;
-    remainingCardsInDiscard2: number;
-
-    expansion: boolean;
-    doublePoints: boolean;
+    tableCards: Card[];
 }
 
 interface PixiesGame extends Game {
@@ -65,8 +43,7 @@ interface PixiesGame extends Game {
     updateTableHeight(): void;
     setTooltip(id: string, html: string): void;
     takeCardsFromDeck(): void;
-    onCardClick(card: Card): void;
-    onDiscardPileClick(discardNumber: number): void;
+    onTableCardClick(card: Card): void;
 }
 
 interface EnteringTakeCardsArgs {
@@ -136,7 +113,6 @@ interface NotifScoreArgs {
     playerId: number;
     newScore: number;
     incScore: number;
-    details: ScoreDetails;
 }
 
 interface NotifPlayCardsArgs {
@@ -166,12 +142,6 @@ interface NotifBetResultArgs {
 interface NotifUpdateCardsPointsArgs {
     cardsPoints: number;
     detailledPoints: number[];
-}
-
-interface NotifStealCardArgs {
-    playerId: number;
-    opponentId: number;
-    card: Card;
 }
 
 interface NotifReshuffleDeckArgs {

@@ -23,8 +23,8 @@ class CardsPoints {
     public int $totalPoints;
     public int $colorBonus;
 
-    public function __construct(array $tableCards, array $handCards) {
-        $cards = array_merge($tableCards, $handCards);
+    public function __construct(array $tableCards) {
+        $cards = $tableCards;
 
         $numberByColor = [];
         foreach($cards as $card) {
@@ -36,21 +36,8 @@ class CardsPoints {
         }
         $this->colorBonus = count($numberByColor) > 0 ? max($numberByColor) : 0;
 
-        if (count(array_filter($handCards, fn($card) => $card->category == SPECIAL && $card->family == SEAHORSE)) > 0) {
-            $this->totalPoints = -1;
-            foreach ([SHELL, OCTOPUS, PENGUIN, SAILOR] as $collectionBonus) {
-                $detailledPoints = $this->getPoints($tableCards, $handCards, $numberByColor, $collectionBonus); // only works for 1, to change if multiple seahorses one day
-                $totalPoints = $this->getTotalPoints($detailledPoints);
-
-                if ($totalPoints > $this->totalPoints) {
-                    $this->detailledPoints = $detailledPoints;            
-                    $this->totalPoints = $totalPoints;
-                }
-            }
-        } else {
-            $this->detailledPoints = $this->getPoints($tableCards, $handCards, $numberByColor);            
+            $this->detailledPoints = $this->getPoints($tableCards, [], $numberByColor);            
             $this->totalPoints = $this->getTotalPoints($this->detailledPoints);
-        }
     }
 
     public function getTotalPoints(array $detailledPoints) {
@@ -91,7 +78,7 @@ class CardsPoints {
         $pairPoints += floor(count($pairTableCards) / 2);
 
         $remainingPairCards = $pairHandCards; // copy
-        usort($remainingPairCards, fn($a, $b) => $b->family - $a->family); // so a pair of crabs & a pair of lobster would be match lobster+crab * 2 instead of 2 crabs & 2 lone lobsters
+        usort($remainingPairCards, fn($a, $b) => $b->family - $a->family);
         while (count($remainingPairCards) > 0) {
             $card = $remainingPairCards[0];
             $matchingCard = null;

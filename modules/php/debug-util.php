@@ -33,10 +33,8 @@ trait DebugUtilTrait {
         $this->debugSetCardInHand(2343492, PAIR, JELLYFISH, PURPLE);*/
         //$this->debugSetCardInHand(2343492, PAIR, CRAB, DARK_BLUE);
         //$this->debugSetCardInHand(2343492, PAIR, CRAB, LIGHT_BLUE);
-        /*$this->debugSetCardInHand(2343492, PAIR, LOBSTER, BLACK);
-        $this->debugSetCardInHand(2343492, SPECIAL, STARFISH, YELLOW);*/
+        //$this->debugSetCardInHand(2343492, SPECIAL, STARFISH, YELLOW);*/
         //$this->debugSetCardInHand(2343492, PAIR, CRAB, BLACK);
-        //$this->debugSetCardInHand(2343492, PAIR, LOBSTER, BLACK);
         /*$this->debugSetCardInHand(2343492, COLLECTION, OCTOPUS, YELLOW);
         $this->debugSetCardInHand(2343492, COLLECTION, OCTOPUS, PURPLE);
         $this->debugSetCardInHand(2343492, SPECIAL, SEAHORSE, WHITE);

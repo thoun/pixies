@@ -24,50 +24,19 @@ html, .mode_3d #game_play_area_background {
   #centered-table {
     display: flex;
     justify-content: center;
+    flex-direction: column;
   }
 
-  #tables-and-center {
+  #tables {
     position: relative;
     display: flex;
     justify-content: center;
-    align-items: start;
-    gap: 20px;
-
-    #tables {
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-  }
-}
-
-@media (max-width: 1165px) { 
-  #tables-and-center {
+    align-items: center;
     flex-wrap: wrap;
+    gap: 20px;
   }
 }
 
 .log p /*.replay_last_move_button*/, .hidden-log-action {
   display: none !important;
-}
-
-.title-bar-call {
-  background: #8B0000;
-  color: white;
-  padding: 5px 8px;
-  margin-left: 8px;
-  border-radius: 8px;
-  animation: title-bar-call-animation 1s alternate infinite ease-in-out;
-}
-
-@keyframes title-bar-call-animation {
-  0% { 
-    box-shadow: 0 0 6px 2px #8B0000;
-  }
-  100% { 
-    box-shadow: 0 0 6px 2px #8B000088;
-  }
 }

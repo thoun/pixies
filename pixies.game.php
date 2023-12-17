@@ -48,11 +48,6 @@ class Pixies extends Table {
             LAST_CHANCE_CALLER => LAST_CHANCE_CALLER,
             STOP_CALLER => STOP_CALLER,
             BET_RESULT => BET_RESULT,
-            FORCE_TAKE_ONE => FORCE_TAKE_ONE,
-            LOBSTER_POWER => LOBSTER_POWER,
-
-            EXPANSION => EXPANSION,
-            DOUBLE_POINTS => DOUBLE_POINTS,
         ]);  
 
         $this->cards = self::getNew("module.common.deck");
@@ -98,8 +93,6 @@ class Pixies extends Table {
         $this->setGameStateInitialValue(LAST_CHANCE_CALLER, 0);
         $this->setGameStateInitialValue(STOP_CALLER, 0);
         $this->setGameStateInitialValue(BET_RESULT, 0);
-        $this->setGameStateInitialValue(FORCE_TAKE_ONE, 0);
-        $this->setGameStateInitialValue(LOBSTER_POWER, 0);
         
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -154,86 +147,17 @@ class Pixies extends Table {
         
 
         $endRound = intval($this->getGameStateValue(END_ROUND_TYPE));
-        $endCaller = 0;
-        if ($endRound == LAST_CHANCE) {
-            $endCaller = intval($this->getGameStateValue(LAST_CHANCE_CALLER));
-        } else if ($endRound == STOP) {
-            $endCaller = intval($this->getGameStateValue(STOP_CALLER));
-        }
 
         foreach($result['players'] as $playerId => &$player) {
             $player['playerNo'] = intval($player['playerNo']);
-            $handCards = $this->getPlayerCards($playerId, 'hand', false);
-            $player['handCards'] = $playerId == $currentPlayerId ? $handCards : Card::onlyIds($handCards);
-            $player['tableCards'] = $this->getPlayerCards($playerId, 'table', true);
-            if ($playerId == $currentPlayerId) {
-                $cardsPointsObj = $this->getCardsPoints($playerId);
-                $player['cardsPoints'] = $cardsPointsObj->totalPoints;
-                $player['detailledPoints'] = $cardsPointsObj->detailledPoints;
-            }
-
-            $betResult = intval($this->getGameStateValue(BET_RESULT));
-            if ($endCaller == $playerId) {
-                $player['endCall'] = [
-                    'announcement' => $this->ANNOUNCEMENTS[$endRound],
-                    'cardsPoints' => $this->getCardsPoints($playerId)->totalPoints,
-                ];
-                
-                if (in_array($betResult, [1, 2])) {
-                    $player['endCall']['betResult'] = $betResult == 2 ? clienttranslate('won') : clienttranslate('lost');
-                }
-            } else if (count($player['handCards']) == 0 && count($player['tableCards']) > 0) {
-                $player['endRoundPoints'] = [
-                    'cardsPoints' => $this->getCardsPoints($playerId)->totalPoints,
-                ];
-            }
-
-            if ($endRound == LAST_CHANCE) {
-                $playerScoreDetails = $this->getCardsPoints($playerId);
-                if ($betResult == 2) { // won
-                    if ($endCaller == $playerId) {
-                        $player['scoringDetail'] = [
-                            'cardsPoints' => $playerScoreDetails->totalPoints,
-                            'colorBonus' => $playerScoreDetails->colorBonus,
-                        ];
-                    } else {
-                        $player['scoringDetail'] = [
-                            'cardsPoints' => null,
-                            'colorBonus' => $playerScoreDetails->colorBonus,
-                        ];
-                    }
-                } else if ($betResult == 1) { // lost
-                    if ($endCaller == $playerId) {
-                        $player['scoringDetail'] = [
-                            'cardsPoints' => null,
-                            'colorBonus' => $playerScoreDetails->colorBonus,
-                        ];
-                    } else {
-                        $player['scoringDetail'] = [
-                            'cardsPoints' => $playerScoreDetails->totalPoints,
-                            'colorBonus' => null,
-                        ];
-                    }
-                }
-            } else if ($endRound == STOP) {
-                $player['scoringDetail'] = [
-                    'cardsPoints' => $this->getCardsPoints($playerId)->totalPoints,
-                    'colorBonus' => null,
-                ];
-            } else if ($endRound == EMPTY_DECK) {
-                $player['scoringDetail'] = [
-                    'cardsPoints' => null,
-                    'colorBonus' => null,
-                ];
+            $player['cards'] = [];
+            for ($i = 1; $i <= 9; $i++) {
+                $player['cards'][$i] = $this->getCardsFromDb($this->cards->getCardsInLocation("player-$playerId-$i"));
             }
         }
 
-        $result['deckTopCard'] = $this->getDeckTopCard();
         $result['remainingCardsInDeck'] = $this->getRemainingCardsInDeck();
-        foreach ([1, 2] as $number) {
-            $result['discardTopCard'.$number] = $this->getCardFromDb($this->cards->getCardOnTop('discard'.$number));
-            $result['remainingCardsInDiscard'.$number] = $this->getRemainingCardsInDiscard($number);
-        }
+        $result['tableCards'] = $this->getCardsFromDb($this->cards->getCardsInLocation('table'));
   
         return $result;
     }

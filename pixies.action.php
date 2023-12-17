@@ -44,12 +44,12 @@
         self::ajaxResponse();
     }
 
-    public function takeCardFromDiscard() {
+    public function takeCard() {
         self::setAjaxMode();
 
-        $discardNumber = self::getArg("discardNumber", AT_posint, true);
+        $id = self::getArg("id", AT_posint, true);
 
-        $this->game->takeCardFromDiscard($discardNumber);
+        $this->game->takeCard($id);
 
         self::ajaxResponse();
     }

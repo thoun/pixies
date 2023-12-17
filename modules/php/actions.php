@@ -77,8 +77,8 @@ trait ActionTrait {
 
     }
 
-    public function takeCardFromDiscard(int $discardNumber) {
-        $this->checkAction('takeCardFromDiscard'); 
+    public function takeCard(int $id) {
+        $this->checkAction('takeCard'); 
 
         $args = $this->argTakeCards();        
         
@@ -157,43 +157,17 @@ trait ActionTrait {
             return;
         }
 
-        if (boolval($this->getGameStateValue(LOBSTER_POWER))) {
-            $this->setGameStateValue(LOBSTER_POWER, 0);
+        $remainingCardsInDiscard1 = intval($this->cards->countCardInLocation('discard1'));
+        $remainingCardsInDiscard2 = intval($this->cards->countCardInLocation('discard2'));
 
-            $cards = $this->getCardsFromDb($this->cards->getCardsInLocation('pick'));
-            if (count($cards) > 0) {
-                $this->cards->moveAllCardsInLocation('pick', 'deck');
-                $this->cards->shuffle('deck');
-
-                self::notifyAllPlayers('cardsInDeckFromPick', '', [
-                    'playerId' => $playerId,
-                    'player_name' => $this->getPlayerName($playerId),
-                    'cards' => $cards,
-                    'deckTopCard' => $this->getDeckTopCard(),
-                    'remainingCardsInDeck' => $this->getRemainingCardsInDeck(),
-                    'preserve' => ['actionPlayerId'],
-                    'actionPlayerId' => $playerId,
-                ]);
-
-                self::notifyAllPlayers('reshuffleDeck', '', [
-                    'deckTopCard' => $this->getDeckTopCard(),
-                ]);
-            }
-
+        if ($remainingCardsInDiscard1 == 0) {
+            $this->applyPutDiscardPile(1);
+            $this->gamestate->nextState('playCards');
+        } else if ($remainingCardsInDiscard2 == 0) {
+            $this->applyPutDiscardPile(2);
             $this->gamestate->nextState('playCards');
         } else {
-            $remainingCardsInDiscard1 = intval($this->cards->countCardInLocation('discard1'));
-            $remainingCardsInDiscard2 = intval($this->cards->countCardInLocation('discard2'));
-
-            if ($remainingCardsInDiscard1 == 0) {
-                $this->applyPutDiscardPile(1);
-                $this->gamestate->nextState('playCards');
-            } else if ($remainingCardsInDiscard2 == 0) {
-                $this->applyPutDiscardPile(2);
-                $this->gamestate->nextState('playCards');
-            } else {
-                $this->gamestate->nextState('putDiscardPile');
-            }
+            $this->gamestate->nextState('putDiscardPile');
         }
     }
 
@@ -265,13 +239,8 @@ trait ActionTrait {
         $power = 0;
         switch ($families[0]) {
             case CRAB:
-                if ($families[1] == LOBSTER) {
-                    $action = clienttranslate('takes the first five cards from the deck and keeps one of them');
-                    $power = 6;
-                } else {
-                    $action = clienttranslate('takes a card from a discard pile');
-                    $power = 1;
-                }
+                $action = clienttranslate('takes a card from a discard pile');
+                $power = 1;
                 break;
             case BOAT:
                 $action = clienttranslate('plays a new turn');
@@ -384,30 +353,6 @@ trait ActionTrait {
                     }
                     $this->gamestate->nextState('playCards');
                 }*/
-                break;
-            case 5:
-                $this->setGameStateValue(FORCE_TAKE_ONE, $playerId);
-                $this->gamestate->nextState('playCards');
-                break;
-            case 6:
-                if (intval($this->cards->countCardInLocation('deck')) > 0) {
-                    $this->setGameStateValue(LOBSTER_POWER, 1);
-
-                    $cards = $this->getCardsFromDb($this->cards->pickCardsForLocation(5, 'deck', 'pick'));
-            
-                    self::notifyAllPlayers('log', clienttranslate('${player_name} picks ${number} cards from the deck'), [
-                        'playerId' => $playerId,
-                        'player_name' => $this->getPlayerName($playerId),
-                        'number' => count($cards),
-                        'preserve' => ['actionPlayerId'],
-                        'actionPlayerId' => $playerId,
-                    ]);
-
-                    $this->gamestate->nextState('chooseCard');
-                } else {
-                    self::notifyAllPlayers('log', clienttranslate('Impossible to activate Pair effect, it is ignored'), []);
-                    $this->gamestate->nextState('playCards');
-                }
                 break;
         }
     }

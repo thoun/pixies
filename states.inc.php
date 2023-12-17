@@ -78,18 +78,13 @@ $playerActionsGameStates = [
 
     ST_PLAYER_TAKE_CARDS => [
         "name" => "takeCards",
-        "description" => clienttranslate('${actplayer} must take two cards from deck or one card from a discard pile ${call}'),
-        "descriptionmyturn" => clienttranslate('${you} must take two cards from deck or one card from a discard pile ${call}'),
-        "descriptionNoDiscard" => clienttranslate('${actplayer} must take two cards from deck ${call}'),
-        "descriptionmyturnNoDiscard" => clienttranslate('${you} must take two cards from deck ${call}'),
-        "descriptionForceTakeOne" => clienttranslate('${actplayer} must take the first card from deck ${call}'),
-        "descriptionmyturnForceTakeOne" => clienttranslate('${you} must take the first card from deck ${call}'),
+        "description" => clienttranslate('${actplayer} must choose a card to play'),
+        "descriptionmyturn" => clienttranslate('${you} must choose a card to play'),
         "type" => "activeplayer",
         "args" => "argTakeCards",
         "updateGameProgression" => true,
         "possibleactions" => [ 
-            "takeCardsFromDeck",
-            "takeCardFromDiscard",
+            "takeCard",
         ],
         "transitions" => [
             "playCards" => ST_PLAYER_PLAY_CARDS,
@@ -208,6 +203,16 @@ $gameGameStates = [
         "description" => "",
         "type" => "game",
         "action" => "stNewRound",
+        "transitions" => [
+            "start" => ST_NEW_TURN,
+        ],
+    ],
+
+    ST_NEW_TURN => [
+        "name" => "newTurn",
+        "description" => "",
+        "type" => "game",
+        "action" => "stNewTurn",
         "transitions" => [
             "start" => ST_PLAYER_TAKE_CARDS,
         ],

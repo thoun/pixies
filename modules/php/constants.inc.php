@@ -5,7 +5,8 @@
  */
 define('ST_BGA_GAME_SETUP', 1);
 
-define('ST_NEW_ROUND', 10);
+const ST_NEW_ROUND = 10;
+const ST_NEW_TURN = 15;
 
 define('ST_PLAYER_TAKE_CARDS', 20);
 
@@ -18,10 +19,11 @@ define('ST_PLAYER_CHOOSE_DISCARD_PILE', 45);
 define('ST_PLAYER_CHOOSE_DISCARD_CARD', 46);
 define('ST_PLAYER_CHOOSE_OPPONENT', 50);
 
-define('ST_NEXT_PLAYER', 75);
+define('ST_NEXT_PLAYER', 74);
 
 define('ST_MULTIPLAYER_BEFORE_END_ROUND', 79);
-define('ST_END_ROUND', 80);
+const ST_END_TURN = 75;
+const ST_END_ROUND = 80;
 
 define('ST_END_SCORE', 90);
 
@@ -36,11 +38,6 @@ define('END_ROUND_TYPE', 12); /* : */ define('STOP', 1); define('LAST_CHANCE', 2
 define('LAST_CHANCE_CALLER', 13);
 define('STOP_CALLER', 14);
 define('BET_RESULT', 15);
-define('FORCE_TAKE_ONE', 16);
-define('LOBSTER_POWER', 17);
-
-define('EXPANSION', 101); // TODO RENAME CONSTANT
-define('DOUBLE_POINTS', 110); // TODO RENAME CONSTANT
 
 /*
  * Cards
@@ -59,7 +56,6 @@ define('FISH', 3);
 define('SWIMMER', 4);
 define('SHARK', 5);
 define('JELLYFISH', 6);
-define('LOBSTER', 7);
 // Collection family
 define('SHELL', 1);
 define('OCTOPUS', 2);
