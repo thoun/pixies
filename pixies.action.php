@@ -36,24 +36,6 @@
   	
   	// define your action entry points there
 
-    public function takeCardsFromDeck() {
-        self::setAjaxMode();
-
-        $this->game->takeCardsFromDeck();
-
-        self::ajaxResponse();
-    }
-
-    public function takeCard() {
-        self::setAjaxMode();
-
-        $id = self::getArg("id", AT_posint, true);
-
-        $this->game->takeCard($id);
-
-        self::ajaxResponse();
-    }
-
     public function chooseCard() {
         self::setAjaxMode();
 
@@ -64,35 +46,24 @@
         self::ajaxResponse();
     }
 
-    public function putDiscardPile() {
+    public function playCard() {
         self::setAjaxMode();
 
-        $discardNumber = self::getArg("discardNumber", AT_posint, true);
+        $space = self::getArg("space", AT_posint, true);
 
-        $this->game->putDiscardPile($discardNumber);
+        $this->game->playCard($space);
 
         self::ajaxResponse();
     }
 
-    public function playCards() {
-        self::setAjaxMode();
-
-        $cardId1 = self::getArg("id1", AT_posint, true);
-        $cardId2 = self::getArg("id2", AT_posint, true);
-
-        $this->game->playCards($cardId1, $cardId2);
-
-        self::ajaxResponse();
-    }
-
-    public function playCardsTrio() {
+    public function playCardTrio() {
         self::setAjaxMode();
 
         $cardId1 = self::getArg("id1", AT_posint, true);
         $cardId2 = self::getArg("id2", AT_posint, true);
         $starfishCardId = self::getArg("starfishId", AT_posint, true);
 
-        $this->game->playCardsTrio($cardId1, $cardId2, $starfishCardId);
+        $this->game->playCardTrio($cardId1, $cardId2, $starfishCardId);
 
         self::ajaxResponse();
     }
@@ -109,14 +80,6 @@
         self::setAjaxMode();
 
         $this->game->endRound();
-
-        self::ajaxResponse();
-    }
-
-    public function immediateEndRound() {
-        self::setAjaxMode();
-
-        $this->game->immediateEndRound();
 
         self::ajaxResponse();
     }

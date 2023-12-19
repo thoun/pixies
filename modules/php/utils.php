@@ -56,16 +56,38 @@ trait UtilTrait {
         return true;
     }
 
+    function setGlobalVariable(string $name, /*object|array*/ $obj) {
+        /*if ($obj == null) {
+            throw new \Error('Global Variable null');
+        }*/
+        $jsonObj = json_encode($obj);
+        $this->DbQuery("INSERT INTO `global_variables`(`name`, `value`)  VALUES ('$name', '$jsonObj') ON DUPLICATE KEY UPDATE `value` = '$jsonObj'");
+    }
+
+    function getGlobalVariable(string $name, $asArray = null) {
+        $json_obj = $this->getUniqueValueFromDB("SELECT `value` FROM `global_variables` where `name` = '$name'");
+        if ($json_obj) {
+            $object = json_decode($json_obj, $asArray);
+            return $object;
+        } else {
+            return null;
+        }
+    }
+
+    function deleteGlobalVariable(string $name) {
+        $this->DbQuery("DELETE FROM `global_variables` where `name` = '$name'");
+    }
+
+    function deleteGlobalVariables(array $names) {
+        $this->DbQuery("DELETE FROM `global_variables` where `name` in (".implode(',', array_map(fn($name) => "'$name'", $names)).")");
+    }
+
     function getPlayersIds() {
         return array_keys($this->loadPlayersBasicInfos());
     }
 
     function getPlayerName(int $playerId) {
         return self::getUniqueValueFromDB("SELECT player_name FROM player WHERE player_id = $playerId");
-    }
-
-    function getPlayerTopScore() {
-        return intval(self::getUniqueValueFromDB("SELECT max(player_score) FROM player"));
     }
 
     function getCardFromDb(/*array|null*/ $dbCard) {
@@ -77,6 +99,20 @@ trait UtilTrait {
 
     function getCardsFromDb(array $dbCards) {
         return array_map(fn($dbCard) => $this->getCardFromDb($dbCard), array_values($dbCards));
+    }
+
+    function getCardsFromSpace(int $playerId, int $value) {
+        return $this->getCardsFromDb($this->cards->getCardsInLocation("player-$playerId-$value"));
+    }
+
+    function getCardsFromSpaces(int $playerId) {
+        $spaces = [];
+        
+        for ($i = 1; $i <= 9; $i++) {
+            $spaces[$i] = $this->getCardsFromSpace($playerId, $i);
+        }
+
+        return $spaces;
     }
 
     function setupCards() {

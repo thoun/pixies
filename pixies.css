@@ -305,11 +305,10 @@ body > .card {
   position: relative;
   width: 149px;
   height: 208px;
-  margin: 5px;
   border-radius: 10px;
 }
 .card .card-sides .card-side {
-  border-radius: 8px;
+  border-radius: 10px;
   background-size: auto 100%;
 }
 .card .card-sides .card-side > * {
@@ -622,7 +621,7 @@ body > .card {
 }
 
 .player-table {
-  width: 650px;
+  width: 547px;
   position: relative;
   background: rgba(255, 255, 255, 0.4);
   border: 2px solid white;
@@ -643,22 +642,29 @@ body > .card {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-}
-.player-table .cards {
-  display: flex;
+  padding: 10px;
   justify-content: center;
-  flex-wrap: wrap;
-  min-height: 218px;
+  gap: 10px;
 }
-.player-table .cards.hand[data-current-player=false]:not([data-animated=true]) {
-  min-height: 45px;
-  max-height: 45px;
-  overflow: hidden;
+.player-table .player-cards .space {
+  width: 169px;
+  height: 228px;
+  outline: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+  position: relative;
 }
-.player-table .cards.hand[data-current-player=false] .card:not(:first-child) {
-  margin-left: -120px;
+.player-table .player-cards .space .slot {
+  position: absolute;
 }
-.player-table .cards.hand[data-can-steal=true] .card {
+.player-table .player-cards .space .slot[data-slot-id="0"] {
+  top: 0px;
+  left: 0px;
+}
+.player-table .player-cards .space .slot[data-slot-id="1"] {
+  bottom: 0px;
+  right: 0px;
+}
+.player-table .player-cards .space.selectable {
   cursor: pointer;
   animation: selectable-card-animation 1s alternate infinite ease-in-out;
 }

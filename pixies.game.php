@@ -43,7 +43,6 @@ class Pixies extends Table {
         parent::__construct();
         
         self::initGameStateLabels([
-            CHOSEN_DISCARD => CHOSEN_DISCARD,
             END_ROUND_TYPE => END_ROUND_TYPE,
             LAST_CHANCE_CALLER => LAST_CHANCE_CALLER,
             STOP_CALLER => STOP_CALLER,
@@ -150,10 +149,7 @@ class Pixies extends Table {
 
         foreach($result['players'] as $playerId => &$player) {
             $player['playerNo'] = intval($player['playerNo']);
-            $player['cards'] = [];
-            for ($i = 1; $i <= 9; $i++) {
-                $player['cards'][$i] = $this->getCardsFromDb($this->cards->getCardsInLocation("player-$playerId-$i"));
-            }
+            $player['cards'] = $this->getCardsFromSpaces($playerId);
         }
 
         $result['remainingCardsInDeck'] = $this->getRemainingCardsInDeck();
@@ -174,7 +170,7 @@ class Pixies extends Table {
     */
     function getGameProgression() {
         $maxScore = 100; // TODO
-        $topScore = $this->getPlayerTopScore();
+        $topScore = 0; // TODO
 
         return min(100, 100 * $topScore / $maxScore);
     }

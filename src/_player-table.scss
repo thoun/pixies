@@ -1,5 +1,5 @@
 .player-table {
-  width: 650px;
+  width: 547px; // 169 * 3 + 4 * 10
   position: relative;
   background: #FFFFFF66;
   border: 2px solid white;
@@ -22,28 +22,31 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
-  }
-
-  .cards {
-    display: flex;
+    padding: 10px;
     justify-content: center;
-    flex-wrap: wrap;
-    min-height: 218px;
+    gap: 10px;
 
-    &.hand {
-      &[data-current-player="false"] {
-        &:not([data-animated="true"]) {
-          min-height: 45px;
-          max-height: 45px;
-          overflow: hidden;
+    .space {
+      width: 169px;
+      height: 228px;
+      outline: 1px solid #FFFFFF66;
+      border-radius: 10px;
+      position: relative;
+
+      .slot {
+        position: absolute;
+
+        &[data-slot-id="0"] {
+          top: 0px;
+          left: 0px;
         }
-
-        .card:not(:first-child) {
-          margin-left: -120px;
+        &[data-slot-id="1"] {
+          bottom: 0px;
+          right: 0px;
         }
       }
 
-      &[data-can-steal="true"] .card {
+      &.selectable {
         cursor: pointer;
         animation: selectable-card-animation 1s alternate infinite ease-in-out;
       }

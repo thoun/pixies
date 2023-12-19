@@ -76,121 +76,52 @@ $basicGameStates = [
 
 $playerActionsGameStates = [
 
-    ST_PLAYER_TAKE_CARDS => [
-        "name" => "takeCards",
-        "description" => clienttranslate('${actplayer} must choose a card to play'),
-        "descriptionmyturn" => clienttranslate('${you} must choose a card to play'),
-        "type" => "activeplayer",
-        "args" => "argTakeCards",
-        "updateGameProgression" => true,
-        "possibleactions" => [ 
-            "takeCard",
-        ],
-        "transitions" => [
-            "playCards" => ST_PLAYER_PLAY_CARDS,
-            "chooseCard" => ST_PLAYER_CHOOSE_CARD,
-            "zombiePass" => ST_NEXT_PLAYER,
-        ]
-    ],
-
     ST_PLAYER_CHOOSE_CARD => [
         "name" => "chooseCard",
-        "description" => clienttranslate('${actplayer} must choose a card to keep'),
-        "descriptionmyturn" => clienttranslate('${you} must choose a card to keep'),
+        "description" => clienttranslate('${actplayer} must choose a card to play'),
+        "descriptionmyturn" => clienttranslate('${you} must choose a card to play'),
         "type" => "activeplayer",
         "args" => "argChooseCard",  
         "possibleactions" => [ 
             "chooseCard",
         ],
         "transitions" => [
-            "putDiscardPile" => ST_PLAYER_PUT_DISCARD_PILE,
-            "playCards" => ST_PLAYER_PLAY_CARDS,
+            "playCard" => ST_PLAYER_PLAY_CARD,
+            "keepCard" => ST_PLAYER_KEEP_CARD,
             "zombiePass" => ST_NEXT_PLAYER,
         ]
     ],
 
-    ST_PLAYER_PUT_DISCARD_PILE => [
-        "name" => "putDiscardPile",
-        "description" => clienttranslate('${actplayer} must choose a discard pile for the other card'),
-        "descriptionmyturn" => clienttranslate('${you} must choose a discard pile for the other card'),
-        "type" => "activeplayer",
-        "args" => "argChooseCard",  
-        "possibleactions" => [ 
-            "putDiscardPile",
-        ],
-        "transitions" => [
-            "playCards" => ST_PLAYER_PLAY_CARDS,
-            "zombiePass" => ST_NEXT_PLAYER,
-        ]
-    ],
-
-    ST_PLAYER_PLAY_CARDS => [
-        "name" => "playCards",
-        "description" => clienttranslate('${actplayer} may play cards duo'),
-        "descriptionmyturn" => clienttranslate('${you} may play cards duo'),
+    ST_PLAYER_PLAY_CARD => [
+        "name" => "playCard",
+        "description" => clienttranslate('${actplayer} must place the card'),
+        "descriptionmyturn" => clienttranslate('${you} must place the card'),
         "type" => "activeplayer",    
-        "args" => "argPlayCards",     
-        "action" => "stPlayCards",
-        "updateGameProgression" => true,
+        "args" => "argPlayCard",    
         "possibleactions" => [ 
-            "playCards",
-            "playCardsTrio",
-            "endTurn",
-            "endRound",
-            "immediateEndRound",
+            "playCard",
+            "cancel",
         ],
         "transitions" => [
-            "chooseDiscardPile" => ST_PLAYER_CHOOSE_DISCARD_PILE,
-            "newTurn" => ST_PLAYER_TAKE_CARDS,
-            "chooseOpponent" => ST_PLAYER_CHOOSE_OPPONENT,
-            "chooseCard" => ST_PLAYER_CHOOSE_CARD,
-            "playCards" => ST_PLAYER_PLAY_CARDS,
-            "endTurn" => ST_NEXT_PLAYER,
-            "mermaids" => ST_END_SCORE,
+            "next" => ST_NEXT_PLAYER,
+            "cancel" => ST_PLAYER_CHOOSE_CARD,
             "zombiePass" => ST_NEXT_PLAYER,
         ]
     ],
 
-    ST_PLAYER_CHOOSE_DISCARD_PILE => [
-        "name" => "chooseDiscardPile",
-        "description" => clienttranslate('${actplayer} must choose a discard pile'),
-        "descriptionmyturn" => clienttranslate('${you} must choose a discard pile'),
-        "type" => "activeplayer",
-        "possibleactions" => [ 
-            "chooseDiscardPile",
-        ],
-        "transitions" => [
-            "chooseCard" => ST_PLAYER_CHOOSE_DISCARD_CARD,
-            "zombiePass" => ST_NEXT_PLAYER,
-        ]
-    ],
-
-    ST_PLAYER_CHOOSE_DISCARD_CARD => [
-        "name" => "chooseDiscardCard",
-        "description" => clienttranslate('${actplayer} must choose a card'),
-        "descriptionmyturn" => clienttranslate('${you} must choose a card'),
+    ST_PLAYER_KEEP_CARD => [
+        "name" => "keepCard",
+        "description" => clienttranslate('${actplayer} must choose a card to keep'),
+        "descriptionmyturn" => clienttranslate('${you} must choose a card to keep'),
         "type" => "activeplayer", 
-        "args" => "argChooseDiscardCard", 
+        "args" => "argKeepCard",    
         "possibleactions" => [ 
-            "chooseDiscardCard",
+            "keepCard",
+            "cancel",
         ],
         "transitions" => [
-            "playCards" => ST_PLAYER_PLAY_CARDS,
-            "zombiePass" => ST_NEXT_PLAYER,
-        ]
-    ],
-
-    ST_PLAYER_CHOOSE_OPPONENT => [
-        "name" => "chooseOpponent",
-        "description" => clienttranslate('${actplayer} must choose a card to steal'),
-        "descriptionmyturn" => clienttranslate('${you} must choose a card to steal'),
-        "type" => "activeplayer",
-        "args" => "argChooseOpponent", 
-        "possibleactions" => [ 
-            "chooseOpponent",
-        ],
-        "transitions" => [
-            "playCards" => ST_PLAYER_PLAY_CARDS,
+            "next" => ST_NEXT_PLAYER,
+            "cancel" => ST_PLAYER_CHOOSE_CARD,
             "zombiePass" => ST_NEXT_PLAYER,
         ]
     ],
@@ -203,6 +134,7 @@ $gameGameStates = [
         "description" => "",
         "type" => "game",
         "action" => "stNewRound",
+        "updateGameProgression" => true,
         "transitions" => [
             "start" => ST_NEW_TURN,
         ],
@@ -213,8 +145,9 @@ $gameGameStates = [
         "description" => "",
         "type" => "game",
         "action" => "stNewTurn",
+        "updateGameProgression" => true,
         "transitions" => [
-            "start" => ST_PLAYER_TAKE_CARDS,
+            "start" => ST_PLAYER_CHOOSE_CARD,
         ],
     ],
 
@@ -224,21 +157,19 @@ $gameGameStates = [
         "type" => "game",
         "action" => "stNextPlayer",
         "transitions" => [
-            "newTurn" => ST_PLAYER_TAKE_CARDS, 
-            "endRound" => ST_MULTIPLAYER_BEFORE_END_ROUND,
+            "next" => ST_PLAYER_CHOOSE_CARD, 
+            "endTurn" => ST_END_TURN,
         ],
     ],
-    
-    ST_MULTIPLAYER_BEFORE_END_ROUND => [
-        "name" => "beforeEndRound",
-        "description" => clienttranslate('Some players are seeing end round result'),
-        "descriptionmyturn" => clienttranslate('End round result'),
-        "type" => "multipleactiveplayer",
-        "action" => "stBeforeEndRound",
-        "possibleactions" => [ "seen" ],
+
+    ST_END_TURN => [
+        "name" => "endTurn",
+        "description" => "",
+        "type" => "game",
+        "action" => "stEndTurn",
         "transitions" => [
+            "newTurn" => ST_NEW_TURN,
             "endRound" => ST_END_ROUND,
-            "endScore" => ST_END_SCORE,
         ],
     ],
 

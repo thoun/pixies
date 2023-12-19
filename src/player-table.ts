@@ -6,7 +6,7 @@ class PlayerTable {
 
     private currentPlayer: boolean;
 
-    private tableCards: LineStock<Card>[] = [];
+    private tableCards: SlotStock<Card>[] = [];
 
     constructor(private game: PixiesGame, player: PixiesPlayer) {
         this.playerId = Number(player.id);
@@ -20,19 +20,26 @@ class PlayerTable {
             <div id="player-table-${this.playerId}-cards" class="player-cards">`;
         for (let i = 1; i <= 9; i++) {
             html += `
-                <div id="player-table-${this.playerId}-cards-${i}" class="table cards"></div>`;
+                <div id="player-table-${this.playerId}-cards-${i}" class="space"></div>`;
         }
         html += `
             </div>
         </div>`;
         document.getElementById('tables').insertAdjacentHTML('beforeend', html);
 
-        const stockSettings: LineStockSettings = {
-            gap: '0px',
+        const stockSettings: SlotStockSettings<Card> = {
+            slotsIds: [0, 1],
+            mapCardToSlot: card => card.locationArg,
         }
 
         for (let i = 1; i <= 9; i++) {
-            this.tableCards[i] = new LineStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-cards-${i}`), stockSettings);
+            const spaceDiv = document.getElementById(`player-table-${this.playerId}-cards-${i}`);
+            spaceDiv.addEventListener('click', () => {
+                if (spaceDiv.classList.contains('selectable')) {
+                    this.game.onSpaceClick(i);
+                }
+            })
+            this.tableCards[i] = new SlotStock<Card>(this.game.cardsManager, spaceDiv, stockSettings);
             this.tableCards[i].addCards(player.cards[i]);
         }
     }
@@ -41,11 +48,13 @@ class PlayerTable {
         return this.tableCards.getCards();
     }
     
-    public setSelectable(selectable: boolean) {
-        this.tableCards.setSelectionMode(selectable ? 'multiple' : 'none');
+    public setSelectableSpaces(spaces: number[]) {
+        for (let i = 1; i <= 9; i++) {
+            document.getElementById(`player-table-${this.playerId}-cards-${i}`).classList.toggle('selectable', spaces.includes(i));
+        }
     }
 
-    public updateDisabledPlayCards(selectedCards: Card[], selectedStarfishCards: Card[], playableDuoCardFamilies: number[]) {
+    public updateDisabledPlayCard(selectedCards: Card[], selectedStarfishCards: Card[], playableDuoCardFamilies: number[]) {
         if (!(this.game as any).isCurrentPlayerActive()) {
             return;
         }

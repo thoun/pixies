@@ -11,71 +11,31 @@ trait ArgsTrait {
         These methods function is to return some additional information that is specific to the current
         game state.
     */
+
+    function argChooseCard() {    
+        return [
+        ];
+    }
    
-    function argTakeCards() {
-        $canTakeFromDeck = intval($this->cards->countCardInLocation('deck')) > 0;
-        $canTakeFromDiscard = [];
-        foreach([1, 2] as $discardNumber) {
-            if (intval($this->cards->countCardInLocation('discard'.$discardNumber)) > 0) {
-                $canTakeFromDiscard[] = $discardNumber;
+    function argPlayCard() {
+        $playerId = intval($this->getActivePlayerId());
+
+        $card = $this->getGlobalVariable(SELECTED_CARD);
+        $spaceCards = $this->getCardsFromSpace($playerId, $card->value);
+
+        $spaces = [];
+        if (count($spaceCards) < 2) {
+            $spaces[] = $card->value;
+        } else {
+            for ($i = 1; $i <= 9; $i++) {
+                if ($i != $card->value && count($this->getCardsFromSpace($playerId, $i)) == 0) {
+                    $spaces[] = $i;
+                }
             }
         }
-        $endRound = intval($this->getGameStateValue(END_ROUND_TYPE));
     
         return [
-            'canTakeFromDeck' => $canTakeFromDeck,
-            'canTakeFromDiscard' => $canTakeFromDiscard,
-            'call' => in_array($endRound, [LAST_CHANCE, STOP]) ? $this->ANNOUNCEMENTS[$endRound] : '',
-        ];
-    }
-
-    function argChooseCard() {        
-        $playerId = intval($this->getActivePlayerId());
-
-        $cards = $this->getCardsFromDb($this->cards->getCardsInLocation('table'));
-        $maskedCards = Card::onlyIds($cards);
-    
-        return [
-            '_private' => [
-                $playerId => [
-                    'cards' => $cards,
-                ]
-            ],
-            'cards' => $maskedCards,
-            'deckTopCard' => $this->getDeckTopCard(),
-            'remainingCardsInDeck' => $this->getRemainingCardsInDeck(),
-        ];
-    }
-   
-    function argPlayCards() {
-        $playerId = intval($this->getActivePlayerId());
-
-        $totalPoints = 0;
-        $playableDuoCards = $this->playableDuoCards($playerId);
-        $canCallEndRound = $totalPoints >= 7 && intval($this->getGameStateValue(END_ROUND_TYPE)) == 0;
-    
-        return [
-            'canDoAction' => count($playableDuoCards) > 0 || $canCallEndRound,
-            'playableDuoCards' => $playableDuoCards,
-            'canCallEndRound' => $canCallEndRound,
-        ];
-    }
-
-    function argChooseDiscardCard() {
-        $playerId = intval($this->getActivePlayerId());
-
-        $discardNumber = $this->getGameStateValue(CHOSEN_DISCARD);
-        $cards = $this->getCardsFromDb($this->cards->getCardsInLocation('discard'.$discardNumber, null, 'location_arg'));
-        $maskedCards = Card::onlyIds($cards);
-    
-        return [
-            'discardNumber' => $discardNumber,
-            '_private' => [
-                $playerId => [
-                    'cards' => $cards,
-                ]
-            ],
-            'cards' => $maskedCards,
+            'spaces' => $spaces,
         ];
     }
 

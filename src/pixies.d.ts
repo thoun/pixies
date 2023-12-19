@@ -4,6 +4,8 @@
 
 interface Card {
     id: number;
+    location: string;
+    locationArg: number;
     color: number;
     index: number;
     value: number;
@@ -42,35 +44,15 @@ interface PixiesGame extends Game {
 
     updateTableHeight(): void;
     setTooltip(id: string, html: string): void;
-    takeCardsFromDeck(): void;
     onTableCardClick(card: Card): void;
-}
-
-interface EnteringTakeCardsArgs {
-    forceTakeOne: boolean;
-    canTakeFromDeck: boolean;
-    canTakeFromDiscard: number[];
+    onSpaceClick(space: number): void;
 }
 
 interface EnteringChooseCardArgs {
-    _private?: {
-        cards: Card[];
-    }
-    cards: Card[];
-    discardNumber?: number;
-    deckTopCard?: Card;
-    remainingCardsInDeck: number;
 }
 
-interface EnteringPlayCardsArgs {
-    canDoAction: boolean;
-    playableDuoCards: number[];
-    hasFourMermaids: boolean;
-    canCallEndRound: boolean;
-}
-
-interface EnteringChooseOpponentArgs {
-    playersIds: number[];
+interface EnteringPlayCardArgs {
+    spaces: number[];
 }
 
 interface NotifCardInDiscardFromDeckArgs {
@@ -115,12 +97,12 @@ interface NotifScoreArgs {
     incScore: number;
 }
 
-interface NotifPlayCardsArgs {
+interface NotifPlayCardArgs {
     playerId: number;
     cards: Card[];
 }
 
-interface NotifRevealHandArgs extends NotifPlayCardsArgs {
+interface NotifRevealHandArgs extends NotifPlayCardArgs {
     playerPoints: number;
 }
 

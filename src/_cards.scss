@@ -2,12 +2,11 @@
     position: relative;
     width: 149px;
     height: 208px;
-    margin: 5px;
     border-radius: 10px;
 
     .card-sides {
         .card-side {
-            border-radius: 8px;
+            border-radius: 10px;
             background-size: auto 100%;
 
             &>* {

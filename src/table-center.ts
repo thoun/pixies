@@ -1,4 +1,4 @@
-class Stacks {
+class TableCenter {
     public deck: Deck<Card>;
 
     private tableCards: LineStock<Card>;
@@ -11,9 +11,9 @@ class Stacks {
 
         this.deck = new Deck<Card>(this.game.cardsManager, document.getElementById('deck'), {
             cardNumber: gamedatas.remainingCardsInDeck,
-            counter: {
+            /*counter: {
                 extraClasses: 'pile-counter',
-            }
+            }*/
         });
     }
 

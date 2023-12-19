@@ -8,20 +8,11 @@ define('ST_BGA_GAME_SETUP', 1);
 const ST_NEW_ROUND = 10;
 const ST_NEW_TURN = 15;
 
-define('ST_PLAYER_TAKE_CARDS', 20);
+const ST_PLAYER_CHOOSE_CARD = 20;
+const ST_PLAYER_PLAY_CARD = 30;
+const ST_PLAYER_KEEP_CARD = 40;
 
-define('ST_PLAYER_CHOOSE_CARD', 30);
-
-define('ST_PLAYER_PUT_DISCARD_PILE', 35);
-
-define('ST_PLAYER_PLAY_CARDS', 40);
-define('ST_PLAYER_CHOOSE_DISCARD_PILE', 45);
-define('ST_PLAYER_CHOOSE_DISCARD_CARD', 46);
-define('ST_PLAYER_CHOOSE_OPPONENT', 50);
-
-define('ST_NEXT_PLAYER', 74);
-
-define('ST_MULTIPLAYER_BEFORE_END_ROUND', 79);
+const ST_NEXT_PLAYER = 70;
 const ST_END_TURN = 75;
 const ST_END_ROUND = 80;
 
@@ -33,11 +24,11 @@ define('END_SCORE', 100);
 /*
  * Constants
  */
-define('CHOSEN_DISCARD', 11);
 define('END_ROUND_TYPE', 12); /* : */ define('STOP', 1); define('LAST_CHANCE', 2); define('EMPTY_DECK', 3);
 define('LAST_CHANCE_CALLER', 13);
 define('STOP_CALLER', 14);
 define('BET_RESULT', 15);
+const SELECTED_CARD = 'SELECTED_CARD';
 
 /*
  * Cards

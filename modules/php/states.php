@@ -35,7 +35,7 @@ trait StateTrait {
         $this->gamestate->nextState('start');
     }
 
-    function stPlayCards() {
+    function stPlayCard() {
     }
 
     function stNextPlayer() {
@@ -43,52 +43,33 @@ trait StateTrait {
 
         $this->giveExtraTime($playerId);
 
-        $this->incStat(1, 'turnsNumber');
-        $this->incStat(1, 'turnsNumber', $playerId);
+        $tableCount = intval($this->cards->countCardInLocation('table'));
+        $endTurn = $tableCount == 0;
 
-        $endRound = intval($this->getGameStateValue(END_ROUND_TYPE));
-
-        $newPlayerId = $this->activeNextPlayer();
-
-        $emptyDeck = false;
-            if ($endRound == 0) {
-            $emptyDeck = intval($this->cards->countCardInLocation('deck')) === 0;
-
-            if ($emptyDeck) {
-                $this->setGameStateValue(END_ROUND_TYPE, EMPTY_DECK);
+        $playersIds = $this->getPlayersIds();
+        if (!$endTurn && count($playersIds) == 2 && $tableCount == 2) {
+            if ($this->array_some($playersIds, fn($pId) => $this->array_every($this->getCardsFromSpaces($playerId), fn($space) => count($space) > 0))) {
+                $endTurn = true;
             }
         }
 
-        $this->gamestate->nextState($emptyDeck ? 'endRound' : 'newTurn');
-    }
-
-    function updateScores(int $endRound) {
-        $playersIds = $this->getPlayersIds();
-        $cardsPoints = [];
-        foreach($playersIds as $playerId) {
-            $cardsPoints[$playerId] = 0;
+        if (!$endTurn) {
+            $this->activeNextPlayer();
         }
 
-        $playerPoints = array_map(fn($cardsPoint) => $cardsPoint->totalPoints, $cardsPoints);
-    }
+        $this->gamestate->nextState($endTurn ? 'endTurn' : 'next');
+    } 
+    
+    function stEndTurn() {
+        $playerCount = count($this->getPlayersIds());
+        $cardCount = $playerCount == 2 ? 4 : $playerCount;
 
-    function isLastRound() {
-        $maxScore = 100;
-        $topScore = $this->getPlayerTopScore();
+        $cards = $this->getCardsFromDb($this->cards->pickCardsForLocation($cardCount, 'deck', 'table'));
 
-        return $topScore >= $maxScore;
-    }
+        $this->incStat(1, 'turnsNumber');
+        $this->incStat(1, 'turnsNumber', $playerId);
 
-    function stBeforeEndRound() {
-        $endRound = intval($this->getGameStateValue(END_ROUND_TYPE));
-        $this->updateScores($endRound);
-
-        if ($this->isLastRound()) {
-            $this->gamestate->nextState('endScore');
-        } else {
-            $this->setGameStateValue(FORCE_TAKE_ONE, 0);
-            $this->gamestate->setAllPlayersMultiactive();
-        }
+        $this->gamestate->nextState('start');
     }
 
     function stEndRound() {
