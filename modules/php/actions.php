@@ -21,7 +21,7 @@ trait ActionTrait {
             throw new BgaUserException("You annot choose this card");
         }
 
-        $this->setGlobalVariable(SELECTED_CARD, $card);
+        $this->setGlobalVariable(SELECTED_CARD_ID, $card->id);
 
         self::notifyPlayer($playerId, 'chooseCard', '', [
             'playerId' => $playerId,
@@ -47,72 +47,53 @@ trait ActionTrait {
         }
 
         $playerId = intval($this->getActivePlayerId());
-        $card = $this->getGlobalVariable(SELECTED_CARD);
+        $card = $this->getSelectedCard();
 
-        $count = intval($this->cards->countCardInLocation("player-$playerId-$card->value"));
-        $this->cards->moveCard($card->id, "player-$playerId-$card->value", $count);
+        $count = intval($this->cards->countCardInLocation("player-$playerId-$space"));
+        $this->cards->moveCard($card->id, "player-$playerId-$space", $count);
 
         self::notifyAllPlayers('playCard', clienttranslate('${player_name} plays card on space ${value}'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
-            'card' => $card,
-            'value' => $card->value,
+            'card' => $space == $card->value ? $card : Card::onlyId($card),
+            'space' => $space,
+            'value' => $space, // for log
         ]);
 
         $this->gamestate->nextState('next');
     }
 
-    public function endTurn() {
-        $this->checkAction('endTurn'); 
+    public function keepCard(int $index) {
+        $this->checkAction('keepCard');
+
+        if (!in_array($index, [0, 1])) {
+            throw new BgaUserException("Invalid index");
+        }
 
         $playerId = intval($this->getActivePlayerId());
-        
-        $this->gamestate->nextState('endTurn');
-    }
 
-    private function applyEndRound(int $type, string $announcement) {
-        $playerId = intval($this->getActivePlayerId());
+        $card = $this->getSelectedCard();
+        $space = $card->value;
+        $spaceCard = $this->getCardsFromSpace($playerId, $space)[0];
 
-        $this->setGameStateValue(END_ROUND_TYPE, $type);
+        $hiddenCard = $index == 0 ? $card : $spaceCard;
+        $visibleCard = $index == 1 ? $card : $spaceCard;
 
-        self::notifyAllPlayers('announceEndRound', clienttranslate('${player_name} announces ${announcement}!'), [
+        $hiddenCard->locationArg = 0;
+        $visibleCard->locationArg = 1;
+
+        $this->cards->moveCard($hiddenCard->id, "player-$playerId-$space", $hiddenCard->locationArg);
+        $this->cards->moveCard($visibleCard->id, "player-$playerId-$space", $visibleCard->locationArg);
+
+        self::notifyAllPlayers('keepCard', clienttranslate('${player_name} chooses a card to keep on space ${value}'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
-            'announcement' => $announcement,
-            'i18n' => ['announcement'],
+            'hiddenCard' => Card::onlyId($hiddenCard),
+            'visibleCard' => $visibleCard,
+            'space' => $space,
+            'value' => $space, // for log
         ]);
-        
-        $this->gamestate->nextState('endTurn');
-    }
 
-    public function endRound() {
-        $this->checkAction('endRound');
-
-        $playerId = intval($this->getActivePlayerId());
-
-        $this->incStat(1, 'announce');
-        $this->incStat(1, 'announce', $playerId);
-        $this->incStat(1, 'announceLastChance');
-        $this->incStat(1, 'announceLastChance', $playerId);
-
-        $this->applyEndRound(LAST_CHANCE, $this->ANNOUNCEMENTS[LAST_CHANCE]);
-    }
-
-    public function chooseOpponent(int $opponentId) {
-        $this->checkAction('chooseOpponent');
-
-        $playerId = intval($this->getActivePlayerId());
-
-        $this->applySteal($playerId, $opponentId);
-
-        $this->gamestate->nextState('playCard');
-    }
-
-    public function seen() {
-        $this->checkAction('seen');
-
-        $playerId = intval($this->getCurrentPlayerId());
-
-        $this->gamestate->setPlayerNonMultiactive($playerId, 'endRound');
+        $this->gamestate->nextState('next');
     }
 }

@@ -20,7 +20,7 @@ trait ArgsTrait {
     function argPlayCard() {
         $playerId = intval($this->getActivePlayerId());
 
-        $card = $this->getGlobalVariable(SELECTED_CARD);
+        $card = $this->getSelectedCard();
         $spaceCards = $this->getCardsFromSpace($playerId, $card->value);
 
         $spaces = [];
@@ -35,17 +35,20 @@ trait ArgsTrait {
         }
     
         return [
+            'selectedCard' => $card,
             'spaces' => $spaces,
         ];
     }
 
-    function argChooseOpponent() {
+    function argKeepCard() {
         $playerId = intval($this->getActivePlayerId());
 
-        $possibleOpponentsToSteal = $this->getPossibleOpponentsToSteal($playerId);
+        $card = $this->getSelectedCard();
+        $spaceCards = $this->getCardsFromSpace($playerId, $card->value);
 
         return [
-            'playersIds' => $possibleOpponentsToSteal,
+            'selectedCard' => $card,
+            'cards' => [$spaceCards[0], $card],
         ];
     }
     

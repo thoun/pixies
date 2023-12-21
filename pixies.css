@@ -60,6 +60,99 @@
   background: url('data:image/svg+xml;utf8,<svg width="100%" height="100%" viewBox="0 0 70 70" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;"><g><g transform="matrix(1,0,0,1,-7.91703,-76.2244)"><path d="M23.8,102.1L35.7,102.1" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:7px;"/></g><g transform="matrix(1,0,0,1,-7.91703,-76.2244)"><path d="M35.7,102.1L47.5,102.1" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:7px;"/></g><g transform="matrix(1,0,0,1,-7.91703,-76.2244)"><path d="M35.7,102.1L35.7,90.3" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:7px;"/></g><g transform="matrix(1,0,0,1,-7.91703,-76.2244)"><path d="M51,118C55.2,113.8 57.3,108.7 57.3,102.8C57.3,96.8 55.2,91.8 51,87.6C46.8,83.4 41.7,81.3 35.8,81.3C29.9,81.3 24.8,83.4 20.6,87.6C16.4,91.8 14.3,96.8 14.3,102.8C14.3,108.7 16.4,113.8 20.6,118C24.8,122.2 29.9,124.3 35.8,124.3C41.7,124.3 46.8,122.2 51,118" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:7px;"/></g><g transform="matrix(1,0,0,1,-7.91703,-76.2244)"><path d="M35.7,113.9L35.7,102.1" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:7px;"/></g><g transform="matrix(1,0,0,1,-7.91703,-76.2244)"><path d="M65.3,132.3L51,118" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:7px;"/></g></g></svg>');
 }
 
+#bga-help_buttons {
+  position: fixed;
+  bottom: 12px;
+  left: 5px;
+  display: flex;
+  gap: 10px;
+  z-index: 949;
+  align-items: flex-end;
+}
+
+.bga-help_button {
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  cursor: pointer;
+  box-shadow: 3px 5px 5px 0px rgb(0, 0, 0);
+}
+
+.bga-help_popin-button {
+  --background: black;
+  --color: white;
+  font-weight: bold;
+  font-size: 28pt;
+  background: var(--background);
+  color: var(--color);
+}
+
+.bga-help_expandable-button {
+  overflow: hidden;
+  background-size: contain;
+  background-repeat: no-repeat;
+  transition: width 0.5s, height 0.5s, border-radius 0.5s;
+  display: grid;
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+}
+
+.bga-help_expandable-button .bga-help_folded-content {
+  grid-row: 1;
+  grid-column: 1;
+  opacity: 1;
+  width: 50px;
+  height: 50px;
+}
+
+.bga-help_expandable-button .bga-help_unfolded-content {
+  grid-row: 1;
+  grid-column: 1;
+  opacity: 0;
+}
+
+.bga-help_expandable-button[data-folded=false] {
+  width: var(--expanded-width);
+  height: var(--expanded-height);
+  border-radius: var(--expanded-radius);
+}
+
+.bga-help_expandable-button[data-folded=false] .bga-help_folded-content {
+  opacity: 0;
+}
+
+.bga-help_expandable-button[data-folded=false] .bga-help_unfolded-content {
+  opacity: 1;
+}
+
+/* we show help button if user has no mouse ( = no tooltips) */
+@media (hover: hover) {
+  #bga-help_buttons {
+    bottom: 5px;
+  }
+}
+#popin_bgaHelpDialog_contents {
+  max-width: 100vw;
+  overflow-x: auto;
+}
+
+#popin_bgaHelpDialog {
+  --background-color: white;
+  background: var(--background-color);
+  background-repeat: repeat;
+  max-width: 100vw;
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+#help-dialog-content {
+  width: 520px;
+  max-width: 35rem;
+  max-height: calc(80vh - 80px);
+  overflow: auto;
+}
+
 body > .card {
   position: absolute;
   left: -9999px;
@@ -570,7 +663,7 @@ body > .card {
   align-items: center;
   gap: 20px;
   padding: 5px;
-  min-width: 505px;
+  min-width: 790px;
 }
 #table-center .discard-stack {
   display: inline-block;
@@ -581,6 +674,9 @@ body > .card {
   border-radius: 10px;
   border: 1px solid white;
   background-color: rgba(255, 255, 255, 0.4);
+}
+#table-center #table-cards {
+  width: 620px;
 }
 
 .cards-stack {
@@ -637,6 +733,7 @@ body > .card {
 .player-table .name-wrapper .name {
   font-size: 20pt;
   font-weight: bold;
+  font-family: "pixies";
 }
 .player-table .player-cards {
   display: grid;
@@ -653,6 +750,18 @@ body > .card {
   border-radius: 10px;
   position: relative;
 }
+.player-table .player-cards .space::before {
+  content: var(--value);
+  position: absolute;
+  top: 50px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 50pt;
+  font-weight: bold;
+  font-family: "pixies";
+  color: rgba(255, 255, 255, 0.4);
+}
 .player-table .player-cards .space .slot {
   position: absolute;
 }
@@ -668,170 +777,147 @@ body > .card {
   cursor: pointer;
   animation: selectable-card-animation 1s alternate infinite ease-in-out;
 }
-
-#pixies-help-button {
-  position: fixed;
-  bottom: 12px;
-  left: 5px;
-  width: 50px;
-  height: 50px;
-  background: #60c2cb;
-  font-weight: bold;
-  color: white;
-  border-radius: 25px;
-  box-shadow: 3px 5px 5px 0px rgb(0, 0, 0);
-  cursor: pointer;
-  z-index: 949;
-  font-size: 28pt;
+.player-table .player-cards .space.selectable::before {
+  color: rgba(255, 255, 255, 0.7333333333);
 }
 
-#color-help-button {
-  position: fixed;
-  bottom: 12px;
-  left: 65px;
-  width: 50px;
-  height: 50px;
-  border-radius: 25px;
-  box-shadow: 3px 5px 5px 0px rgb(0, 0, 0);
-  cursor: pointer;
-  z-index: 949;
-  overflow: hidden;
+.color-help-folded-content {
+  background: url("img/logo-coloradd.svg") white center no-repeat;
   background-size: contain;
-  transition: width 0.5s, height 0.5s, border-radius 0.5s, background-image 0.5s;
 }
-#color-help-button .label {
-  position: absolute;
-  color: white;
-  font-size: 10pt;
-  opacity: 0;
-  text-transform: uppercase;
-  display: flex;
-  justify-content: center;
+
+.color-help-unfolded-content {
+  display: grid;
+  grid-template-columns: 40px 80px;
   align-items: center;
-  width: 69px;
+  justify-items: center;
+  background: #ebdbcb;
+}
+.color-help-unfolded-content .color-icon {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  background-image: url("img/cards0.jpg");
+  background-position-x: -80px;
+  border-radius: 5px;
+}
+.color-help-unfolded-content .color-icon[data-row="0"] {
+  background-position-y: -9px;
+}
+.color-help-unfolded-content .color-icon[data-row="1"] {
+  background-position-y: -291px;
+}
+.color-help-unfolded-content .color-icon[data-row="2"] {
+  background-position-y: -573px;
+}
+.color-help-unfolded-content .color-icon[data-row="3"] {
+  background-position-y: -855px;
+}
+.color-help-unfolded-content .color-icon[data-row="4"] {
+  background-position-y: -1137px;
+}
+.color-help-unfolded-content .label {
+  font-size: 10pt;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  width: 100%;
   height: 42px;
   word-break: break-word;
+  color: black;
 }
-#color-help-button .label[data-row="0"] {
-  top: 11px;
+
+#popin_bgaHelpDialog {
+  background: #ebdbcb;
 }
-#color-help-button .label[data-row="1"] {
-  top: 60.8px;
-}
-#color-help-button .label[data-row="2"] {
-  top: 110.6px;
-}
-#color-help-button .label[data-row="3"] {
-  top: 160.4px;
-}
-#color-help-button .label[data-row="4"] {
-  top: 210.2px;
-}
-#color-help-button .label[data-row="5"] {
-  top: 260px;
-}
-#color-help-button .label[data-column="0"] {
-  left: 38px;
-}
-#color-help-button .label[data-column="1"] {
-  left: 143px;
-}
-#color-help-button .quantity {
-  position: absolute;
-  color: white;
-  font-size: 9pt;
-  opacity: 0;
-  text-transform: uppercase;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 29px;
-  height: 17px;
-  word-break: break-word;
-}
-#color-help-button .quantity[data-row="0"] {
-  top: 36px;
-}
-#color-help-button .quantity[data-row="1"] {
-  top: 85.8px;
-}
-#color-help-button .quantity[data-row="2"] {
-  top: 135.6px;
-}
-#color-help-button .quantity[data-row="3"] {
-  top: 185.4px;
-}
-#color-help-button .quantity[data-row="4"] {
-  top: 235.2px;
-}
-#color-help-button .quantity[data-row="5"] {
-  top: 285px;
-}
-#color-help-button .quantity[data-column="0"] {
-  left: 11px;
-}
-#color-help-button .quantity[data-column="1"] {
-  left: 116px;
-}
-#color-help-button[data-folded=true] {
-  background-image: url("img/logo-coloradd.svg");
-}
-#color-help-button[data-folded=false] {
-  background-image: url("img/color-legend.jpg");
-  width: 223px;
-  height: 312px;
+
+#help-popin h1, #help-popin h2 {
+  padding: 5px;
   border-radius: 10px;
-}
-#color-help-button[data-folded=false] .label, #color-help-button[data-folded=false] .quantity {
-  opacity: 1;
-}
-
-/* we show help button if user has no mouse ( = no tooltips) */
-@media (hover: hover) {
-  #pixies-help-button, #color-help-button {
-    bottom: 5px;
-  }
-}
-#popin_pixiesHelpDialog_contents {
-  max-width: 100vw;
-  overflow-x: auto;
-}
-
-#popin_pixiesHelpDialog {
-  background: white;
-  background-repeat: repeat;
-  max-width: 100vw;
-  max-height: 80vh;
-  overflow: hidden;
-}
-
-#help-popin {
-  width: 520px;
-  max-width: 35rem;
-  max-height: calc(80vh - 80px);
-  overflow: auto;
+  font-weight: normal;
+  color: white;
+  font-family: "komika parch";
+  text-align: center;
 }
 #help-popin h1 {
-  color: #63c5cf;
+  background: #571f13;
+  font-size: 22px;
+  margin: 10px 0;
+}
+#help-popin h2 {
+  background: #C1262F;
   font-size: 18px;
   margin: 8px 0;
 }
-#help-popin .help-section {
-  color: white;
-  background-color: #63c5cf;
-  border-radius: 8px;
-  padding: 5px;
-  margin: 3px 0;
+#help-popin .row {
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  grid-template-columns: 64px auto;
+  gap: 10px;
+}
+#help-popin .row .help-icon {
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  background-image: url("img/cards.jpg");
+  border-radius: 5px;
+}
+#help-popin .row .help-icon.card {
+  background-position: -1010px -232px;
+}
+#help-popin .row .help-icon.token {
+  background-position: -1616px -232px;
+}
+#help-popin .row .help-icon.score {
+  width: 40px;
+  height: 40px;
+}
+#help-popin .row .help-icon.by-color {
+  background-position: -8px -8px;
+}
+#help-popin .row .help-icon.different {
+  background-position: -1220px -572px;
+}
+#help-popin .row .help-icon.by-resource {
+  background-position: -614px -854px;
+}
+#help-popin .row .help-icon.by-type {
+  background-position: -1826px -290px;
+}
+#help-popin .row.help-chief {
+  grid-template-columns: 108px auto;
+}
+#help-popin .row.help-chief .help-icon {
+  width: 100px;
+  background-image: url("img/cards0.jpg");
+  background-position-y: -231px;
+}
+#help-popin .row.help-chief .help-icon[data-power="1"] {
+  background-position-x: -910px;
+}
+#help-popin .row.help-chief .help-icon[data-power="2"] {
+  background-position-x: -1112px;
+}
+#help-popin .row.help-chief .help-icon[data-power="3"] {
+  background-position-x: -1314px;
+}
+#help-popin .row.help-chief .help-icon[data-power="4"] {
+  background-position-x: -1516px;
+}
+#help-popin .row .help-label {
+  width: 100%;
   display: flex;
-}
-#help-popin .help-section > div:not(:first-child) {
-  margin-left: 5px;
-}
-#help-popin .help-section > div:not(:first-child):not([id]) {
-  flex: 1;
-  margin-left: 5px;
+  justify-content: start;
+  align-items: center;
 }
 
+@font-face {
+  font-family: "pixies";
+  src: url("img/pixies.woff2") format("woff2"), url("img/pixies.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
 /* make space between buttons on touch devices */
 @media (hover: none) {
   #page-title .action-button.bgabutton, #page-title .bgabutton {
@@ -840,7 +926,8 @@ body > .card {
   }
 }
 html, .mode_3d #game_play_area_background {
-  background: url("img/background.jpg");
+  background: url("img/background.jpg") #3d5c28;
+  background-size: 100% 100%;
 }
 
 #full-table {

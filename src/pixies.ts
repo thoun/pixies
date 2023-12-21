@@ -66,7 +66,23 @@ class Pixies implements PixiesGame {
 
         this.setupNotifications();
         this.setupPreferences();
-        this.addHelp();
+        new HelpManager(this, { 
+            buttons: [
+                new BgaHelpPopinButton({
+                    title: _("Card help").toUpperCase(),
+                    html: this.getHelpHtml(),
+                    onPopinCreated: () => this.getHelpHtml(),
+                    buttonBackground: '#3d5c28',
+                }),
+                new BgaHelpExpandableButton({
+                    unfoldedHtml: this.getColorAddHtml(),
+                    foldedContentExtraClasses: 'color-help-folded-content',
+                    unfoldedContentExtraClasses: 'color-help-unfolded-content',
+                    expandedWidth: '120px',
+                    expandedHeight: '168px',
+                }),
+            ]
+        });
 
         (this as any).onScreenWidthChange = () => {
             this.updateTableHeight();
@@ -200,37 +216,9 @@ class Pixies implements PixiesGame {
     public onUpdateActionButtons(stateName: string, args: any) {
         if ((this as any).isCurrentPlayerActive()) {
             switch (stateName) {
-                case 'playCard':
-                    const playCardArgs = args as EnteringPlayCardArgs;
-                    (this as any).addActionButton(`playCard_button`, _("Play selected cards"), () => this.playSelectedCards());
-                    (this as any).addActionButton(`endTurn_button`, _("End turn"), () => this.endTurn());
-                    if (playCardArgs.canCallEndRound) {
-                        (this as any).addActionButton(`endRound_button`, _('End round') + ' ("' + _('LAST CHANCE') + '")', () => this.endRound(), null, null, 'red');
-
-                        this.setTooltip(`endRound_button`, `${_("Say <strong>LAST CHANCE</strong> if you are willing to take the bet of having the most points at the end of the round. The other players each take a final turn (take a card + play cards) which they complete by revealing their hand, which is now protected from attacks. Then, all players count the points on their cards (in their hand and in front of them).")}<br><br>
-                        ${_("If your hand is higher or equal to that of your opponents, bet won! You score the points for your cards + the color bonus (1 point per card of the color they have the most of). Your opponents only score their color bonus.")}<br><br>
-                        ${_("If your score is less than that of at least one opponent, bet lost! You score only the color bonus. Your opponents score points for their cards.")}`);
-                    }
-                    dojo.addClass(`playCard_button`, `disabled`);
-                    /*if (!playCardArgs.canCallEndRound) {
-                        dojo.addClass(`endRound_button`, `disabled`);
-                    }*/
-                    
-                    if (!playCardArgs.canDoAction) {
-                        this.startActionTimer('endTurn_button', ACTION_TIMER_DURATION + Math.round(3 * Math.random()));
-                    }
-                    break;
-                /*case 'chooseOpponent':
-                    const chooseOpponentArgs = args as EnteringChooseOpponentArgs;
-        
-                    chooseOpponentArgs.playersIds.forEach(playerId => {
-                        const player = this.getPlayer(playerId);
-                        (this as any).addActionButton(`choosePlayer${playerId}-button`, player.name, () => this.chooseOpponent(playerId));
-                        document.getElementById(`choosePlayer${playerId}-button`).style.border = `3px solid #${player.color}`;
-                    });
-                    break;*/
-                case 'beforeEndRound':
-                    (this as any).addActionButton(`seen_button`, _("Seen"), () => this.seen());
+                case 'keepCard':
+                    (this as any).addActionButton(`keepCard0_button`, _("Keep the card on the table"), () => this.keepCard(0));
+                    (this as any).addActionButton(`keepCard1_button`, _("Keep the new card"), () => this.keepCard(1));
                     break;
             }
         }
@@ -323,46 +311,7 @@ class Pixies implements PixiesGame {
         this.playCard(space);
     }
 
-    private addHelp() {
-        const quantities = [
-            9, 9,
-            8, 8,
-            6, 4,
-            4, 4,
-            3, 2,
-            1,
-        ];
-
-        let labels = [
-            _('Dark blue'),
-            _('Light blue'),
-            _('Black'),
-            _('Yellow'),
-            _('Green'),
-            _('White'),
-            _('Purple'),
-            _('Gray'),
-            _('Light orange'),
-            _('Pink'),
-            _('Orange'),
-        ].map((label, index) => `
-            <span class="label" data-row="${Math.floor(index / 2)}" data-column="${Math.floor(index % 2)}">${label}</span>
-            <span class="quantity" data-row="${Math.floor(index / 2)}" data-column="${Math.floor(index % 2)}">&times; ${quantities[index]}</span>
-            `).join('');
-        dojo.place(`
-            <button id="pixies-help-button">?</button>
-            <button id="color-help-button" data-folded="true">${labels}</button>
-        `, 'left-side');
-        document.getElementById('pixies-help-button').addEventListener('click', () => this.showHelp());
-        const helpButton = document.getElementById('color-help-button');
-        helpButton.addEventListener('click', () => helpButton.dataset.folded = helpButton.dataset.folded == 'true' ? 'false' : 'true');
-    }
-
-    private showHelp() {
-        const helpDialog = new ebg.popindialog();
-        helpDialog.create('pixiesHelpDialog');
-        helpDialog.setTitle(_("Card details").toUpperCase());
-
+    private getHelpHtml() {
         const duoCardsNumbers = [1, 2, 3, 4, 5];
         const multiplierNumbers = [1, 2, 3, 4];
 
@@ -415,20 +364,11 @@ class Pixies implements PixiesGame {
         </div>
         `;
         
-        // Show the dialog
-        helpDialog.setContent(html);
+        return html;
+    }
 
-        helpDialog.show();
-
-        // pair
-        const duoCardsPairs = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]];
-        duoCardsPairs.forEach(([family, color]) => this.cardsManager.setForHelp({id: 1020 + family, category: 2, family, color, index: 0 } as any, `help-pair-${family}`));
-        // mermaid
-        this.cardsManager.setForHelp({id: 1010, category: 1 } as any, `help-mermaid`);
-        // collector
-        [[1, 1], [2, 2], [3, 6], [4, 9]].forEach(([family, color]) => this.cardsManager.setForHelp({id: 1030 + family, category: 3, family, color, index: 0 } as any, `help-collector-${family}`));
-        // multiplier
-        multiplierNumbers.forEach(family => this.cardsManager.setForHelp({id: 1040 + family, category: 4, family } as any, `help-multiplier-${family}`));
+    private getColorAddHtml() {
+        return [1, 2, 3, 4].map((number, index) => `<div class="color-icon" data-row="${index}"></div><span class="label"> ${this.cardsManager.getColor(number)}</span>`).join('');
     }
 
     public chooseCard(id: number) {
@@ -451,101 +391,20 @@ class Pixies implements PixiesGame {
         });
     }
 
-    public playCardTrio(ids: number[], starfishId: number) {
-        if(!(this as any).checkAction('playCardTrio')) {
+    public keepCard(index: number) {
+        if(!(this as any).checkAction('keepCard')) {
             return;
         }
 
-        this.takeAction('playCardTrio', {
-            'id1': ids[0],
-            'id2': ids[1],
-            'starfishId': starfishId
+        this.takeAction('keepCard', {
+            index
         });
-    }
-
-    public chooseDiscardPile(discardNumber: number) {
-        if(!(this as any).checkAction('chooseDiscardPile')) {
-            return;
-        }
-
-        this.takeAction('chooseDiscardPile', {
-            discardNumber
-        });
-    }
-
-    public chooseDiscardCard(id: number) {
-        if(!(this as any).checkAction('chooseDiscardCard')) {
-            return;
-        }
-
-        this.takeAction('chooseDiscardCard', {
-            id
-        });
-    }
-
-    public chooseOpponent(id: number) {
-        if(!(this as any).checkAction('chooseOpponent')) {
-            return;
-        }
-
-        this.takeAction('chooseOpponent', {
-            id
-        });
-    }
-
-    public endTurn() {
-        if(!(this as any).checkAction('endTurn')) {
-            return;
-        }
-
-        this.takeAction('endTurn');
-    }
-
-    public endRound() {
-        if(!(this as any).checkAction('endRound')) {
-            return;
-        }
-
-        this.takeAction('endRound');
-    }
-
-    public seen() {
-        if(!(this as any).checkAction('seen')) {
-            return;
-        }
-
-        this.takeAction('seen');
     }
 
     public takeAction(action: string, data?: any) {
         data = data || {};
         data.lock = true;
         (this as any).ajaxcall(`/pixies/pixies/${action}.html`, data, this, () => {});
-    }
-
-    private startActionTimer(buttonId: string, time: number) {
-        if (Number((this as any).prefs[202]?.value) === 2) {
-            return;
-        }
-
-        const button = document.getElementById(buttonId);
- 
-        let actionTimerId = null;
-        const _actionTimerLabel = button.innerHTML;
-        let _actionTimerSeconds = time;
-        const actionTimerFunction = () => {
-          const button = document.getElementById(buttonId);
-          if (button == null || button.classList.contains('disabled')) {
-            window.clearInterval(actionTimerId);
-          } else if (_actionTimerSeconds-- > 1) {
-            button.innerHTML = _actionTimerLabel + ' (' + _actionTimerSeconds + ')';
-          } else {
-            window.clearInterval(actionTimerId);
-            button.click();
-          }
-        };
-        actionTimerFunction();
-        actionTimerId = window.setInterval(() => actionTimerFunction(), 1000);
     }
 
     ///////////////////////////////////////////////////
@@ -564,20 +423,15 @@ class Pixies implements PixiesGame {
         //log( 'notifications subscriptions setup' );
 
         const notifs = [
-            ['cardInDiscardFromDeck', ANIMATION_MS],
-            ['cardInHandFromDiscard', ANIMATION_MS],
-            ['cardInHandFromDiscardCrab', ANIMATION_MS],
-            ['cardInHandFromPick', ANIMATION_MS],
-            ['cardInHandFromDeck', ANIMATION_MS],
-            ['cardInDiscardFromPick', ANIMATION_MS],
-            ['cardsInDeckFromPick', ANIMATION_MS],
+            ['newTurn', undefined],
             ['playCard', undefined],
+            ['keepCard', undefined],
             ['revealHand', ANIMATION_MS * 2],
             ['announceEndRound', ANIMATION_MS * 2],
             ['betResult', ANIMATION_MS * 2],
             ['endRound', undefined],
             ['score', ANIMATION_MS * 3],
-            ['newRound', 1],
+            ['newRound', ANIMATION_MS * 3],
             ['updateCardsPoints', 1],
             ['emptyDeck', 1],
             ['reshuffleDeck', undefined],
@@ -594,84 +448,23 @@ class Pixies implements PixiesGame {
             });
             (this as any).notifqueue.setSynchronous(notif[0], notif[1]);
         });
-
-        (this as any).notifqueue.setIgnoreNotificationCheck('cardInHandFromPick', (notif: Notif<NotifCardInHandFromPickArgs>) => 
-            notif.args.playerId == this.getPlayerId() && !notif.args.card.category
-        );
-        (this as any).notifqueue.setIgnoreNotificationCheck('cardInHandFromDeck', (notif: Notif<NotifCardInHandFromPickArgs>) => 
-            notif.args.playerId == this.getPlayerId() && !notif.args.card.category
-        );
-        (this as any).notifqueue.setIgnoreNotificationCheck('cardInHandFromDiscardCrab', (notif: Notif<NotifCardInHandFromDiscardArgs>) => 
-            notif.args.playerId == this.getPlayerId() && !notif.args.card.category
-        );
     }
 
-    onPlaceLogOnChannel(msg) {
-        var currentLogId = (this as any).notifqueue.next_log_id;
-        var res = (this as any).inherited(arguments);
-        this.lastNotif = {
-          logId: currentLogId,
-          msg,
-        };
-        return res;
+    async notif_newTurn(args: NotifNewTurnArgs) {
+        const { cards } = args;
+        await this.tableCenter.newTurn(cards);
     }
 
-    notif_cardInDiscardFromDeck(args: NotifCardInDiscardFromDeckArgs) {
-        this.tableCenter.setDiscardCard(args.discardId, args.card, 1, document.getElementById('deck'));
-        this.tableCenter.deck.setCardNumber(args.remainingCardsInDeck, args.deckTopCard);
-        this.updateTableHeight();
-    } 
-
-    notif_cardInHandFromDiscard(args: NotifCardInHandFromDiscardArgs) {
-        const card = args.card;
-        const playerId = args.playerId;
-        const discardNumber = args.discardId;
-        const maskedCard = playerId == this.getPlayerId() ? card : { id: card.id } as Card;
-        this.getPlayerTable(playerId).addCardsToHand([maskedCard]);
-        this.handCounters[playerId].incValue(1);
-
-        this.tableCenter.setDiscardCard(discardNumber, args.newDiscardTopCard, args.remainingCardsInDiscard);
-        this.updateTableHeight();
-    } 
-
-    notif_cardInHandFromDiscardCrab(args: NotifCardInHandFromDiscardArgs) {
-        const card = args.card;
-        const playerId = args.playerId;
-        const maskedCard = playerId == this.getPlayerId() ? card : { id: card.id } as Card;
-        this.getPlayerTable(playerId).addCardsToHand([maskedCard]);
-        this.handCounters[playerId].incValue(1);
-
-        this.tableCenter.setDiscardCard(args.discardId, args.newDiscardTopCard, args.remainingCardsInDiscard);
-        this.updateTableHeight();
-    } 
-
-    notif_cardInHandFromPick(args: NotifCardInHandFromPickArgs) {
-        const playerId = args.playerId;
-        this.getPlayerTable(playerId).addCardsToHand([args.card]);
-        this.handCounters[playerId].incValue(1);
+    async notif_playCard(args: NotifPlayCardArgs) {
+        const { playerId, card, space } = args;
+        const playerTable = this.getPlayerTable(playerId);
+        await playerTable.playCard(card, space);
     }
 
-    notif_cardInHandFromDeck(args: NotifCardInHandFromPickArgs) {
-        const playerId = args.playerId;
-        this.getPlayerTable(playerId).addCardsToHand([args.card], true);
-        this.tableCenter.deck.setCardNumber(args.remainingCardsInDeck, args.deckTopCard)
-        this.handCounters[playerId].incValue(1);
-    }   
-
-    notif_cardInDiscardFromPick(args: NotifCardInDiscardFromPickArgs) {
-        const card = args.card;
-        const discardNumber = args.discardId;
-        this.cardsManager.setCardVisible(card, true);
-        this.tableCenter.setDiscardCard(discardNumber, card, args.remainingCardsInDiscard);
-        this.updateTableHeight();
-    } 
-
-    notif_cardsInDeckFromPick(args: NotifCardsInDeckFromPickArgs) {
-        this.tableCenter.deck.addCards(args.cards, undefined, {
-            visible: false,
-        });
-        this.tableCenter.deck.setCardNumber(args.remainingCardsInDeck, args.deckTopCard);
-        this.updateTableHeight();
+    async notif_keepCard(args: NotifKeepCardArgs) {
+        const { playerId, hiddenCard, visibleCard, space } = args;
+        const playerTable = this.getPlayerTable(playerId);
+        await playerTable.keepCard(hiddenCard, visibleCard, space);
     }
 
     notif_score(args: NotifScoreArgs) {
@@ -689,14 +482,6 @@ class Pixies implements PixiesGame {
     }
     notif_newRound() {}
 
-    notif_playCard(args: NotifPlayCardArgs) {
-        /*const playerId = args.playerId;
-        const cards = args.cards;
-        const playerTable = this.getPlayerTable(playerId);
-        this.handCounters[playerId].incValue(-cards.length);
-        return playerTable.addCardsToTable(cards);*/
-    }
-
     notif_revealHand(args: NotifRevealHandArgs) {
         const playerId = args.playerId;
         const playerPoints = args.playerPoints;
@@ -713,12 +498,6 @@ class Pixies implements PixiesGame {
 
     async notif_endRound(args: NotifEndRoundArgs) {
         const cards = this.tableCenter.getDiscardCards();
-
-        this.playersTables.forEach(playerTable => {
-            cards.push(...playerTable.getAllCards());
-            this.handCounters[playerTable.playerId].setValue(0);
-            playerTable.clearAnnouncement();
-        });
 
         this.tableCenter.cleanDiscards();
         await this.tableCenter.deck.addCards(cards, undefined, { visible: false });

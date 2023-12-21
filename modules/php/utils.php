@@ -102,17 +102,24 @@ trait UtilTrait {
     }
 
     function getCardsFromSpace(int $playerId, int $value) {
-        return $this->getCardsFromDb($this->cards->getCardsInLocation("player-$playerId-$value"));
+        return $this->getCardsFromDb($this->cards->getCardsInLocation("player-$playerId-$value", null, 'location_arg'));
     }
 
     function getCardsFromSpaces(int $playerId) {
         $spaces = [];
-        
+
         for ($i = 1; $i <= 9; $i++) {
             $spaces[$i] = $this->getCardsFromSpace($playerId, $i);
+            if (count($spaces[$i]) == 2 || (count($spaces[$i]) == 1 && $spaces[$i][0]->value != $i)) {
+                $spaces[$i][0] = Card::onlyId($spaces[$i][0]);
+            }
         }
 
         return $spaces;
+    }
+
+    function getSelectedCard() {
+        return $this->getCardFromDb($this->cards->getCard($this->getGlobalVariable(SELECTED_CARD_ID)));
     }
 
     function setupCards() {

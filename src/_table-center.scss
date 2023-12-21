@@ -4,7 +4,7 @@
     align-items: center; 
     gap: 20px;
     padding: 5px; 
-    min-width: 505px;
+    min-width: 790px;
 
     .discard-stack {
         display: inline-block;
@@ -15,6 +15,10 @@
         border-radius: 10px;
         border: 1px solid white;
         background-color: #FFFFFF66;
+    }
+
+    #table-cards {
+        width: 620px;
     }
 }
 

@@ -35,9 +35,6 @@ trait StateTrait {
         $this->gamestate->nextState('start');
     }
 
-    function stPlayCard() {
-    }
-
     function stNextPlayer() {
         $playerId = intval($this->getActivePlayerId());
 
@@ -48,7 +45,7 @@ trait StateTrait {
 
         $playersIds = $this->getPlayersIds();
         if (!$endTurn && count($playersIds) == 2 && $tableCount == 2) {
-            if ($this->array_some($playersIds, fn($pId) => $this->array_every($this->getCardsFromSpaces($playerId), fn($space) => count($space) > 0))) {
+            if ($this->array_some($playersIds, fn($pId) => $this->array_every($this->getCardsFromSpaces($pId), fn($space) => count($space) > 0))) {
                 $endTurn = true;
             }
         }
@@ -61,23 +58,16 @@ trait StateTrait {
     } 
     
     function stEndTurn() {
-        $playerCount = count($this->getPlayersIds());
-        $cardCount = $playerCount == 2 ? 4 : $playerCount;
-
-        $cards = $this->getCardsFromDb($this->cards->pickCardsForLocation($cardCount, 'deck', 'table'));
-
         $this->incStat(1, 'turnsNumber');
-        $this->incStat(1, 'turnsNumber', $playerId);
 
-        $this->gamestate->nextState('start');
+        $playersIds = $this->getPlayersIds();
+        $endRound = $this->array_some($playersIds, fn($pId) => $this->array_every($this->getCardsFromSpaces($pId), fn($space) => count($space) > 0));
+
+        $this->gamestate->nextState($endRound ? 'endRound' : 'newTurn');
     }
 
     function stEndRound() {
-        $lastRound = $this->isLastRound();
-        if (!$lastRound) {
-            $this->cards->moveAllCardsInLocation(null, 'deck');
-            $this->cards->shuffle('deck');
-        }
+        $lastRound = $this->getStat('roundNumber') >= 3;
 
         self::notifyAllPlayers('endRound', '', [
             'deckTopCard' => $this->getDeckTopCard(),

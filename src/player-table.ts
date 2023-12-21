@@ -20,7 +20,7 @@ class PlayerTable {
             <div id="player-table-${this.playerId}-cards" class="player-cards">`;
         for (let i = 1; i <= 9; i++) {
             html += `
-                <div id="player-table-${this.playerId}-cards-${i}" class="space"></div>`;
+                <div id="player-table-${this.playerId}-cards-${i}" class="space" style="--value: '${i}';"></div>`;
         }
         html += `
             </div>
@@ -43,37 +43,22 @@ class PlayerTable {
             this.tableCards[i].addCards(player.cards[i]);
         }
     }
-
-    public getAllCards(): Card[] {
-        return this.tableCards.getCards();
+    
+    public async playCard(card: Card, space: number): Promise<any> {
+        await this.tableCards[space].addCard(card);
+    }
+    
+    public async keepCard(hiddenCard: Card, visibleCard: Card, space: number): Promise<any> {
+        this.game.cardsManager.updateCardInformations(hiddenCard);
+        await this.tableCards[space].addCard(hiddenCard);
+        
+        this.game.cardsManager.updateCardInformations(visibleCard);
+        await this.tableCards[space].addCard(visibleCard);
     }
     
     public setSelectableSpaces(spaces: number[]) {
         for (let i = 1; i <= 9; i++) {
             document.getElementById(`player-table-${this.playerId}-cards-${i}`).classList.toggle('selectable', spaces.includes(i));
         }
-    }
-
-    public updateDisabledPlayCard(selectedCards: Card[], selectedStarfishCards: Card[], playableDuoCardFamilies: number[]) {
-        if (!(this.game as any).isCurrentPlayerActive()) {
-            return;
-        }
-
-        const selectableCards = this.handCards.getCards().filter(card => {
-            let disabled = false;
-                if (playableDuoCardFamilies.includes(card.family)) {
-                    if (selectedCards.length >= 2) {
-                        disabled = !selectedCards.some(c => c.id == card.id);
-                    } else if (selectedCards.length == 1) {
-                        const matchFamilies = selectedCards[0].matchFamilies;
-                        disabled = card.id != selectedCards[0].id && !matchFamilies.includes(card.family);
-                    }
-                } else {
-                    disabled = true;
-                }
-            return !disabled;
-        });
-        
-        this.handCards.setSelectableCards(selectableCards);
     }
 }

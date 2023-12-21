@@ -79,4 +79,14 @@ class CardsManager extends CardManager<Card> {
             })
         );
     }
+
+    public getColor(color: number): string {
+        switch (color) {
+            case 0: return _("Multicolor");
+            case 1: return _("Blue");
+            case 2: return _("Green");
+            case 3: return _("Yellow");
+            case 4: return _("Red");
+        }
+    }
 }

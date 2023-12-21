@@ -56,68 +56,12 @@
         self::ajaxResponse();
     }
 
-    public function playCardTrio() {
+    public function keepCard() {
         self::setAjaxMode();
 
-        $cardId1 = self::getArg("id1", AT_posint, true);
-        $cardId2 = self::getArg("id2", AT_posint, true);
-        $starfishCardId = self::getArg("starfishId", AT_posint, true);
+        $index = self::getArg("index", AT_posint, true);
 
-        $this->game->playCardTrio($cardId1, $cardId2, $starfishCardId);
-
-        self::ajaxResponse();
-    }
-
-    public function endTurn() {
-        self::setAjaxMode();
-
-        $this->game->endTurn();
-
-        self::ajaxResponse();
-    }
-
-    public function endRound() {
-        self::setAjaxMode();
-
-        $this->game->endRound();
-
-        self::ajaxResponse();
-    }
-
-    public function chooseDiscardPile() {
-        self::setAjaxMode();
-
-        $discardNumber = self::getArg("discardNumber", AT_posint, true);
-
-        $this->game->chooseDiscardPile($discardNumber);
-
-        self::ajaxResponse();
-    }
-
-    public function chooseDiscardCard() {
-        self::setAjaxMode();
-
-        $id = self::getArg("id", AT_posint, true);
-
-        $this->game->chooseDiscardCard($id);
-
-        self::ajaxResponse();
-    }
-
-    public function chooseOpponent() {
-        self::setAjaxMode();
-
-        $id = self::getArg("id", AT_posint, true);
-
-        $this->game->chooseOpponent($id);
-
-        self::ajaxResponse();
-    }
-
-    public function seen() {
-        self::setAjaxMode();
-
-        $this->game->seen();
+        $this->game->keepCard($index);
 
         self::ajaxResponse();
     }

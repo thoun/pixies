@@ -28,7 +28,7 @@ define('END_ROUND_TYPE', 12); /* : */ define('STOP', 1); define('LAST_CHANCE', 2
 define('LAST_CHANCE_CALLER', 13);
 define('STOP_CALLER', 14);
 define('BET_RESULT', 15);
-const SELECTED_CARD = 'SELECTED_CARD';
+const SELECTED_CARD_ID = 'SELECTED_CARD_ID';
 
 /*
  * Cards

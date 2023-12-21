@@ -16,6 +16,13 @@ class TableCenter {
             }*/
         });
     }
+    
+    public async newTurn(cards: Card[]) {
+        this.tableCards.addCards(cards, {
+            fromStock: this.deck,
+            originalSide: 'back',
+        }, undefined, 250);
+    }
 
     public makeCardsSelectable(selectable: boolean) {
         this.tableCards.setSelectionMode(selectable ? 'single' : 'none');

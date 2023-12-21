@@ -55,60 +55,27 @@ interface EnteringPlayCardArgs {
     spaces: number[];
 }
 
-interface NotifCardInDiscardFromDeckArgs {
-    card: Card;
-    discardId: number;
-    deckTopCard?: Card;
-    remainingCardsInDeck: number;
-}
-
-interface NotifCardInHandFromDiscardArgs {
-    playerId: number;
-    card: Card;
-    discardId: number;
-    newDiscardTopCard: Card | null;
-    remainingCardsInDiscard: number;
-}
-
-interface NotifCardInHandFromPickArgs {
-    playerId: number;
-    card?: Card;
-    deckTopCard?: Card;
-    remainingCardsInDeck: number;
-}
-
-interface NotifCardInDiscardFromPickArgs {
-    playerId: number;
-    card: Card;
-    discardId: number;
-    remainingCardsInDiscard: number;
-}
-
-interface NotifCardsInDeckFromPickArgs {
-    playerId: number;
+interface NotifNewTurnArgs {
     cards: Card[];
-    deckTopCard?: Card;
-    remainingCardsInDeck: number;
+}
+
+interface NotifPlayCardArgs {
+    playerId: number;
+    card: Card;
+    space: number;
+}
+
+interface NotifKeepCardArgs {
+    playerId: number;
+    hiddenCard: Card;
+    visibleCard: Card;
+    space: number;
 }
 
 interface NotifScoreArgs {
     playerId: number;
     newScore: number;
     incScore: number;
-}
-
-interface NotifPlayCardArgs {
-    playerId: number;
-    cards: Card[];
-}
-
-interface NotifRevealHandArgs extends NotifPlayCardArgs {
-    playerPoints: number;
-}
-
-interface NotifAnnounceEndRoundArgs {
-    playerId: number;
-    announcement: string;
 }
 
 interface NotifEndRoundArgs {
