@@ -16,6 +16,10 @@ class TableCenter {
             }*/
         });
     }
+
+    getTableCards(): Card[] {
+        return this.tableCards.getCards();
+    }
     
     public async newTurn(cards: Card[]) {
         this.tableCards.addCards(cards, {

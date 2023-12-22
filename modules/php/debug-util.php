@@ -68,12 +68,6 @@ trait DebugUtilTrait {
         $this->cards->moveCard($card->id, 'hand'.$playerId);
     }
 
-    function debugEmptyDeck() {
-        $leave = 2;
-        $move = intval($this->cards->countCardInLocation('deck')) - $leave;
-        $this->cards->pickCardsForLocation($move, 'deck', 'discard');
-    }
-
     function debugFillHands() {
         $number = 15;
         $playersIds = $this->getPlayersIds();

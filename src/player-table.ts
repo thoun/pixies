@@ -44,6 +44,16 @@ class PlayerTable {
         }
     }
     
+    public getAllCards(): Card[] {
+        const cards = [];
+
+        for (let i = 1; i <= 9; i++) {
+            cards.push(...this.tableCards[i].getCards());
+        }
+
+        return cards;
+    }
+    
     public async playCard(card: Card, space: number): Promise<any> {
         await this.tableCards[space].addCard(card);
     }
@@ -51,7 +61,7 @@ class PlayerTable {
     public async keepCard(hiddenCard: Card, visibleCard: Card, space: number): Promise<any> {
         this.game.cardsManager.updateCardInformations(hiddenCard);
         await this.tableCards[space].addCard(hiddenCard);
-        
+
         this.game.cardsManager.updateCardInformations(visibleCard);
         await this.tableCards[space].addCard(visibleCard);
     }

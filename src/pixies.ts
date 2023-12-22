@@ -84,10 +84,6 @@ class Pixies implements PixiesGame {
             ]
         });
 
-        (this as any).onScreenWidthChange = () => {
-            this.updateTableHeight();
-        };
-
         log( "Ending game setup" );
     }
 
@@ -106,15 +102,6 @@ class Pixies implements PixiesGame {
                 break;
             case 'playCard':
                 this.onEnteringPlayCard(args.args);
-                break;
-            case 'chooseDiscardPile':
-                this.onEnteringChooseDiscardPile();
-                break;
-            case 'chooseDiscardCard':
-                this.onEnteringChooseDiscardCard(args.args);
-                break;
-            case 'chooseOpponent':
-                this.onEnteringChooseOpponent(args.args);
                 break;
         }
     }
@@ -137,40 +124,6 @@ class Pixies implements PixiesGame {
             this.getCurrentPlayerTable()?.setSelectableSpaces(args.spaces);
         }
     }
-    
-    private onEnteringChooseDiscardPile() {
-        this.tableCenter.makeCardsSelectable((this as any).isCurrentPlayerActive());
-    }
-    
-    private onEnteringChooseDiscardCard(args: EnteringChooseCardArgs) {
-        const currentPlayer = (this as any).isCurrentPlayerActive();
-        const cards = args._private?.cards || args.cards;
-        const pickDiv = document.getElementById('discard-pick');
-        pickDiv.innerHTML = '';
-        pickDiv.dataset.visible = 'true';
-
-        if (!this.discardStock) {
-            this.discardStock = new LineStock<Card>(this.cardsManager, pickDiv, { gap: '0px' });
-            this.discardStock.onCardClick = card => this.chooseDiscardCard(card.id);
-        }
-
-        cards?.forEach(card => {
-            this.discardStock.addCard(card, { fromStock: this.tableCenter.getDiscardDeck(args.discardNumber) });
-        });
-        if (currentPlayer) {
-            this.discardStock.setSelectionMode('single');
-        }
-
-        this.updateTableHeight();
-    }
-    
-    private onEnteringChooseOpponent(args: EnteringChooseOpponentArgs) {
-        if ((this as any).isCurrentPlayerActive()) {
-            args.playersIds.forEach(playerId => 
-                document.getElementById(`player-table-${playerId}-hand-cards`).dataset.canSteal = 'true'
-            );
-        }
-    }
 
     public onLeavingState(stateName: string) {
         log( 'Leaving state: '+stateName );
@@ -181,12 +134,6 @@ class Pixies implements PixiesGame {
                 break;
             case 'playCard':
                 this.onLeavingPlayCard();
-                break;
-            case 'chooseDiscardCard':
-                this.onLeavingChooseDiscardCard();
-                break;
-            case 'chooseOpponent':
-                this.onLeavingChooseOpponent();
                 break;
         }
     }
@@ -199,17 +146,6 @@ class Pixies implements PixiesGame {
         this.getCurrentPlayerTable()?.setSelectableSpaces([]);
     }
 
-    private onLeavingChooseDiscardCard() {
-        const pickDiv = document.getElementById('discard-pick');
-        pickDiv.dataset.visible = 'false';
-        this.discardStock?.removeAll();
-        this.updateTableHeight();
-    }
-
-    private onLeavingChooseOpponent() {
-        (Array.from(document.querySelectorAll('[data-can-steal]')) as HTMLElement[]).forEach(elem => elem.dataset.canSteal = 'false');
-    }
-
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
     //                        action status bar (ie: the HTML links in the status bar).
     //
@@ -217,8 +153,16 @@ class Pixies implements PixiesGame {
         if ((this as any).isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'keepCard':
-                    (this as any).addActionButton(`keepCard0_button`, _("Keep the card on the table"), () => this.keepCard(0));
-                    (this as any).addActionButton(`keepCard1_button`, _("Keep the new card"), () => this.keepCard(1));
+                    const labels = [
+                        _("Keep the card on the table"),
+                        _("Keep the new card"),
+                    ];
+                    [0, 1].forEach(index => {
+                        (this as any).addActionButton(`keepCard${index}_button`, `${labels[index]}<br><div id="keepCard${index}"></div>`, () => this.keepCard(index));
+                        this.cardsManager.setForHelp(args.cards[index], `keepCard${index}`);
+                    });
+
+
                     break;
             }
         }
@@ -255,10 +199,6 @@ class Pixies implements PixiesGame {
 
     private getCurrentPlayerTable(): PlayerTable | null {
         return this.playersTables.find(playerTable => playerTable.playerId === this.getPlayerId());
-    }
-
-    public updateTableHeight() {
-        this.zoomManager?.manualHeightUpdate();
     }
 
     private setupPreferences() {
@@ -426,15 +366,9 @@ class Pixies implements PixiesGame {
             ['newTurn', undefined],
             ['playCard', undefined],
             ['keepCard', undefined],
-            ['revealHand', ANIMATION_MS * 2],
-            ['announceEndRound', ANIMATION_MS * 2],
-            ['betResult', ANIMATION_MS * 2],
             ['endRound', undefined],
             ['score', ANIMATION_MS * 3],
             ['newRound', ANIMATION_MS * 3],
-            ['updateCardsPoints', 1],
-            ['emptyDeck', 1],
-            ['reshuffleDeck', undefined],
         ];
     
         notifs.forEach((notif) => {
@@ -482,47 +416,15 @@ class Pixies implements PixiesGame {
     }
     notif_newRound() {}
 
-    notif_revealHand(args: NotifRevealHandArgs) {
-        const playerId = args.playerId;
-        const playerPoints = args.playerPoints;
-        const playerTable = this.getPlayerTable(playerId);
-        playerTable.showAnnouncementPoints(playerPoints);
-
-        this.notif_playCard(args);
-        this.handCounters[playerId].toValue(0);
-    }
-
-    notif_announceEndRound(args: NotifAnnounceEndRoundArgs) {
-        this.getPlayerTable(args.playerId).showAnnouncement(args.announcement);
-    }
-
     async notif_endRound(args: NotifEndRoundArgs) {
-        const cards = this.tableCenter.getDiscardCards();
+        const cards = this.tableCenter.getTableCards();
 
-        this.tableCenter.cleanDiscards();
+        this.playersTables.forEach(playerTable => cards.push(...playerTable.getAllCards()));
+
         await this.tableCenter.deck.addCards(cards, undefined, { visible: false });
-        
-        this.getCurrentPlayerTable()?.setHandPoints(0, [0, 0, 0, 0]);
-        this.updateTableHeight();
-        this.tableCenter.deck.setCardNumber(args.remainingCardsInDeck, args.deckTopCard);
+        this.tableCenter.deck.setCardNumber(args.remainingCardsInDeck);
 
-        return await this.tableCenter.deck.shuffle({ newTopCard: args.deckTopCard });
-    }
-
-    notif_updateCardsPoints(args: NotifUpdateCardsPointsArgs) {
-        this.getCurrentPlayerTable()?.setHandPoints(args.cardsPoints, args.detailledPoints);
-    }
-
-    notif_betResult(args: NotifBetResultArgs) {
-        this.getPlayerTable(args.playerId).showAnnouncementBetResult(args.result);
-    }
-
-    notif_emptyDeck() {
-        this.playersTables.forEach(playerTable => playerTable.showEmptyDeck());
-    }
-
-    async notif_reshuffleDeck(args: NotifReshuffleDeckArgs) {
-        return await this.tableCenter.deck.shuffle({ newTopCard: args.deckTopCard });
+        return await this.tableCenter.deck.shuffle();
     }
 
     /* This enable to inject translatable styled things to logs or action bar */
@@ -530,10 +432,6 @@ class Pixies implements PixiesGame {
     public format_string_recursive(log: string, args: any) {
         try {
             if (log && args && !args.processed) {
-                if (args.announcement && args.announcement[0] != '<') {
-                    args.announcement = `<strong style="color: darkred;">${_(args.announcement)}</strong>`;
-                }
-
                 ['discardNumber', 'roundPoints', 'cardsPoints', 'colorBonus', 'cardName', 'cardName1', 'cardName2', 'cardName3', 'cardColor', 'cardColor1', 'cardColor2', 'cardColor3', 'points', 'result'].forEach(field => {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
                         args[field] = `<strong>${_(args[field])}</strong>`;

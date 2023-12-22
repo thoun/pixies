@@ -118,6 +118,14 @@ trait UtilTrait {
         return $spaces;
     }
 
+    function getValidatedCards(int $playerId) {
+        $spaces = $this->getCardsFromSpaces($playerId);
+
+        $cards = array_map(fn($space) => count($space) == 2 ? $space[1] : null, $spaces);
+
+        return $cards;
+    }
+
     function getSelectedCard() {
         return $this->getCardFromDb($this->cards->getCard($this->getGlobalVariable(SELECTED_CARD_ID)));
     }
@@ -131,10 +139,6 @@ trait UtilTrait {
         }
         $this->cards->createCards($cards, 'deck');
         $this->cards->shuffle('deck');
-    }
-    
-    function getTotalRoundNumber() {
-        return 6 - count($this->getPlayersIds());
     }
 
     function getPlayerScore(int $playerId) {
@@ -163,54 +167,49 @@ trait UtilTrait {
         ] + $args);
     }
 
-    function getPossibleOpponentsToSteal(int $stealerId) {
-        $playersIds = $this->getPlayersIds();
-
-        return array_values(array_filter($playersIds, fn($playerId) => 
-            $playerId != $stealerId && intval($this->cards->countCardInLocation('hand'.$playerId)) > 0
-        ));
-    }
-
-    function playableDuoCards(int $playerId) {
-        $familyPairs = [];
-        $pairCards = array_values(array_filter([], fn($card) => $card->category == PAIR));
-        for ($family = CRAB; $family <= CRAB; $family++) {
-            $familyCards = array_values(array_filter($pairCards, fn($card) => $card->family == $family));
-            if (count($familyCards) > 0) {
-                $matchFamilies = $familyCards[0]->matchFamilies;
-
-                if ($this->array_some($matchFamilies, fn($matchFamily) => 
-                    count(array_filter($pairCards, fn($card) => $card->family == $matchFamily)) >= ($matchFamily == $family ? 2 : 1)
-                )) {
-                    $familyPairs[] = $family;
-                }
-            }
-        }
-
-        return $familyPairs;
-    }
-
-    function getCardName(Card $card) {
-        return ''; // TODO remove
-    }
-
     function getRemainingCardsInDeck() {
         return intval($this->cards->countCardInLocation('deck'));
     }
 
-    function getRemainingCardsInDiscard(int $number) {
-        return intval($this->cards->countCardInLocation('discard'.$number));
-    }
+    function getColorZoneSize(array $validatedCards, $coalition, int $currentSpace) {
+        // we check we don't count twice the same space
+        if (array_search($currentSpace, $coalition->alreadyCounted) !== false) {
+            return;
+        }
 
-    function cardCollected(int $playerId, Card $card) {
-        $number = $card->category;
-        if ($number <= 4) {
-            $this->incStat(1, 'cardsCollected'.$number);
-            $this->incStat(1, 'cardsCollected'.$number, $playerId);
+        $coalition->size++;
+        $coalition->alreadyCounted = array_merge($coalition->alreadyCounted, [$currentSpace]);
+
+        // we only take cards having same color
+        $filteredNeigbours = array_filter($this->NEIGHBOURS[$currentSpace], fn($neighbour) =>
+            $validatedCards[$neighbour] && in_array($validatedCards[$neighbour]->color, [$coalition->color, 0])
+        );
+
+        foreach ($filteredNeigbours as $filteredNeigbour) {
+            $this->getColorZoneSize($validatedCards, $coalition, $filteredNeigbour);
         }
     }
 
-    function getDeckTopCard() {
-        return Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck')));
+    function getLargestColorZone(array $validatedCards) {
+        $topCoalition = null;
+
+        for ($space = 1; $space <= 9; $space++) {
+            $cardInSpace = $validatedCards[$space];
+
+            if ($cardInSpace) {
+                $coalition = new stdClass();
+                $coalition->space = $space;
+                $coalition->size = 0;
+                $coalition->color = $cardInSpace->color;
+                $coalition->alreadyCounted = [];
+                $this->getColorZoneSize($validatedCards, $coalition, $space);
+                
+                if (!$topCoalition || $coalition->size > $topCoalition->size) {
+                    $topCoalition = $coalition;
+                }
+            }
+        }
+
+        return $topCoalition->size;
     }
 }

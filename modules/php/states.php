@@ -67,10 +67,53 @@ trait StateTrait {
     }
 
     function stEndRound() {
-        $lastRound = $this->getStat('roundNumber') >= 3;
+        $roundNumber = intval($this->getStat('roundNumber'));
+        $playersIds = $this->getPlayersIds();
+
+        foreach ($playersIds as $playerId) {
+            $validatedCards = $this->getValidatedCards($playerId);
+
+            $validatedCardPoints = 0;
+            $spiralsAndCrossesPoints = 0;
+            $largestColorZone = 0;
+            $largestColorZonePoints = 0;
+
+            foreach ($validatedCards as $space => $card) {
+                if ($card) {
+                    $validatedCardPoints += $space;
+
+                    if ($card->spirals != 0) {
+                        if ($card->spirals == -1) {
+                            $spiralsAndCrossesPoints += count(array_filter($validatedCards, fn($c) => $c && in_array($c->color, [0, $card->color])));
+                        } else {
+                            $spiralsAndCrossesPoints += $card->spirals;
+                        }
+                    }
+                    if ($card->crosses != 0) {
+                        $spiralsAndCrossesPoints -= $card->crosses;
+                    }
+
+                    $colorZone = $this->getLargestColorZone($validatedCards);
+                    if ($colorZone > $largestColorZone) {
+                        $largestColorZone = $colorZone;
+                    }
+                }
+            }
+
+            $largestColorZonePoints = $largestColorZone * ($roundNumber + 1);
+
+            $points = $validatedCardPoints + $spiralsAndCrossesPoints + $largestColorZonePoints;
+            // TODO save points & detail ?
+        }
+
+        $lastRound = $roundNumber >= 3;
+        
+        if (!$lastRound) {
+            $this->cards->moveAllCardsInLocation(null, 'deck');
+            $this->cards->shuffle('deck');
+        }
 
         self::notifyAllPlayers('endRound', '', [
-            'deckTopCard' => $this->getDeckTopCard(),
             'remainingCardsInDeck' => $this->getRemainingCardsInDeck(),
         ]);
 

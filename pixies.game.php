@@ -101,9 +101,6 @@ class Pixies extends Table {
             $this->initStat($statType, 'takeCardFromDeck', 0);
             $this->initStat($statType, 'takeFromDiscard', 0);
             $this->initStat($statType, 'playedDuoCards', 0);
-            $this->initStat($statType, 'announce', 0);
-            $this->initStat($statType, 'announceStop', 0);
-            $this->initStat($statType, 'announceLastChance', 0);
             $this->initStat($statType, 'lastChanceBetWon', 0);
             $this->initStat($statType, 'lastChanceBetLost', 0);
             foreach([1,2,3,4] as $number) {

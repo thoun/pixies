@@ -94,21 +94,6 @@ $commonStats = [
         "name" => totranslate("Win with 4 Mermaids"),
         "type" => "bool"
     ],
-    "announce" => [
-        "id" => 20,
-        "name" => totranslate("Announce end of round"),
-        "type" => "int"
-    ],
-    "announceStop" => [
-        "id" => 21,
-        "name" => totranslate("Announce end of round (STOP)"),
-        "type" => "int"
-    ],
-    "announceLastChance" => [
-        "id" => 22,
-        "name" => totranslate("Announce end of round (LAST CHANCE)"),
-        "type" => "int"
-    ],
     "lastChanceBetWon" => [
         "id" => 23,
         "name" => totranslate("Last chance bet won"),

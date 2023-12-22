@@ -2268,6 +2268,9 @@ var TableCenter = /** @class */ (function () {
             }*/
         });
     }
+    TableCenter.prototype.getTableCards = function () {
+        return this.tableCards.getCards();
+    };
     TableCenter.prototype.newTurn = function (cards) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -2319,6 +2322,13 @@ var PlayerTable = /** @class */ (function () {
             _loop_3(i);
         }
     }
+    PlayerTable.prototype.getAllCards = function () {
+        var cards = [];
+        for (var i = 1; i <= 9; i++) {
+            cards.push.apply(cards, this.tableCards[i].getCards());
+        }
+        return cards;
+    };
     PlayerTable.prototype.playCard = function (card, space) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -2413,9 +2423,6 @@ var Pixies = /** @class */ (function () {
                 }),
             ]
         });
-        this.onScreenWidthChange = function () {
-            _this.updateTableHeight();
-        };
         log("Ending game setup");
     };
     ///////////////////////////////////////////////////
@@ -2431,15 +2438,6 @@ var Pixies = /** @class */ (function () {
                 break;
             case 'playCard':
                 this.onEnteringPlayCard(args.args);
-                break;
-            case 'chooseDiscardPile':
-                this.onEnteringChooseDiscardPile();
-                break;
-            case 'chooseDiscardCard':
-                this.onEnteringChooseDiscardCard(args.args);
-                break;
-            case 'chooseOpponent':
-                this.onEnteringChooseOpponent(args.args);
                 break;
         }
     };
@@ -2461,36 +2459,6 @@ var Pixies = /** @class */ (function () {
             (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setSelectableSpaces(args.spaces);
         }
     };
-    Pixies.prototype.onEnteringChooseDiscardPile = function () {
-        this.tableCenter.makeCardsSelectable(this.isCurrentPlayerActive());
-    };
-    Pixies.prototype.onEnteringChooseDiscardCard = function (args) {
-        var _this = this;
-        var _a;
-        var currentPlayer = this.isCurrentPlayerActive();
-        var cards = ((_a = args._private) === null || _a === void 0 ? void 0 : _a.cards) || args.cards;
-        var pickDiv = document.getElementById('discard-pick');
-        pickDiv.innerHTML = '';
-        pickDiv.dataset.visible = 'true';
-        if (!this.discardStock) {
-            this.discardStock = new LineStock(this.cardsManager, pickDiv, { gap: '0px' });
-            this.discardStock.onCardClick = function (card) { return _this.chooseDiscardCard(card.id); };
-        }
-        cards === null || cards === void 0 ? void 0 : cards.forEach(function (card) {
-            _this.discardStock.addCard(card, { fromStock: _this.tableCenter.getDiscardDeck(args.discardNumber) });
-        });
-        if (currentPlayer) {
-            this.discardStock.setSelectionMode('single');
-        }
-        this.updateTableHeight();
-    };
-    Pixies.prototype.onEnteringChooseOpponent = function (args) {
-        if (this.isCurrentPlayerActive()) {
-            args.playersIds.forEach(function (playerId) {
-                return document.getElementById("player-table-".concat(playerId, "-hand-cards")).dataset.canSteal = 'true';
-            });
-        }
-    };
     Pixies.prototype.onLeavingState = function (stateName) {
         log('Leaving state: ' + stateName);
         switch (stateName) {
@@ -2499,12 +2467,6 @@ var Pixies = /** @class */ (function () {
                 break;
             case 'playCard':
                 this.onLeavingPlayCard();
-                break;
-            case 'chooseDiscardCard':
-                this.onLeavingChooseDiscardCard();
-                break;
-            case 'chooseOpponent':
-                this.onLeavingChooseOpponent();
                 break;
         }
     };
@@ -2515,16 +2477,6 @@ var Pixies = /** @class */ (function () {
         var _a;
         (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setSelectableSpaces([]);
     };
-    Pixies.prototype.onLeavingChooseDiscardCard = function () {
-        var _a;
-        var pickDiv = document.getElementById('discard-pick');
-        pickDiv.dataset.visible = 'false';
-        (_a = this.discardStock) === null || _a === void 0 ? void 0 : _a.removeAll();
-        this.updateTableHeight();
-    };
-    Pixies.prototype.onLeavingChooseOpponent = function () {
-        Array.from(document.querySelectorAll('[data-can-steal]')).forEach(function (elem) { return elem.dataset.canSteal = 'false'; });
-    };
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
     //                        action status bar (ie: the HTML links in the status bar).
     //
@@ -2533,8 +2485,14 @@ var Pixies = /** @class */ (function () {
         if (this.isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'keepCard':
-                    this.addActionButton("keepCard0_button", _("Keep the card on the table"), function () { return _this.keepCard(0); });
-                    this.addActionButton("keepCard1_button", _("Keep the new card"), function () { return _this.keepCard(1); });
+                    var labels_1 = [
+                        _("Keep the card on the table"),
+                        _("Keep the new card"),
+                    ];
+                    [0, 1].forEach(function (index) {
+                        _this.addActionButton("keepCard".concat(index, "_button"), "".concat(labels_1[index], "<br><div id=\"keepCard").concat(index, "\"></div>"), function () { return _this.keepCard(index); });
+                        _this.cardsManager.setForHelp(args.cards[index], "keepCard".concat(index));
+                    });
                     break;
             }
         }
@@ -2563,10 +2521,6 @@ var Pixies = /** @class */ (function () {
     Pixies.prototype.getCurrentPlayerTable = function () {
         var _this = this;
         return this.playersTables.find(function (playerTable) { return playerTable.playerId === _this.getPlayerId(); });
-    };
-    Pixies.prototype.updateTableHeight = function () {
-        var _a;
-        (_a = this.zoomManager) === null || _a === void 0 ? void 0 : _a.manualHeightUpdate();
     };
     Pixies.prototype.setupPreferences = function () {
         var _this = this;
@@ -2673,15 +2627,9 @@ var Pixies = /** @class */ (function () {
             ['newTurn', undefined],
             ['playCard', undefined],
             ['keepCard', undefined],
-            ['revealHand', ANIMATION_MS * 2],
-            ['announceEndRound', ANIMATION_MS * 2],
-            ['betResult', ANIMATION_MS * 2],
             ['endRound', undefined],
             ['score', ANIMATION_MS * 3],
             ['newRound', ANIMATION_MS * 3],
-            ['updateCardsPoints', 1],
-            ['emptyDeck', 1],
-            ['reshuffleDeck', undefined],
         ];
         notifs.forEach(function (notif) {
             dojo.subscribe(notif[0], _this, function (notifDetails) {
@@ -2753,54 +2701,20 @@ var Pixies = /** @class */ (function () {
         }
     };
     Pixies.prototype.notif_newRound = function () { };
-    Pixies.prototype.notif_revealHand = function (args) {
-        var playerId = args.playerId;
-        var playerPoints = args.playerPoints;
-        var playerTable = this.getPlayerTable(playerId);
-        playerTable.showAnnouncementPoints(playerPoints);
-        this.notif_playCard(args);
-        this.handCounters[playerId].toValue(0);
-    };
-    Pixies.prototype.notif_announceEndRound = function (args) {
-        this.getPlayerTable(args.playerId).showAnnouncement(args.announcement);
-    };
     Pixies.prototype.notif_endRound = function (args) {
-        var _a;
         return __awaiter(this, void 0, void 0, function () {
             var cards;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        cards = this.tableCenter.getDiscardCards();
-                        this.tableCenter.cleanDiscards();
-                        return [4 /*yield*/, this.tableCenter.deck.addCards(cards, undefined, { visible: false })];
-                    case 1:
-                        _b.sent();
-                        (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setHandPoints(0, [0, 0, 0, 0]);
-                        this.updateTableHeight();
-                        this.tableCenter.deck.setCardNumber(args.remainingCardsInDeck, args.deckTopCard);
-                        return [4 /*yield*/, this.tableCenter.deck.shuffle({ newTopCard: args.deckTopCard })];
-                    case 2: return [2 /*return*/, _b.sent()];
-                }
-            });
-        });
-    };
-    Pixies.prototype.notif_updateCardsPoints = function (args) {
-        var _a;
-        (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setHandPoints(args.cardsPoints, args.detailledPoints);
-    };
-    Pixies.prototype.notif_betResult = function (args) {
-        this.getPlayerTable(args.playerId).showAnnouncementBetResult(args.result);
-    };
-    Pixies.prototype.notif_emptyDeck = function () {
-        this.playersTables.forEach(function (playerTable) { return playerTable.showEmptyDeck(); });
-    };
-    Pixies.prototype.notif_reshuffleDeck = function (args) {
-        return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.tableCenter.deck.shuffle({ newTopCard: args.deckTopCard })];
-                    case 1: return [2 /*return*/, _a.sent()];
+                    case 0:
+                        cards = this.tableCenter.getTableCards();
+                        this.playersTables.forEach(function (playerTable) { return cards.push.apply(cards, playerTable.getAllCards()); });
+                        return [4 /*yield*/, this.tableCenter.deck.addCards(cards, undefined, { visible: false })];
+                    case 1:
+                        _a.sent();
+                        this.tableCenter.deck.setCardNumber(args.remainingCardsInDeck);
+                        return [4 /*yield*/, this.tableCenter.deck.shuffle()];
+                    case 2: return [2 /*return*/, _a.sent()];
                 }
             });
         });
@@ -2810,9 +2724,6 @@ var Pixies = /** @class */ (function () {
     Pixies.prototype.format_string_recursive = function (log, args) {
         try {
             if (log && args && !args.processed) {
-                if (args.announcement && args.announcement[0] != '<') {
-                    args.announcement = "<strong style=\"color: darkred;\">".concat(_(args.announcement), "</strong>");
-                }
                 ['discardNumber', 'roundPoints', 'cardsPoints', 'colorBonus', 'cardName', 'cardName1', 'cardName2', 'cardName3', 'cardColor', 'cardColor1', 'cardColor2', 'cardColor3', 'points', 'result'].forEach(function (field) {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
                         args[field] = "<strong>".concat(_(args[field]), "</strong>");

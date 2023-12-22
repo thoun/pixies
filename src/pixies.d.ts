@@ -42,7 +42,6 @@ interface PixiesGame extends Game {
     getPlayerId(): number;
     getPlayerColor(playerId: number): string;
 
-    updateTableHeight(): void;
     setTooltip(id: string, html: string): void;
     onTableCardClick(card: Card): void;
     onSpaceClick(space: number): void;
@@ -79,20 +78,5 @@ interface NotifScoreArgs {
 }
 
 interface NotifEndRoundArgs {
-    deckTopCard?: Card;
     remainingCardsInDeck: number;
-}
-
-interface NotifBetResultArgs {
-    playerId: number;
-    result: string;
-}
-
-interface NotifUpdateCardsPointsArgs {
-    cardsPoints: number;
-    detailledPoints: number[];
-}
-
-interface NotifReshuffleDeckArgs {
-    deckTopCard: Card;
 }
