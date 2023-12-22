@@ -49,6 +49,54 @@ html, .mode_3d #game_play_area_background {
   }
 }
 
-.log p /*.replay_last_move_button*/, .hidden-log-action {
-  display: none !important;
+.score-icon {
+  display: inline-block;
+  width: 39px;
+  height: 48px;
+  background-image: url('img/score-icons.png');
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  
+  &.validated {
+    background-position-x: #{0 * 100% / 3};
+  }
+  &.zone {
+    background-position-x: #{1 * 100% / 3};
+  }
+  &.spirals {
+    background-position-x: #{2 * 100% / 3};
+  }
+  &.sum {
+    background-position-x: #{3 * 100% / 3};
+  }
+}
+
+#result {
+  display: flex;
+  justify-content: center;
+
+  .round-result {
+    margin: 10px;
+  }
+}
+
+.round-result {
+  th:not(.empty), td {
+    text-align: center;
+    border: 2px solid black;
+    padding: 5px;
+    background: #FFFFFF;
+  }
+
+  th.type {
+    background: #8ac752;
+    padding: 0;
+  }
+  th.name, th.sum {
+    background: #c3dfa5;
+    min-width: 100px;
+    font-weight: bold;
+  }
 }

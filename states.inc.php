@@ -125,6 +125,20 @@ $playerActionsGameStates = [
             "zombiePass" => ST_NEXT_PLAYER,
         ]
     ],
+    
+    ST_MULTIPLAYER_BEFORE_END_ROUND => [
+        "name" => "beforeEndRound",
+        "description" => clienttranslate('Some players are seeing end round result'),
+        "descriptionmyturn" => clienttranslate('End round result'),
+        "type" => "multipleactiveplayer",
+        "action" => "stBeforeEndRound",
+        "possibleactions" => [ "seen" ],
+        "transitions" => [
+            "next" => ST_END_ROUND, // for zombie
+            "endRound" => ST_END_ROUND,
+            "endScore" => ST_END_SCORE,
+        ],
+    ],
 ];
 
 $gameGameStates = [
@@ -169,7 +183,7 @@ $gameGameStates = [
         "action" => "stEndTurn",
         "transitions" => [
             "newTurn" => ST_NEW_TURN,
-            "endRound" => ST_END_ROUND,
+            "endRound" => ST_MULTIPLAYER_BEFORE_END_ROUND,
         ],
     ],
 

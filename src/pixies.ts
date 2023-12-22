@@ -18,12 +18,7 @@ class Pixies implements PixiesGame {
     private gamedatas: PixiesGamedatas;
     private tableCenter: TableCenter;
     private playersTables: PlayerTable[] = [];
-    private selectedCards: Card[];
-    private selectedStarfishCards: Card[];
-    private lastNotif: any;
-    private handCounters: Counter[] = [];
-
-    private discardStock: LineStock<Card>;
+    private roundCounter: Counter;
     
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
 
@@ -63,6 +58,10 @@ class Pixies implements PixiesGame {
             },
             localStorageZoomKey: LOCAL_STORAGE_ZOOM_KEY,
         });
+        
+        this.roundCounter = new ebg.counter();
+        this.roundCounter.create('round-counter');
+        this.roundCounter.setValue(gamedatas.roundNumber);
 
         this.setupNotifications();
         this.setupPreferences();
@@ -83,6 +82,10 @@ class Pixies implements PixiesGame {
                 }),
             ]
         });
+
+        if (gamedatas.roundResult) {
+            this.setRoundResult(gamedatas.roundResult);
+        }
 
         log( "Ending game setup" );
     }
@@ -161,8 +164,9 @@ class Pixies implements PixiesGame {
                         (this as any).addActionButton(`keepCard${index}_button`, `${labels[index]}<br><div id="keepCard${index}"></div>`, () => this.keepCard(index));
                         this.cardsManager.setForHelp(args.cards[index], `keepCard${index}`);
                     });
-
-
+                    break;
+                case 'beforeEndRound':
+                    (this as any).addActionButton(`seen_button`, _("Seen"), () => this.seen());
                     break;
             }
         }
@@ -311,6 +315,29 @@ class Pixies implements PixiesGame {
         return [1, 2, 3, 4].map((number, index) => `<div class="color-icon" data-row="${index}"></div><span class="label"> ${this.cardsManager.getColor(number)}</span>`).join('');
     }
 
+    private setRoundResultForPlayer(playerId: number, detailledScore: DetailledScore) {
+        if (!document.getElementById(`points-${playerId}`)) {
+            const emptyRoundResult = [];
+            Object.keys(this.gamedatas.players).forEach(id => emptyRoundResult[id] = null);
+            this.setRoundResult(emptyRoundResult);
+        }
+
+        Object.entries(detailledScore).forEach(([key, value]) => document.getElementById(`${key}-${playerId}`).innerText = `${value}`);
+    }
+
+    private setRoundResult(roundResult: { [playerId: number]: DetailledScore }) {
+        const playersIds = Object.keys(roundResult).map(Number);
+        let html = `<table class='round-result'>
+            <tr><th class="empty"></th>${playersIds.map(playerId => `<th class="name"><strong style='color: #${this.getPlayer(playerId).color};'>${this.getPlayer(playerId).name}</strong></th>`).join('')}</tr>
+            <tr><th class="type"><div class="score-icon validated"></div></th>${playersIds.map(playerId => `<td id="validatedCardPoints-${playerId}">${roundResult[playerId]?.validatedCardPoints ?? ''}</td>`).join('')}</tr>
+            <tr><th class="type"><div class="score-icon zone"></div></th>${playersIds.map(playerId => `<td id="largestColorZonePoints-${playerId}">${roundResult[playerId]?.largestColorZonePoints ?? ''}</td>`).join('')}</tr>
+            <tr><th class="type"><div class="score-icon spirals"></div></th>${playersIds.map(playerId => `<td id="spiralsAndCrossesPoints-${playerId}">${roundResult[playerId]?.spiralsAndCrossesPoints ?? ''}</td>`).join('')}</tr>
+            <tr><th class="type"><div class="score-icon sum"></div></th>${playersIds.map(playerId => `<th class="sum" id="points-${playerId}">${roundResult[playerId]?.points ?? ''}</th>`).join('')}</tr>
+        </table>`;
+
+        document.getElementById(`result`).innerHTML = html;
+    }
+
     public chooseCard(id: number) {
         if(!(this as any).checkAction('chooseCard')) {
             return;
@@ -341,6 +368,14 @@ class Pixies implements PixiesGame {
         });
     }
 
+    public seen() {
+        if(!(this as any).checkAction('seen')) {
+            return;
+        }
+
+        this.takeAction('seen');
+    }
+
     public takeAction(action: string, data?: any) {
         data = data || {};
         data.lock = true;
@@ -363,12 +398,12 @@ class Pixies implements PixiesGame {
         //log( 'notifications subscriptions setup' );
 
         const notifs = [
+            ['newRound', ANIMATION_MS],
             ['newTurn', undefined],
             ['playCard', undefined],
             ['keepCard', undefined],
             ['endRound', undefined],
             ['score', ANIMATION_MS * 3],
-            ['newRound', ANIMATION_MS * 3],
         ];
     
         notifs.forEach((notif) => {
@@ -382,6 +417,11 @@ class Pixies implements PixiesGame {
             });
             (this as any).notifqueue.setSynchronous(notif[0], notif[1]);
         });
+    }
+
+    notif_newRound(args: NotifNewRoundArgs) {
+        const { round } = args;
+        this.roundCounter.toValue(round);
     }
 
     async notif_newTurn(args: NotifNewTurnArgs) {
@@ -402,21 +442,16 @@ class Pixies implements PixiesGame {
     }
 
     notif_score(args: NotifScoreArgs) {
-        const playerId = args.playerId;
-        (this as any).scoreCtrl[playerId]?.toValue(args.newScore);
+        const { playerId, newScore, detailledScore } = args;
+        (this as any).scoreCtrl[playerId]?.toValue(newScore);
 
-        const incScore = args.incScore;
-        if (incScore != null && incScore !== undefined) {
-            (this as any).displayScoring(`player-table-${playerId}-table-cards`, this.getPlayerColor(playerId), incScore, ANIMATION_MS * 3);
-        }
-
-        if (args.details) {
-            this.getPlayerTable(args.playerId).showScoreDetails(args.details);
-        }
+        (this as any).displayScoring(`player-table-${playerId}-cards`, this.getPlayerColor(playerId), detailledScore.points, ANIMATION_MS * 3);
+        
+        this.setRoundResultForPlayer(playerId, detailledScore);
     }
-    notif_newRound() {}
 
     async notif_endRound(args: NotifEndRoundArgs) {
+        document.getElementById(`result`).innerHTML = ``;
         const cards = this.tableCenter.getTableCards();
 
         this.playersTables.forEach(playerTable => cards.push(...playerTable.getAllCards()));
@@ -432,7 +467,7 @@ class Pixies implements PixiesGame {
     public format_string_recursive(log: string, args: any) {
         try {
             if (log && args && !args.processed) {
-                ['discardNumber', 'roundPoints', 'cardsPoints', 'colorBonus', 'cardName', 'cardName1', 'cardName2', 'cardName3', 'cardColor', 'cardColor1', 'cardColor2', 'cardColor3', 'points', 'result'].forEach(field => {
+                ['roundNumber', 'value', 'incScore'].forEach(field => {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
                         args[field] = `<strong>${_(args[field])}</strong>`;
                     }

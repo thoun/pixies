@@ -42,12 +42,7 @@ class Pixies extends Table {
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
         
-        self::initGameStateLabels([
-            END_ROUND_TYPE => END_ROUND_TYPE,
-            LAST_CHANCE_CALLER => LAST_CHANCE_CALLER,
-            STOP_CALLER => STOP_CALLER,
-            BET_RESULT => BET_RESULT,
-        ]);  
+        self::initGameStateLabels([]);  
 
         $this->cards = self::getNew("module.common.deck");
         $this->cards->init("card");        
@@ -88,10 +83,6 @@ class Pixies extends Table {
         /************ Start the game initialization *****/
 
         // Init global values with their initial values
-        $this->setGameStateInitialValue(END_ROUND_TYPE, 0);
-        $this->setGameStateInitialValue(LAST_CHANCE_CALLER, 0);
-        $this->setGameStateInitialValue(STOP_CALLER, 0);
-        $this->setGameStateInitialValue(BET_RESULT, 0);
         
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -140,10 +131,6 @@ class Pixies extends Table {
         $sql = "SELECT player_id id, player_score score, player_no playerNo FROM player ";
         $result['players'] = self::getCollectionFromDb( $sql );
 
-        
-
-        $endRound = intval($this->getGameStateValue(END_ROUND_TYPE));
-
         foreach($result['players'] as $playerId => &$player) {
             $player['playerNo'] = intval($player['playerNo']);
             $player['cards'] = $this->getCardsFromSpaces($playerId);
@@ -151,6 +138,8 @@ class Pixies extends Table {
 
         $result['remainingCardsInDeck'] = $this->getRemainingCardsInDeck();
         $result['tableCards'] = $this->getCardsFromDb($this->cards->getCardsInLocation('table'));
+        $result['roundResult'] = $this->getGlobalVariable(ROUND_RESULT);
+        $result['roundNumber'] = intval($this->getStat('roundNumber'));
   
         return $result;
     }

@@ -126,6 +126,14 @@ trait UtilTrait {
         return $cards;
     }
 
+    function getVisibleCards(int $playerId) {
+        $spaces = $this->getCardsFromSpaces($playerId);
+
+        $cards = array_map(fn($space) => count($space) == 2 ? $space[1] : (count($space) == 1 && $space[0]->value !== null ? $space[0] : null), $spaces);
+
+        return $cards;
+    }
+
     function getSelectedCard() {
         return $this->getCardFromDb($this->cards->getCard($this->getGlobalVariable(SELECTED_CARD_ID)));
     }
@@ -146,7 +154,7 @@ trait UtilTrait {
     }
 
     function incPlayerScore(int $playerId, int $roundScore, $message = '', $args = []) {
-        $this->DbQuery("UPDATE player SET `player_score` = `player_score` + $roundScore,  `player_score_aux` = $roundScore WHERE player_id = $playerId");
+        $this->DbQuery("UPDATE player SET `player_score` = `player_score` + $roundScore WHERE player_id = $playerId");
             
         $this->notifyAllPlayers('score', $message, [
             'playerId' => $playerId,
@@ -190,11 +198,11 @@ trait UtilTrait {
         }
     }
 
-    function getLargestColorZone(array $validatedCards) {
+    function getLargestColorZone(array $visibleCards) {
         $topCoalition = null;
 
         for ($space = 1; $space <= 9; $space++) {
-            $cardInSpace = $validatedCards[$space];
+            $cardInSpace = $visibleCards[$space];
 
             if ($cardInSpace) {
                 $coalition = new stdClass();
@@ -202,7 +210,7 @@ trait UtilTrait {
                 $coalition->size = 0;
                 $coalition->color = $cardInSpace->color;
                 $coalition->alreadyCounted = [];
-                $this->getColorZoneSize($validatedCards, $coalition, $space);
+                $this->getColorZoneSize($visibleCards, $coalition, $space);
                 
                 if (!$topCoalition || $coalition->size > $topCoalition->size) {
                     $topCoalition = $coalition;
@@ -211,5 +219,56 @@ trait UtilTrait {
         }
 
         return $topCoalition->size;
+    }
+    
+    function scoreRound() {
+        $roundNumber = intval($this->getStat('roundNumber'));
+        $playersIds = $this->getPlayersIds();
+        $result = [];
+
+        foreach ($playersIds as $playerId) {
+            $detailledScore = new stdClass();
+            $validatedCards = $this->getValidatedCards($playerId);
+            $visibleCards = $this->getVisibleCards($playerId);
+
+            $detailledScore->validatedCardPoints = 0;
+            $detailledScore->spiralsAndCrossesPoints = 0;
+            $largestColorZone = 0;
+            $detailledScore->largestColorZonePoints = 0;
+
+            foreach ($validatedCards as $space => $card) {
+                if ($card) {
+                    $detailledScore->validatedCardPoints += $space;
+                }
+            }
+
+            foreach ($visibleCards as $space => $card) {
+                if ($card) {
+                    if ($card->spirals != 0) {
+                        if ($card->spirals == -1) {
+                            $detailledScore->spiralsAndCrossesPoints += count(array_filter($visibleCards, fn($c) => $c && in_array($c->color, [0, $card->color])));
+                        } else {
+                            $detailledScore->spiralsAndCrossesPoints += $card->spirals;
+                        }
+                    }
+                    if ($card->crosses != 0) {
+                        $detailledScore->spiralsAndCrossesPoints -= $card->crosses;
+                    }
+                    $colorZone = $this->getLargestColorZone($visibleCards);
+                    if ($colorZone > $largestColorZone) {
+                        $largestColorZone = $colorZone;
+                    }
+                }
+            }
+
+            $detailledScore->largestColorZonePoints = $largestColorZone * ($roundNumber + 1);
+
+            $detailledScore->points = $detailledScore->validatedCardPoints + $detailledScore->spiralsAndCrossesPoints + $detailledScore->largestColorZonePoints;
+            $result[$playerId] = $detailledScore;            
+        }
+
+        $this->setGlobalVariable(ROUND_RESULT, $result);
+
+        return $result;
     }
 }

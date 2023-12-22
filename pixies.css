@@ -657,6 +657,17 @@ body > .card {
     box-shadow: 0 0 5px 3px #FFFFFF;
   }
 }
+#round-counter-wrapper {
+  position: absolute;
+  top: 0;
+  left: 10px;
+  text-align: center;
+}
+#round-counter-wrapper .counter {
+  margin-top: 5px;
+  font-size: 150%;
+}
+
 #table-center {
   display: flex;
   justify-content: center;
@@ -705,15 +716,6 @@ body > .card {
 }
 .player-board.spectator-mode * {
   background: white !important;
-}
-
-.counters {
-  display: flex;
-  align-items: center;
-  margin: 5px 0;
-}
-.counters .icon {
-  margin-right: 5px;
 }
 
 .player-table {
@@ -947,6 +949,49 @@ html, .mode_3d #game_play_area_background {
   gap: 20px;
 }
 
-.log p, .hidden-log-action {
-  display: none !important;
+.score-icon {
+  display: inline-block;
+  width: 39px;
+  height: 48px;
+  background-image: url("img/score-icons.png");
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+}
+.score-icon.validated {
+  background-position-x: 0%;
+}
+.score-icon.zone {
+  background-position-x: 33.3333333333%;
+}
+.score-icon.spirals {
+  background-position-x: 66.6666666667%;
+}
+.score-icon.sum {
+  background-position-x: 100%;
+}
+
+#result {
+  display: flex;
+  justify-content: center;
+}
+#result .round-result {
+  margin: 10px;
+}
+
+.round-result th:not(.empty), .round-result td {
+  text-align: center;
+  border: 2px solid black;
+  padding: 5px;
+  background: #FFFFFF;
+}
+.round-result th.type {
+  background: #8ac752;
+  padding: 0;
+}
+.round-result th.name, .round-result th.sum {
+  background: #c3dfa5;
+  min-width: 100px;
+  font-weight: bold;
 }

@@ -1,3 +1,15 @@
+#round-counter-wrapper {
+    position: absolute;
+    top: 0;
+    left: 10px;
+    text-align: center;
+  
+    .counter {
+      margin-top: 5px;
+      font-size: 150%;
+    }
+  }
+
 #table-center {
     display: flex;
     justify-content: center;

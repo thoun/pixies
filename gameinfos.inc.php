@@ -13,16 +13,16 @@
 $gameinfos = [
 
 // Name of the game in English (will serve as the basis for translation) 
-'game_name' => "Sea Salt & Paper",
+'game_name' => "Pixies",
 
 // Game designer (or game designers, separated by commas)
-'designer' => 'Bruno Cathala, Théo Rivière',       
+'designer' => 'Johannes Goupy',       
 
 // Game artist (or game artists, separated by commas)
-'artist' => 'Pierre-Yves Gallard, Lucien Derainne',         
+'artist' => 'Sylvain Trabut',         
 
 // Year of FIRST publication of this game. Can be negative.
-'year' => 2022,
+'year' => 2024,
 
 // Game publisher (use empty string if there is no publisher)
 'publisher' => 'Bombyx',
@@ -34,7 +34,7 @@ $gameinfos = [
 'publisher_bgg_id' => 19260,
 
 // Board game geek ID of the game
-'bgg_id' => 367220,
+'bgg_id' => 0, // TODO
 
 
 // Players configuration that can be played (ex: 2 to 4 players)
@@ -67,7 +67,7 @@ $gameinfos = [
 // Note: if you are NOT using any tie breaker, leave the empty string.
 //
 // Example: 'tie_breaker_description' => totranslate( "Number of remaining cards in hand" ),
-'tie_breaker_description' => totranslate("Last round points"),
+'tie_breaker_description' => '',
 
 // If in the game, all losers are equal (no score to rank them or explicit in the rules that losers are not ranked between them), set this to true 
 // The game end result will display "Winner" for the 1st player and "Loser" for all other players
@@ -118,7 +118,7 @@ $gameinfos = [
     //  default: 740
     //  maximum possible value: 740 (ie: your game interface should fit with a 740px width (correspond to a 1024px screen)
     //  minimum possible value: 320 (the lowest value you specify, the better the display is on mobile)
-    'min' => 670,
+    'min' => 790,
 
     // Maximum width
     //  default: null (ie: no limit, the game interface is as big as the player's screen allows it).
@@ -132,20 +132,10 @@ $gameinfos = [
 // Each paragraph must be wrapped with totranslate() for translation and should not contain html (plain text without formatting).
 // A good length for this text is between 100 and 150 words (about 6 to 9 lines on a standard display)
 'presentation' => [
-    totranslate("During their turn, you assemble your hand, maybe place cards for their effect, and decide if you want to end the round. But do you think you are the one with the most points in hand?"),
-    totranslate("You will have to choose: stop the round immediately or give the others an extra turn to try to extend the gap? Is it worth taking the risk?"),
+    // TODO
+    //totranslate("During their turn, you assemble your hand, maybe place cards for their effect, and decide if you want to end the round. But do you think you are the one with the most points in hand?"),
+    //totranslate("You will have to choose: stop the round immediately or give the others an extra turn to try to extend the gap? Is it worth taking the risk?"),
 ],
-
-// Games tags (categories)
-//  You can attribute a maximum of ten "tags" for your game.
-//  Each tag has a specific ID (ex: 22 for the category "Prototype", 101 for the tag "Science-fiction theme game")
-//  Please see the "Game meta information" entry in the BGA Studio documentation for a full list of available tags:
-//  https://en.doc.boardgamearena.com/Game_meta-information:_gameinfos.inc.php#Tags
-//  IMPORTANT: this list should be ORDERED, with the most important tag first.
-//  NOTE: tags are only read during the first deploy from the file gameinfos.inc.php; afterwards, BGA is responsible for setting tags for a game.
-
-'tags' => [2, 11, 26, 114, 200, 207],
-
 
 //////// BGA SANDBOX ONLY PARAMETERS (DO NOT MODIFY)
 

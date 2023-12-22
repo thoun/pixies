@@ -51,13 +51,16 @@ trait ActionTrait {
 
         $count = intval($this->cards->countCardInLocation("player-$playerId-$space"));
         $this->cards->moveCard($card->id, "player-$playerId-$space", $count);
+        $card->locationArg = $count;
 
-        self::notifyAllPlayers('playCard', clienttranslate('${player_name} plays card on space ${value}'), [
+        self::notifyAllPlayers('playCard', clienttranslate('${player_name} plays a ${color} card on space ${value}'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
             'card' => $space == $card->value ? $card : Card::onlyId($card),
             'space' => $space,
+            'color' => $this->COLORS[$card->color], // for log
             'value' => $space, // for log
+            'i18n' => ['color'],
         ]);
 
         $this->gamestate->nextState('next');
@@ -85,15 +88,25 @@ trait ActionTrait {
         $this->cards->moveCard($hiddenCard->id, "player-$playerId-$space", $hiddenCard->locationArg);
         $this->cards->moveCard($visibleCard->id, "player-$playerId-$space", $visibleCard->locationArg);
 
-        self::notifyAllPlayers('keepCard', clienttranslate('${player_name} chooses a card to keep on space ${value}'), [
+        self::notifyAllPlayers('keepCard', clienttranslate('${player_name} keeps the ${color} card on space ${value}'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
             'hiddenCard' => Card::onlyId($hiddenCard),
             'visibleCard' => $visibleCard,
             'space' => $space,
+            'color' => $this->COLORS[$card->color], // for log
             'value' => $space, // for log
+            'i18n' => ['color'],
         ]);
 
         $this->gamestate->nextState('next');
+    }
+
+    public function seen() {
+        $this->checkAction('seen');
+
+        $playerId = intval($this->getCurrentPlayerId());
+
+        $this->gamestate->setPlayerNonMultiactive($playerId, 'endRound');
     }
 }

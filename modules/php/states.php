@@ -15,8 +15,11 @@ trait StateTrait {
 
         $this->incStat(1, 'roundNumber');
 
-        self::notifyAllPlayers('newRound', clienttranslate('Round ${round}/3 begins!'), [
-            'round' => $this->getStat('roundNumber')
+        $roundNumber = intval($this->getStat('roundNumber'));
+
+        self::notifyAllPlayers('newRound', clienttranslate('Round ${roundNumber}/3 begins!'), [
+            'round' => $roundNumber,
+            'roundNumber' => $roundNumber, // for logs
         ]);
 
         $this->gamestate->nextState('start');
@@ -65,47 +68,29 @@ trait StateTrait {
 
         $this->gamestate->nextState($endRound ? 'endRound' : 'newTurn');
     }
+    
+
+    function stBeforeEndRound() {
+        $scoreRound = $this->scoreRound();
+        
+        foreach ($scoreRound as $playerId => $detailledScore) {
+            $this->incPlayerScore($playerId, $detailledScore->points, clienttranslate('${player_name} gains ${incScore} points in this round'), [                
+                'detailledScore' => $detailledScore,
+            ]);
+        }
+        $this->setGlobalVariable(ROUND_RESULT, $scoreRound);
+
+        $roundNumber = intval($this->getStat('roundNumber'));
+        $lastRound = $roundNumber >= 3;
+        if ($lastRound) {
+            $this->gamestate->nextState('endRound');
+        } else {
+            $this->gamestate->setAllPlayersMultiactive();
+        }
+    }
 
     function stEndRound() {
         $roundNumber = intval($this->getStat('roundNumber'));
-        $playersIds = $this->getPlayersIds();
-
-        foreach ($playersIds as $playerId) {
-            $validatedCards = $this->getValidatedCards($playerId);
-
-            $validatedCardPoints = 0;
-            $spiralsAndCrossesPoints = 0;
-            $largestColorZone = 0;
-            $largestColorZonePoints = 0;
-
-            foreach ($validatedCards as $space => $card) {
-                if ($card) {
-                    $validatedCardPoints += $space;
-
-                    if ($card->spirals != 0) {
-                        if ($card->spirals == -1) {
-                            $spiralsAndCrossesPoints += count(array_filter($validatedCards, fn($c) => $c && in_array($c->color, [0, $card->color])));
-                        } else {
-                            $spiralsAndCrossesPoints += $card->spirals;
-                        }
-                    }
-                    if ($card->crosses != 0) {
-                        $spiralsAndCrossesPoints -= $card->crosses;
-                    }
-
-                    $colorZone = $this->getLargestColorZone($validatedCards);
-                    if ($colorZone > $largestColorZone) {
-                        $largestColorZone = $colorZone;
-                    }
-                }
-            }
-
-            $largestColorZonePoints = $largestColorZone * ($roundNumber + 1);
-
-            $points = $validatedCardPoints + $spiralsAndCrossesPoints + $largestColorZonePoints;
-            // TODO save points & detail ?
-        }
-
         $lastRound = $roundNumber >= 3;
         
         if (!$lastRound) {
@@ -117,7 +102,12 @@ trait StateTrait {
             'remainingCardsInDeck' => $this->getRemainingCardsInDeck(),
         ]);
 
-        $this->gamestate->nextState($lastRound ? 'endScore' : 'newRound');
+        if ($lastRound) {
+            $this->gamestate->nextState('endScore');
+        } else {            
+            $this->deleteGlobalVariable(ROUND_RESULT);
+            $this->gamestate->nextState('newRound');
+        }
     }
 
     function stEndScore() {

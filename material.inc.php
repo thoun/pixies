@@ -34,9 +34,9 @@ $this->CARDS = [
     1 => new CardType(2),
     2 => new CardType(3),
     3 => new CardType(4),
-    4 => new CardType(6),
-    5 => new CardType(7),
-    6 => new CardType(8),
+    4 => new CardType(6, 0, 1),
+    5 => new CardType(7, 0, 1),
+    6 => new CardType(8, 0, 1),
   ],
 
   1 => [
@@ -117,7 +117,7 @@ $this->CARDS = [
 ];
 
 /*
- * Coalition
+ * Color zone
  */
 $this->NEIGHBOURS = [
   1 => [2, 4],
@@ -129,6 +129,17 @@ $this->NEIGHBOURS = [
   7 => [4, 8],
   8 => [5, 7, 9],
   9 => [6, 8],
+];
+
+/*
+ * Colors
+ */
+$this->COLORS = [
+  clienttranslate('Multicolor'),
+  clienttranslate('Blue'),
+  clienttranslate('Green'),
+  clienttranslate('Yellow'),
+  clienttranslate('Red'),
 ];
 
 

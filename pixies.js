@@ -2372,7 +2372,6 @@ var LOCAL_STORAGE_ZOOM_KEY = 'Pixies-zoom';
 var Pixies = /** @class */ (function () {
     function Pixies() {
         this.playersTables = [];
-        this.handCounters = [];
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
     }
     /*
@@ -2404,6 +2403,9 @@ var Pixies = /** @class */ (function () {
             },
             localStorageZoomKey: LOCAL_STORAGE_ZOOM_KEY,
         });
+        this.roundCounter = new ebg.counter();
+        this.roundCounter.create('round-counter');
+        this.roundCounter.setValue(gamedatas.roundNumber);
         this.setupNotifications();
         this.setupPreferences();
         new HelpManager(this, {
@@ -2423,6 +2425,9 @@ var Pixies = /** @class */ (function () {
                 }),
             ]
         });
+        if (gamedatas.roundResult) {
+            this.setRoundResult(gamedatas.roundResult);
+        }
         log("Ending game setup");
     };
     ///////////////////////////////////////////////////
@@ -2493,6 +2498,9 @@ var Pixies = /** @class */ (function () {
                         _this.addActionButton("keepCard".concat(index, "_button"), "".concat(labels_1[index], "<br><div id=\"keepCard").concat(index, "\"></div>"), function () { return _this.keepCard(index); });
                         _this.cardsManager.setForHelp(args.cards[index], "keepCard".concat(index));
                     });
+                    break;
+                case 'beforeEndRound':
+                    this.addActionButton("seen_button", _("Seen"), function () { return _this.seen(); });
                     break;
             }
         }
@@ -2580,6 +2588,23 @@ var Pixies = /** @class */ (function () {
         var _this = this;
         return [1, 2, 3, 4].map(function (number, index) { return "<div class=\"color-icon\" data-row=\"".concat(index, "\"></div><span class=\"label\"> ").concat(_this.cardsManager.getColor(number), "</span>"); }).join('');
     };
+    Pixies.prototype.setRoundResultForPlayer = function (playerId, detailledScore) {
+        if (!document.getElementById("points-".concat(playerId))) {
+            var emptyRoundResult_1 = [];
+            Object.keys(this.gamedatas.players).forEach(function (id) { return emptyRoundResult_1[id] = null; });
+            this.setRoundResult(emptyRoundResult_1);
+        }
+        Object.entries(detailledScore).forEach(function (_a) {
+            var key = _a[0], value = _a[1];
+            return document.getElementById("".concat(key, "-").concat(playerId)).innerText = "".concat(value);
+        });
+    };
+    Pixies.prototype.setRoundResult = function (roundResult) {
+        var _this = this;
+        var playersIds = Object.keys(roundResult).map(Number);
+        var html = "<table class='round-result'>\n            <tr><th class=\"empty\"></th>".concat(playersIds.map(function (playerId) { return "<th class=\"name\"><strong style='color: #".concat(_this.getPlayer(playerId).color, ";'>").concat(_this.getPlayer(playerId).name, "</strong></th>"); }).join(''), "</tr>\n            <tr><th class=\"type\"><div class=\"score-icon validated\"></div></th>").concat(playersIds.map(function (playerId) { var _a, _b; return "<td id=\"validatedCardPoints-".concat(playerId, "\">").concat((_b = (_a = roundResult[playerId]) === null || _a === void 0 ? void 0 : _a.validatedCardPoints) !== null && _b !== void 0 ? _b : '', "</td>"); }).join(''), "</tr>\n            <tr><th class=\"type\"><div class=\"score-icon zone\"></div></th>").concat(playersIds.map(function (playerId) { var _a, _b; return "<td id=\"largestColorZonePoints-".concat(playerId, "\">").concat((_b = (_a = roundResult[playerId]) === null || _a === void 0 ? void 0 : _a.largestColorZonePoints) !== null && _b !== void 0 ? _b : '', "</td>"); }).join(''), "</tr>\n            <tr><th class=\"type\"><div class=\"score-icon spirals\"></div></th>").concat(playersIds.map(function (playerId) { var _a, _b; return "<td id=\"spiralsAndCrossesPoints-".concat(playerId, "\">").concat((_b = (_a = roundResult[playerId]) === null || _a === void 0 ? void 0 : _a.spiralsAndCrossesPoints) !== null && _b !== void 0 ? _b : '', "</td>"); }).join(''), "</tr>\n            <tr><th class=\"type\"><div class=\"score-icon sum\"></div></th>").concat(playersIds.map(function (playerId) { var _a, _b; return "<th class=\"sum\" id=\"points-".concat(playerId, "\">").concat((_b = (_a = roundResult[playerId]) === null || _a === void 0 ? void 0 : _a.points) !== null && _b !== void 0 ? _b : '', "</th>"); }).join(''), "</tr>\n        </table>");
+        document.getElementById("result").innerHTML = html;
+    };
     Pixies.prototype.chooseCard = function (id) {
         if (!this.checkAction('chooseCard')) {
             return;
@@ -2604,6 +2629,12 @@ var Pixies = /** @class */ (function () {
             index: index
         });
     };
+    Pixies.prototype.seen = function () {
+        if (!this.checkAction('seen')) {
+            return;
+        }
+        this.takeAction('seen');
+    };
     Pixies.prototype.takeAction = function (action, data) {
         data = data || {};
         data.lock = true;
@@ -2624,12 +2655,12 @@ var Pixies = /** @class */ (function () {
         //log( 'notifications subscriptions setup' );
         var _this = this;
         var notifs = [
+            ['newRound', ANIMATION_MS],
             ['newTurn', undefined],
             ['playCard', undefined],
             ['keepCard', undefined],
             ['endRound', undefined],
             ['score', ANIMATION_MS * 3],
-            ['newRound', ANIMATION_MS * 3],
         ];
         notifs.forEach(function (notif) {
             dojo.subscribe(notif[0], _this, function (notifDetails) {
@@ -2640,6 +2671,10 @@ var Pixies = /** @class */ (function () {
             });
             _this.notifqueue.setSynchronous(notif[0], notif[1]);
         });
+    };
+    Pixies.prototype.notif_newRound = function (args) {
+        var round = args.round;
+        this.roundCounter.toValue(round);
     };
     Pixies.prototype.notif_newTurn = function (args) {
         return __awaiter(this, void 0, void 0, function () {
@@ -2690,23 +2725,18 @@ var Pixies = /** @class */ (function () {
     };
     Pixies.prototype.notif_score = function (args) {
         var _a;
-        var playerId = args.playerId;
-        (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.toValue(args.newScore);
-        var incScore = args.incScore;
-        if (incScore != null && incScore !== undefined) {
-            this.displayScoring("player-table-".concat(playerId, "-table-cards"), this.getPlayerColor(playerId), incScore, ANIMATION_MS * 3);
-        }
-        if (args.details) {
-            this.getPlayerTable(args.playerId).showScoreDetails(args.details);
-        }
+        var playerId = args.playerId, newScore = args.newScore, detailledScore = args.detailledScore;
+        (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.toValue(newScore);
+        this.displayScoring("player-table-".concat(playerId, "-cards"), this.getPlayerColor(playerId), detailledScore.points, ANIMATION_MS * 3);
+        this.setRoundResultForPlayer(playerId, detailledScore);
     };
-    Pixies.prototype.notif_newRound = function () { };
     Pixies.prototype.notif_endRound = function (args) {
         return __awaiter(this, void 0, void 0, function () {
             var cards;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        document.getElementById("result").innerHTML = "";
                         cards = this.tableCenter.getTableCards();
                         this.playersTables.forEach(function (playerTable) { return cards.push.apply(cards, playerTable.getAllCards()); });
                         return [4 /*yield*/, this.tableCenter.deck.addCards(cards, undefined, { visible: false })];
@@ -2724,7 +2754,7 @@ var Pixies = /** @class */ (function () {
     Pixies.prototype.format_string_recursive = function (log, args) {
         try {
             if (log && args && !args.processed) {
-                ['discardNumber', 'roundPoints', 'cardsPoints', 'colorBonus', 'cardName', 'cardName1', 'cardName2', 'cardName3', 'cardColor', 'cardColor1', 'cardColor2', 'cardColor3', 'points', 'result'].forEach(function (field) {
+                ['roundNumber', 'value', 'incScore'].forEach(function (field) {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
                         args[field] = "<strong>".concat(_(args[field]), "</strong>");
                     }

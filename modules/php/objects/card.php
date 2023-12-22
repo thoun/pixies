@@ -1,7 +1,7 @@
 <?php
 
 class CardType {
-    public int $value;
+    public ?int $value;
     public int $spirals; // -1 = 1 per color
     public int $crosses;
   
@@ -31,6 +31,8 @@ class Card extends CardType {
             $this->value = $cardType->value;
             $this->spirals = $cardType->spirals;
             $this->crosses = $cardType->crosses;
+        } else {
+            $this->value = null;
         }
     } 
 

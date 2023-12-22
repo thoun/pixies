@@ -13,6 +13,13 @@ interface Card {
     crosses: number;
 }
 
+interface DetailledScore {
+    validatedCardPoints: number;
+    largestColorZonePoints: number;
+    spiralsAndCrossesPoints: number;
+    points: number;
+}
+
 interface PixiesPlayer extends Player {
     playerNo: number;
     cards: { [slot: number]: Card[] };
@@ -33,6 +40,8 @@ interface PixiesGamedatas {
     // Add here variables you set up in getAllDatas
     remainingCardsInDeck: number;
     tableCards: Card[];
+    roundResult?: { [playerId: number]: DetailledScore };
+    roundNumber: number;
 }
 
 interface PixiesGame extends Game {
@@ -52,6 +61,10 @@ interface EnteringChooseCardArgs {
 
 interface EnteringPlayCardArgs {
     spaces: number[];
+}
+
+interface NotifNewRoundArgs {
+    round: number;
 }
 
 interface NotifNewTurnArgs {
@@ -75,6 +88,7 @@ interface NotifScoreArgs {
     playerId: number;
     newScore: number;
     incScore: number;
+    detailledScore: DetailledScore;
 }
 
 interface NotifEndRoundArgs {
