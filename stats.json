@@ -1,180 +1,85 @@
 {
-    "table": {
-        "turnsNumber": {
-            "id": 11,
-            "name": "Number of turns",
-            "type": "int"
-        },
-        "takeCardFromDeck": {
-            "id": 12,
-            "name": "Cards taken from deck",
-            "type": "int"
-        },
-        "takeFromDiscard": {
-            "id": 13,
-            "name": "Cards taken from discard",
-            "type": "int"
-        },
-        "playedDuoCards": {
-            "id": 14,
-            "name": "Played duo cards",
-            "type": "int"
-        },
-        "playedDuoCards1": {
-            "id": 15,
-            "name": "Played duo crab cards",
-            "type": "int"
-        },
-        "playedDuoCards2": {
-            "id": 16,
-            "name": "Played duo boat cards",
-            "type": "int"
-        },
-        "playedDuoCards3": {
-            "id": 17,
-            "name": "Played duo fish cards",
-            "type": "int"
-        },
-        "playedDuoCards4": {
-            "id": 18,
-            "name": "Played duo swimmer\/shark cards",
-            "type": "int"
-        },
-        "winWithMermaids": {
-            "id": 19,
-            "name": "Win with 4 Mermaids",
-            "type": "bool"
-        },
-        "lastChanceBetWon": {
-            "id": 23,
-            "name": "Last chance bet won",
-            "type": "int"
-        },
-        "lastChanceBetLost": {
-            "id": 24,
-            "name": "Last chance bet lost",
-            "type": "int"
-        },
-        "cardsCollected2": {
-            "id": 25,
-            "name": "Duo cards collected",
-            "type": "int"
-        },
-        "cardsCollected1": {
-            "id": 26,
-            "name": "Mermaid cards collected",
-            "type": "int"
-        },
-        "cardsCollected3": {
-            "id": 27,
-            "name": "Collector cards collected",
-            "type": "int"
-        },
-        "cardsCollected4": {
-            "id": 28,
-            "name": "Point Multiplier cards collected",
-            "type": "int"
-        },
-        "playedDuoCards5": {
-            "id": 29,
-            "name": "Played duo swimmer\/jellyfish cards",
-            "type": "int"
-        },
-        "playedDuoCards6": {
-            "id": 30,
-            "name": "Played duo crab\/lobster cards",
-            "type": "int"
-        },
+    "table": {        
         "roundNumber": {
             "id": 10,
             "name": "Round number",
             "type": "int"
-        }
-    },
-    "player": {
+        },
         "turnsNumber": {
             "id": 11,
             "name": "Number of turns",
             "type": "int"
         },
-        "takeCardFromDeck": {
+        "cardPlayedEmptySpaceVisible": {
             "id": 12,
-            "name": "Cards taken from deck",
+            "name": "Cards played on empty space (visible)",
             "type": "int"
         },
-        "takeFromDiscard": {
+        "cardPlayedEmptySpaceHidden": {
             "id": 13,
-            "name": "Cards taken from discard",
+            "name": "Cards played on empty space (hidden)",
             "type": "int"
         },
-        "playedDuoCards": {
+        "validatedCard": {
             "id": 14,
-            "name": "Played duo cards",
+            "name": "Validated cards",
             "type": "int"
         },
-        "playedDuoCards1": {
-            "id": 15,
-            "name": "Played duo crab cards",
+        "pointsValidatedCard": {
+            "id": 20,
+            "name": "Points gained with validated cards",
             "type": "int"
         },
-        "playedDuoCards2": {
-            "id": 16,
-            "name": "Played duo boat cards",
+        "pointsSpirals": {
+            "id": 21,
+            "name": "Points gained with spirals",
             "type": "int"
         },
-        "playedDuoCards3": {
-            "id": 17,
-            "name": "Played duo fish cards",
+        "pointsLostCrosses": {
+            "id": 22,
+            "name": "Points lost with crosses",
             "type": "int"
         },
-        "playedDuoCards4": {
-            "id": 18,
-            "name": "Played duo swimmer\/shark cards",
-            "type": "int"
-        },
-        "winWithMermaids": {
-            "id": 19,
-            "name": "Win with 4 Mermaids",
-            "type": "bool"
-        },
-        "lastChanceBetWon": {
+        "pointsColorZone": {
             "id": 23,
-            "name": "Last chance bet won",
+            "name": "Points gained with largest color zone",
+            "type": "int"
+        }
+    },
+    "player": {
+        "cardPlayedEmptySpaceVisible": {
+            "id": 12,
+            "name": "Cards played on empty space (visible)",
             "type": "int"
         },
-        "lastChanceBetLost": {
-            "id": 24,
-            "name": "Last chance bet lost",
+        "cardPlayedEmptySpaceHidden": {
+            "id": 13,
+            "name": "Cards played on empty space (hidden)",
             "type": "int"
         },
-        "cardsCollected2": {
-            "id": 25,
-            "name": "Duo cards collected",
+        "validatedCard": {
+            "id": 14,
+            "name": "Validated cards",
             "type": "int"
         },
-        "cardsCollected1": {
-            "id": 26,
-            "name": "Mermaid cards collected",
+        "pointsValidatedCard": {
+            "id": 20,
+            "name": "Points gained with validated cards",
             "type": "int"
         },
-        "cardsCollected3": {
-            "id": 27,
-            "name": "Collector cards collected",
+        "pointsSpirals": {
+            "id": 21,
+            "name": "Points gained with spirals",
             "type": "int"
         },
-        "cardsCollected4": {
-            "id": 28,
-            "name": "Point Multiplier cards collected",
+        "pointsLostCrosses": {
+            "id": 22,
+            "name": "Points lost with crosses",
             "type": "int"
         },
-        "playedDuoCards5": {
-            "id": 29,
-            "name": "Played duo swimmer\/jellyfish cards",
-            "type": "int"
-        },
-        "playedDuoCards6": {
-            "id": 30,
-            "name": "Played duo crab\/lobster cards",
+        "pointsColorZone": {
+            "id": 23,
+            "name": "Points gained with largest color zone",
             "type": "int"
         }
     }

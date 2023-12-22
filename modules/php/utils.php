@@ -232,7 +232,8 @@ trait UtilTrait {
             $visibleCards = $this->getVisibleCards($playerId);
 
             $detailledScore->validatedCardPoints = 0;
-            $detailledScore->spiralsAndCrossesPoints = 0;
+            $spiralsPoints = 0;
+            $crossesPoints = 0;
             $largestColorZone = 0;
             $detailledScore->largestColorZonePoints = 0;
 
@@ -246,13 +247,13 @@ trait UtilTrait {
                 if ($card) {
                     if ($card->spirals != 0) {
                         if ($card->spirals == -1) {
-                            $detailledScore->spiralsAndCrossesPoints += count(array_filter($visibleCards, fn($c) => $c && in_array($c->color, [0, $card->color])));
+                            $spiralsPoints += count(array_filter($visibleCards, fn($c) => $c && in_array($c->color, [0, $card->color])));
                         } else {
-                            $detailledScore->spiralsAndCrossesPoints += $card->spirals;
+                            $spiralsPoints += $card->spirals;
                         }
                     }
                     if ($card->crosses != 0) {
-                        $detailledScore->spiralsAndCrossesPoints -= $card->crosses;
+                        $crossesPoints += $card->crosses;
                     }
                     $colorZone = $this->getLargestColorZone($visibleCards);
                     if ($colorZone > $largestColorZone) {
@@ -261,10 +262,20 @@ trait UtilTrait {
                 }
             }
 
+            $detailledScore->spiralsAndCrossesPoints = $spiralsPoints - $crossesPoints;
             $detailledScore->largestColorZonePoints = $largestColorZone * ($roundNumber + 1);
 
             $detailledScore->points = $detailledScore->validatedCardPoints + $detailledScore->spiralsAndCrossesPoints + $detailledScore->largestColorZonePoints;
-            $result[$playerId] = $detailledScore;            
+            $result[$playerId] = $detailledScore;  
+        
+            $this->incStat($detailledScore->validatedCardPoints, 'pointsValidatedCard');
+            $this->incStat($detailledScore->validatedCardPoints, 'pointsValidatedCard', $playerId);
+            $this->incStat($spiralsPoints, 'pointsSpirals');
+            $this->incStat($spiralsPoints, 'pointsSpirals', $playerId);
+            $this->incStat($crossesPoints, 'pointsLostCrosses');
+            $this->incStat($crossesPoints, 'pointsLostCrosses', $playerId);
+            $this->incStat($detailledScore->largestColorZonePoints, 'pointsColorZone');
+            $this->incStat($detailledScore->largestColorZonePoints, 'pointsColorZone', $playerId);
         }
 
         $this->setGlobalVariable(ROUND_RESULT, $result);

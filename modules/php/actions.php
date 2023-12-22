@@ -62,6 +62,10 @@ trait ActionTrait {
         $this->cards->moveCard($card->id, "player-$playerId-$space", $count);
         $card->locationArg = $count;
 
+        $statName = $space == $card->value ? 'cardPlayedEmptySpaceVisible' : 'cardPlayedEmptySpaceHidden';
+        $this->incStat(1, $statName);
+        $this->incStat(1, $statName, $playerId);
+
         self::notifyAllPlayers('playCard', clienttranslate('${player_name} plays a ${color} card on space ${value}'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
@@ -111,6 +115,9 @@ trait ActionTrait {
             'value' => $space, // for log
             'i18n' => ['color'],
         ]);
+        
+        $this->incStat(1, 'validatedCard');
+        $this->incStat(1, 'validatedCard', $playerId);
 
         $this->gamestate->nextState('next');
     }

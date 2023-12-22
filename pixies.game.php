@@ -87,17 +87,14 @@ class Pixies extends Table {
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
         $this->initStat('table', 'roundNumber', 0); 
+        $this->initStat('table', 'turnsNumber', 0);
         foreach(['table', 'player'] as $statType) {
-            $this->initStat($statType, 'turnsNumber', 0);
-            $this->initStat($statType, 'takeCardFromDeck', 0);
-            $this->initStat($statType, 'takeFromDiscard', 0);
-            $this->initStat($statType, 'playedDuoCards', 0);
-            $this->initStat($statType, 'lastChanceBetWon', 0);
-            $this->initStat($statType, 'lastChanceBetLost', 0);
-            foreach([1,2,3,4] as $number) {
-                $this->initStat($statType, 'cardsCollected'.$number, 0);
+            foreach([
+                'cardPlayedEmptySpaceVisible', 'cardPlayedEmptySpaceHidden', 'validatedCard', 
+                'pointsValidatedCard', 'pointsSpirals', 'pointsLostCrosses', 'pointsColorZone',
+            ] as $statName) {
+                $this->initStat($statType, $statName, 0);
             }
-            $this->initStat($statType, 'winWithMermaids', 0);
         }
 
         // setup the initial game situation here
