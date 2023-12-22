@@ -4,6 +4,12 @@
     height: 208px;
     border-radius: 10px;
 
+    &.double-size {
+        width: 298px;
+        height: 416px;
+        border-radius: 20px;
+    }
+
     .card-sides {
         .card-side {
             border-radius: 10px;
@@ -70,4 +76,4 @@
       //background: var(--background-darker);
       box-shadow: 0 0 5px 3px #FFFFFF;
     }
-  }
+}

@@ -62,12 +62,23 @@
 
       &.selectable {
         cursor: pointer;
-        animation: selectable-card-animation 1s alternate infinite ease-in-out;
+        animation: selectable-space-animation 1s alternate infinite ease-in-out;
 
         &::before {
-          color: #FFFFFFBB;
+          color: rgba(255, 166, 0, 0.75);
         }
       }
     }
   }
+}
+
+@keyframes selectable-space-animation {
+    0% { 
+      //background: var(--background-lighter);
+      box-shadow: 0 0 5px 3px orange;
+    }
+    100% { 
+      //background: var(--background-darker);
+      box-shadow: 0 0 8px 5px orange;
+    }
 }

@@ -27,7 +27,14 @@ class CardsManager extends CardManager<Card> {
         div.dataset.color = ''+card.color;
         div.dataset.index = ''+card.index;
         if (!ignoreTooltip) {
-            this.game.setTooltip(div.id, this.getTooltip(card) + `<br><i>${this.COLORS[card.color]}</i>`);
+            let tooltip = this.getTooltip(card) + `<br><i>${this.COLORS[card.color]}</i><br>
+            <div class="card double-size">
+                <div class="card-sides">
+                    <div class="card-side front" data-color="${card.color}" data-index="${card.index}">
+                    </div>
+                </div>
+            </div>`;
+            this.game.setTooltip(div.id, tooltip);
         }
     }
 

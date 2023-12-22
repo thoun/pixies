@@ -400,6 +400,11 @@ body > .card {
   height: 208px;
   border-radius: 10px;
 }
+.card.double-size {
+  width: 298px;
+  height: 416px;
+  border-radius: 20px;
+}
 .card .card-sides .card-side {
   border-radius: 10px;
   background-size: auto 100%;
@@ -662,6 +667,7 @@ body > .card {
   top: 0;
   left: 10px;
   text-align: center;
+  z-index: 1;
 }
 #round-counter-wrapper .counter {
   margin-top: 5px;
@@ -777,12 +783,20 @@ body > .card {
 }
 .player-table .player-cards .space.selectable {
   cursor: pointer;
-  animation: selectable-card-animation 1s alternate infinite ease-in-out;
+  animation: selectable-space-animation 1s alternate infinite ease-in-out;
 }
 .player-table .player-cards .space.selectable::before {
-  color: rgba(255, 255, 255, 0.7333333333);
+  color: rgba(255, 166, 0, 0.75);
 }
 
+@keyframes selectable-space-animation {
+  0% {
+    box-shadow: 0 0 5px 3px orange;
+  }
+  100% {
+    box-shadow: 0 0 8px 5px orange;
+  }
+}
 .color-help-folded-content {
   background: url("img/logo-coloradd.svg") white center no-repeat;
   background-size: contain;

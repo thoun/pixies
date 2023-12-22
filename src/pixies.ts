@@ -56,6 +56,7 @@ class Pixies implements PixiesGame {
             zoomControls: {
                 color: 'white',
             },
+            zoomLevels: [0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1, 1.25, 1.5, 1.75, 2],
             localStorageZoomKey: LOCAL_STORAGE_ZOOM_KEY,
         });
         
@@ -106,6 +107,9 @@ class Pixies implements PixiesGame {
             case 'playCard':
                 this.onEnteringPlayCard(args.args);
                 break;
+            case 'keepCard':
+                this.onEnteringKeepCard(args.args);
+                break;
         }
     }
     
@@ -123,9 +127,15 @@ class Pixies implements PixiesGame {
     }
 
     private onEnteringPlayCard(args: EnteringPlayCardArgs) {
+        this.tableCenter.setSelectedCard(args.selectedCard);
+        
         if ((this as any).isCurrentPlayerActive()) {
             this.getCurrentPlayerTable()?.setSelectableSpaces(args.spaces);
         }
+    }
+
+    private onEnteringKeepCard(args: EnteringKeepCardArgs) {
+        this.tableCenter.setSelectedCard(args.selectedCard);
     }
 
     public onLeavingState(stateName: string) {
@@ -138,15 +148,23 @@ class Pixies implements PixiesGame {
             case 'playCard':
                 this.onLeavingPlayCard();
                 break;
+            case 'keepCard':
+                this.onLeavingKeepCard();
+                break;
         }
     }
     
-    private onLeavingChooseCard() {
+    private onLeavingChooseCard() {      
         this.tableCenter.makeCardsSelectable(false);
     }
 
     private onLeavingPlayCard() {
+        //this.tableCenter.removeSelectedCard();  
         this.getCurrentPlayerTable()?.setSelectableSpaces([]);
+    }
+
+    private onLeavingKeepCard() {
+        //this.tableCenter.removeSelectedCard();  
     }
 
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
@@ -155,6 +173,9 @@ class Pixies implements PixiesGame {
     public onUpdateActionButtons(stateName: string, args: any) {
         if ((this as any).isCurrentPlayerActive()) {
             switch (stateName) {
+                case 'playCard':
+                    (this as any).addActionButton(`cancel_button`, _('Cancel'), () => this.cancel(), null, null, 'gray');
+                    break;
                 case 'keepCard':
                     const labels = [
                         _("Keep the card on the table"),
@@ -374,6 +395,14 @@ class Pixies implements PixiesGame {
         }
 
         this.takeAction('seen');
+    }
+
+    public cancel() {
+        if(!(this as any).checkAction('cancel')) {
+            return;
+        }
+
+        this.takeAction('cancel');
     }
 
     public takeAction(action: string, data?: any) {

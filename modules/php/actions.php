@@ -20,14 +20,18 @@ trait ActionTrait {
         if ($card->location != 'table') {
             throw new BgaUserException("You annot choose this card");
         }
+        
+        $stateName = $this->gamestate->state()['name']; 
+        $isChangeOfCard = $stateName === 'playCard' || $stateName === 'keepCard';
+        if ($isChangeOfCard) {
+            $this->gamestate->nextState('cancel');
+        }
 
+        $this->applyChooseCard($playerId, $card);
+    }
+
+    function applyChooseCard(int $playerId, Card $card) {
         $this->setGlobalVariable(SELECTED_CARD_ID, $card->id);
-
-        self::notifyPlayer($playerId, 'chooseCard', '', [
-            'playerId' => $playerId,
-            'player_name' => $this->getPlayerName($playerId),
-            'card' => $card,
-        ]);
 
         $spaceCards = $this->getCardsFromSpace($playerId, $card->value);
 
@@ -108,5 +112,11 @@ trait ActionTrait {
         $playerId = intval($this->getCurrentPlayerId());
 
         $this->gamestate->setPlayerNonMultiactive($playerId, 'endRound');
+    }
+
+    public function cancel() {
+        $this->checkAction('cancel');
+
+        $this->gamestate->nextState('cancel');
     }
 }

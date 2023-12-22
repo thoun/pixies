@@ -2204,7 +2204,8 @@ var CardsManager = /** @class */ (function (_super) {
         div.dataset.color = '' + card.color;
         div.dataset.index = '' + card.index;
         if (!ignoreTooltip) {
-            this.game.setTooltip(div.id, this.getTooltip(card) + "<br><i>".concat(this.COLORS[card.color], "</i>"));
+            var tooltip = this.getTooltip(card) + "<br><i>".concat(this.COLORS[card.color], "</i><br>\n            <div class=\"card double-size\">\n                <div class=\"card-sides\">\n                    <div class=\"card-side front\" data-color=\"").concat(card.color, "\" data-index=\"").concat(card.index, "\">\n                    </div>\n                </div>\n            </div>");
+            this.game.setTooltip(div.id, tooltip);
         }
     };
     CardsManager.prototype.getTooltip = function (card) {
@@ -2284,6 +2285,9 @@ var TableCenter = /** @class */ (function () {
     };
     TableCenter.prototype.makeCardsSelectable = function (selectable) {
         this.tableCards.setSelectionMode(selectable ? 'single' : 'none');
+    };
+    TableCenter.prototype.setSelectedCard = function (selectedCard) {
+        this.game.cardsManager.getCardElement(selectedCard).classList.add('bga-cards_selected-card');
     };
     return TableCenter;
 }());
@@ -2401,6 +2405,7 @@ var Pixies = /** @class */ (function () {
             zoomControls: {
                 color: 'white',
             },
+            zoomLevels: [0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1, 1.25, 1.5, 1.75, 2],
             localStorageZoomKey: LOCAL_STORAGE_ZOOM_KEY,
         });
         this.roundCounter = new ebg.counter();
@@ -2444,6 +2449,9 @@ var Pixies = /** @class */ (function () {
             case 'playCard':
                 this.onEnteringPlayCard(args.args);
                 break;
+            case 'keepCard':
+                this.onEnteringKeepCard(args.args);
+                break;
         }
     };
     Pixies.prototype.setGamestateDescription = function (property) {
@@ -2460,9 +2468,13 @@ var Pixies = /** @class */ (function () {
     };
     Pixies.prototype.onEnteringPlayCard = function (args) {
         var _a;
+        this.tableCenter.setSelectedCard(args.selectedCard);
         if (this.isCurrentPlayerActive()) {
             (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setSelectableSpaces(args.spaces);
         }
+    };
+    Pixies.prototype.onEnteringKeepCard = function (args) {
+        this.tableCenter.setSelectedCard(args.selectedCard);
     };
     Pixies.prototype.onLeavingState = function (stateName) {
         log('Leaving state: ' + stateName);
@@ -2473,6 +2485,9 @@ var Pixies = /** @class */ (function () {
             case 'playCard':
                 this.onLeavingPlayCard();
                 break;
+            case 'keepCard':
+                this.onLeavingKeepCard();
+                break;
         }
     };
     Pixies.prototype.onLeavingChooseCard = function () {
@@ -2480,7 +2495,11 @@ var Pixies = /** @class */ (function () {
     };
     Pixies.prototype.onLeavingPlayCard = function () {
         var _a;
+        //this.tableCenter.removeSelectedCard();  
         (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setSelectableSpaces([]);
+    };
+    Pixies.prototype.onLeavingKeepCard = function () {
+        //this.tableCenter.removeSelectedCard();  
     };
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
     //                        action status bar (ie: the HTML links in the status bar).
@@ -2489,6 +2508,9 @@ var Pixies = /** @class */ (function () {
         var _this = this;
         if (this.isCurrentPlayerActive()) {
             switch (stateName) {
+                case 'playCard':
+                    this.addActionButton("cancel_button", _('Cancel'), function () { return _this.cancel(); }, null, null, 'gray');
+                    break;
                 case 'keepCard':
                     var labels_1 = [
                         _("Keep the card on the table"),
@@ -2634,6 +2656,12 @@ var Pixies = /** @class */ (function () {
             return;
         }
         this.takeAction('seen');
+    };
+    Pixies.prototype.cancel = function () {
+        if (!this.checkAction('cancel')) {
+            return;
+        }
+        this.takeAction('cancel');
     };
     Pixies.prototype.takeAction = function (action, data) {
         data = data || {};

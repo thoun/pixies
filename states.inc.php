@@ -99,6 +99,7 @@ $playerActionsGameStates = [
         "type" => "activeplayer",    
         "args" => "argPlayCard",    
         "possibleactions" => [ 
+            "chooseCard",
             "playCard",
             "cancel",
         ],
@@ -116,6 +117,7 @@ $playerActionsGameStates = [
         "type" => "activeplayer", 
         "args" => "argKeepCard",    
         "possibleactions" => [ 
+            "chooseCard",
             "keepCard",
             "cancel",
         ],

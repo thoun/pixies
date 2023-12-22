@@ -31,4 +31,8 @@ class TableCenter {
     public makeCardsSelectable(selectable: boolean) {
         this.tableCards.setSelectionMode(selectable ? 'single' : 'none');
     }
+
+    public setSelectedCard(selectedCard: Card) {
+        this.game.cardsManager.getCardElement(selectedCard).classList.add('bga-cards_selected-card');
+    }
 }

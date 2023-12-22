@@ -60,7 +60,13 @@ interface EnteringChooseCardArgs {
 }
 
 interface EnteringPlayCardArgs {
+    selectedCard: Card;
     spaces: number[];
+}
+
+interface EnteringKeepCardArgs {
+    selectedCard: Card;
+    cards: Card[];
 }
 
 interface NotifNewRoundArgs {
