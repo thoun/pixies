@@ -51,6 +51,11 @@ trait ActionTrait {
         }
 
         $playerId = intval($this->getActivePlayerId());
+
+        $this->applyPlayCard($playerId, $space);
+    }
+
+    public function applyPlayCard(int $playerId, int $space) {
         $card = $this->getSelectedCard();
 
         $count = intval($this->cards->countCardInLocation("player-$playerId-$space"));
@@ -79,6 +84,10 @@ trait ActionTrait {
 
         $playerId = intval($this->getActivePlayerId());
 
+        $this->applyKeepCard($playerId, $index);
+    }
+
+    public function applyKeepCard(int $playerId, int $index) {
         $card = $this->getSelectedCard();
         $space = $card->value;
         $spaceCard = $this->getCardsFromSpace($playerId, $space)[0];

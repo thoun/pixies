@@ -2287,13 +2287,17 @@ var TableCenter = /** @class */ (function () {
         this.tableCards.setSelectionMode(selectable ? 'single' : 'none');
     };
     TableCenter.prototype.setSelectedCard = function (selectedCard) {
-        this.game.cardsManager.getCardElement(selectedCard).classList.add('bga-cards_selected-card');
+        var _a;
+        (_a = this.game.cardsManager.getCardElement(selectedCard)) === null || _a === void 0 ? void 0 : _a.classList.add('bga-cards_selected-card');
     };
     return TableCenter;
 }());
 var isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
 ;
 var log = isDebug ? console.log.bind(window.console) : function () { };
+function sleep(ms) {
+    return new Promise(function (r) { return setTimeout(r, ms); });
+}
 var PlayerTable = /** @class */ (function () {
     function PlayerTable(game, player) {
         var _this = this;
@@ -2351,11 +2355,17 @@ var PlayerTable = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         this.game.cardsManager.updateCardInformations(hiddenCard);
-                        return [4 /*yield*/, this.tableCards[space].addCard(hiddenCard)];
+                        return [4 /*yield*/, Promise.all([
+                                this.tableCards[space].addCard(hiddenCard),
+                                this.game.animationManager.animationsActive() ? sleep(ANIMATION_MS) : Promise.resolve(true),
+                            ])];
                     case 1:
                         _a.sent();
                         this.game.cardsManager.updateCardInformations(visibleCard);
-                        return [4 /*yield*/, this.tableCards[space].addCard(visibleCard)];
+                        return [4 /*yield*/, Promise.all([
+                                this.tableCards[space].addCard(visibleCard),
+                                this.game.animationManager.animationsActive() ? sleep(ANIMATION_MS) : Promise.resolve(true),
+                            ])];
                     case 2:
                         _a.sent();
                         return [2 /*return*/];

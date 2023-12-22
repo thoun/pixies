@@ -1,6 +1,10 @@
 const isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;;
 const log = isDebug ? console.log.bind(window.console) : function () { };
 
+function sleep(ms: number){
+    return new Promise((r) => setTimeout(r, ms));
+}
+
 class PlayerTable {
     public playerId: number;
 
@@ -60,10 +64,15 @@ class PlayerTable {
     
     public async keepCard(hiddenCard: Card, visibleCard: Card, space: number): Promise<any> {
         this.game.cardsManager.updateCardInformations(hiddenCard);
-        await this.tableCards[space].addCard(hiddenCard);
-
+        await Promise.all([
+            this.tableCards[space].addCard(hiddenCard),
+            this.game.animationManager.animationsActive() ? sleep(ANIMATION_MS) : Promise.resolve(true),
+        ]);
         this.game.cardsManager.updateCardInformations(visibleCard);
-        await this.tableCards[space].addCard(visibleCard);
+        await Promise.all([
+            this.tableCards[space].addCard(visibleCard),
+            this.game.animationManager.animationsActive() ? sleep(ANIMATION_MS) : Promise.resolve(true),
+        ]);
     }
     
     public setSelectableSpaces(spaces: number[]) {

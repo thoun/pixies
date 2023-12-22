@@ -33,6 +33,6 @@ class TableCenter {
     }
 
     public setSelectedCard(selectedCard: Card) {
-        this.game.cardsManager.getCardElement(selectedCard).classList.add('bga-cards_selected-card');
+        this.game.cardsManager.getCardElement(selectedCard)?.classList.add('bga-cards_selected-card');
     }
 }

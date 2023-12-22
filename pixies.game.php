@@ -183,6 +183,17 @@ class Pixies extends Table {
     	
         if ($state['type'] === "activeplayer") {
             switch ($statename) {
+                case 'chooseCard':
+                    $tableCards = $this->getCardsFromDb($this->cards->getCardsInLocation('table'));
+                    $this->applyChooseCard($active_player, $tableCards[bga_rand(0, count($tableCards) - 1)]);
+                    break;
+                case 'playCard':
+                    $spaces = $this->argPlayCard()['spaces'];
+                    $this->applyPlayCard($active_player, $spaces[bga_rand(0, count($spaces) - 1)]);
+                    break;
+                case 'keepCard':
+                    $this->applyKeepCard($active_player, bga_rand(0, 1));
+                    break;
                 default:
                     $this->gamestate->nextState("zombiePass");
                 	break;
