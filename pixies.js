@@ -2407,7 +2407,6 @@ var Pixies = /** @class */ (function () {
         "gamedatas" argument contains all datas retrieved by your "getAllDatas" PHP method.
     */
     Pixies.prototype.setup = function (gamedatas) {
-        var _this = this;
         log("Starting game setup");
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
@@ -2432,9 +2431,8 @@ var Pixies = /** @class */ (function () {
         new HelpManager(this, {
             buttons: [
                 new BgaHelpPopinButton({
-                    title: _("Card help").toUpperCase(),
+                    title: _("Scoring"),
                     html: this.getHelpHtml(),
-                    onPopinCreated: function () { return _this.getHelpHtml(); },
                     buttonBackground: '#3d5c28',
                 }),
                 new BgaHelpExpandableButton({
@@ -2610,16 +2608,7 @@ var Pixies = /** @class */ (function () {
         this.playCard(space);
     };
     Pixies.prototype.getHelpHtml = function () {
-        var _this = this;
-        var duoCardsNumbers = [1, 2, 3, 4, 5];
-        var multiplierNumbers = [1, 2, 3, 4];
-        var duoCards = duoCardsNumbers.map(function (family) { return "\n        <div class=\"help-section\">\n            <div id=\"help-pair-".concat(family, "\"></div>\n            <div>").concat(_this.cardsManager.getTooltip(2, family), "</div>\n        </div>\n        "); }).join('');
-        var duoSection = "\n        ".concat(duoCards, "\n        ").concat(_("Note: The points for duo cards count whether the cards have been played or not. However, the effect is only applied when the player places the two cards in front of them."));
-        var mermaidSection = "\n        <div class=\"help-section\">\n            <div id=\"help-mermaid\"></div>\n            <div>".concat(this.cardsManager.getTooltip(1), "</div>\n        </div>");
-        var collectorSection = [1, 2, 3, 4].map(function (family) { return "\n        <div class=\"help-section\">\n            <div id=\"help-collector-".concat(family, "\"></div>\n            <div>").concat(_this.cardsManager.getTooltip(3, family), "</div>\n        </div>\n        "); }).join('');
-        var multiplierSection = multiplierNumbers.map(function (family) { return "\n        <div class=\"help-section\">\n            <div id=\"help-multiplier-".concat(family, "\"></div>\n            <div>").concat(_this.cardsManager.getTooltip(4, family), "</div>\n        </div>\n        "); }).join('');
-        var html = "\n        <div id=\"help-popin\">\n            ".concat(_("<strong>Important:</strong> When it is said that the player counts or scores the points on their cards, it means both those in their hand and those in front of them."), "\n\n            <h1>").concat(_("Duo cards"), "</h1>\n            ").concat(duoSection, "\n            <h1>").concat(_("Mermaid cards"), "</h1>\n            ").concat(mermaidSection, "\n            <h1>").concat(_("Collector cards"), "</h1>\n            ").concat(collectorSection, "\n            <h1>").concat(_("Point Multiplier cards"), "</h1>\n            ").concat(multiplierSection, "\n        ");
-        html += "\n        </div>\n        ";
+        var html = "\n        <div id=\"help-popin\">\n            <h1>".concat(_("Validated cards"), "</h1>\n            ").concat(_("Each validated card earns as many points as the number on it."), "\n\n            <h1>").concat(_("Symbols"), "</h1>\n            ").concat(_("A spiral earns 1 point."), "<br>\n            ").concat(_("A cross makes the player lose 1 point."), "<br>\n            ").concat(_("Spiral"), " / <div class=\"color-icon\" data-row=\"0\"></div> : ").concat(_("1 spiral for each faceup card of the indicated color."), "<br><br>            \n            ").concat(_("<strong>Note:</strong> All faceup cards are taken into account, whether they are validated or not."), "\n\n            <h1>").concat(_("The player’s largest color zone"), "</h1>\n            ").concat(_("A color zone is made up of at least 2 cards of the same color touching along a side. Diagonals do not count. Each card that is part of the player’s largest zone earns:"), "\n            <ul>\n            ").concat([1, 2, 3].map(function (roundNumber) { return _("<li>${points} points in round ${round}</li>").replace('${points}', "".concat(roundNumber + 1)).replace('${round}', "".concat(roundNumber)); }).join(''), "\n            </ul>\n            ").concat(_("<strong>Note:</strong> All faceup cards are taken into account, whether they are validated or not."), "\n            <br><br>\n            ").concat(_("A multi-colored card has all the colors at the same time. This means that it counts for the player’s color zone of course, but also for all their special cards as well."), "\n        </div>\n        ");
         return html;
     };
     Pixies.prototype.getColorAddHtml = function () {

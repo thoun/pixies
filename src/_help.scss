@@ -9,20 +9,6 @@
     align-items: center;
     justify-items: center;
     background: #c3dfa5;
-    
-    .color-icon {
-        display: inline-block;
-        width: 28px;
-        height: 28px;
-        background-image: url('img/cards0.jpg');
-        background-position-y: 56px;
-        border-radius: 5px;
-
-        &[data-row="0"] { background-position-x: -185px; }
-        &[data-row="1"] { background-position-x: -86px; }
-        &[data-row="2"] { background-position-x: -119px; }
-        &[data-row="3"] { background-position-x: -152px; }
-    }
 
     .label {
         font-size: 10pt;
@@ -35,95 +21,31 @@
         color: black;      
     }
 }
+    
+.color-icon {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    background-image: url('img/cards0.jpg');
+    background-position-y: 56px;
+    border-radius: 5px;
+    vertical-align: middle;
+
+    &[data-row="0"] { background-position-x: -185px; }
+    &[data-row="1"] { background-position-x: -86px; }
+    &[data-row="2"] { background-position-x: -119px; }
+    &[data-row="3"] { background-position-x: -152px; }
+}
 
 
 #popin_bgaHelpDialog {
-    background: #ebdbcb;
+    background: white;
 }
 
 #help-popin {
-    h1, h2 {
-        padding: 5px;
-        border-radius: 10px;
-        font-weight: normal;
-        color: white;
-        font-family: "komika parch";
-        text-align: center;
-    }
-
     h1 {
-        background: #571f13;
+        color: #3d5c28;
         font-size: 22px;
         margin: 10px 0;
-    }
-
-    h2 {
-        background: #C1262F;
-        font-size: 18px;
-        margin: 8px 0;
-    }
-
-    .row {
-        display: grid;
-        align-items: center;
-        justify-items: center;
-        grid-template-columns: 64px auto;
-        gap: 10px;
-
-        .help-icon {
-            display: inline-block;
-            width: 48px;
-            height: 48px;
-            background-image: url('img/cards.jpg');
-            border-radius: 5px;
-    
-            &.card {
-                background-position: -1010px -232px;
-            }
-            &.token {
-                background-position: -1616px -232px;
-            }
-
-            &.score {
-                width: 40px;
-                height: 40px;
-            }
-    
-            &.by-color {
-                background-position: -8px -8px;
-            }
-            &.different {
-                background-position: -1220px -572px;
-            }
-            &.by-resource {
-                background-position: -614px -854px;
-            }
-            &.by-type {
-                background-position: -1826px -290px;
-            }
-        }
-
-        &.help-chief {
-            grid-template-columns: 108px auto;
-
-            .help-icon {
-                width: 100px;
-                background-image: url('img/cards0.jpg');
-                background-position-y: -231px;
-
-                @for $i from 1 through 4 {
-                    &[data-power="#{$i}"] {
-                        background-position-x: #{-910px - 202px * ($i - 1)};
-                    }
-                }
-            }
-        }
-
-        .help-label {
-            width: 100%;
-            display: flex;
-            justify-content: start;
-            align-items: center;
-        }
     }
 }

@@ -69,9 +69,8 @@ class Pixies implements PixiesGame {
         new HelpManager(this, { 
             buttons: [
                 new BgaHelpPopinButton({
-                    title: _("Card help").toUpperCase(),
+                    title: _("Scoring"),
                     html: this.getHelpHtml(),
-                    onPopinCreated: () => this.getHelpHtml(),
                     buttonBackground: '#3d5c28',
                 }),
                 new BgaHelpExpandableButton({
@@ -277,55 +276,26 @@ class Pixies implements PixiesGame {
     }
 
     private getHelpHtml() {
-        const duoCardsNumbers = [1, 2, 3, 4, 5];
-        const multiplierNumbers = [1, 2, 3, 4];
-
-        const duoCards = duoCardsNumbers.map(family => `
-        <div class="help-section">
-            <div id="help-pair-${family}"></div>
-            <div>${this.cardsManager.getTooltip(2, family)}</div>
-        </div>
-        `).join('');
-
-        const duoSection = `
-        ${duoCards}
-        ${_("Note: The points for duo cards count whether the cards have been played or not. However, the effect is only applied when the player places the two cards in front of them.")}`;
-
-        const mermaidSection = `
-        <div class="help-section">
-            <div id="help-mermaid"></div>
-            <div>${this.cardsManager.getTooltip(1)}</div>
-        </div>`;
-
-        const collectorSection = [1, 2, 3, 4].map(family => `
-        <div class="help-section">
-            <div id="help-collector-${family}"></div>
-            <div>${this.cardsManager.getTooltip(3, family)}</div>
-        </div>
-        `).join('');
-
-        const multiplierSection = multiplierNumbers.map(family => `
-        <div class="help-section">
-            <div id="help-multiplier-${family}"></div>
-            <div>${this.cardsManager.getTooltip(4, family)}</div>
-        </div>
-        `).join('');
         
         let html = `
         <div id="help-popin">
-            ${_("<strong>Important:</strong> When it is said that the player counts or scores the points on their cards, it means both those in their hand and those in front of them.")}
+            <h1>${_("Validated cards")}</h1>
+            ${_("Each validated card earns as many points as the number on it.")}
 
-            <h1>${_("Duo cards")}</h1>
-            ${duoSection}
-            <h1>${_("Mermaid cards")}</h1>
-            ${mermaidSection}
-            <h1>${_("Collector cards")}</h1>
-            ${collectorSection}
-            <h1>${_("Point Multiplier cards")}</h1>
-            ${multiplierSection}
-        `;
-        
-        html += `
+            <h1>${_("Symbols")}</h1>
+            ${_("A spiral earns 1 point.")}<br>
+            ${_("A cross makes the player lose 1 point.")}<br>
+            ${_("Spiral")} / <div class="color-icon" data-row="0"></div> : ${_("1 spiral for each faceup card of the indicated color.")}<br><br>            
+            ${_("<strong>Note:</strong> All faceup cards are taken into account, whether they are validated or not.")}
+
+            <h1>${_("The player’s largest color zone")}</h1>
+            ${_("A color zone is made up of at least 2 cards of the same color touching along a side. Diagonals do not count. Each card that is part of the player’s largest zone earns:")}
+            <ul>
+            ${[1, 2, 3].map(roundNumber => _("<li>${points} points in round ${round}</li>").replace('${points}', `${roundNumber + 1}`).replace('${round}', `${roundNumber}`)).join('')}
+            </ul>
+            ${_("<strong>Note:</strong> All faceup cards are taken into account, whether they are validated or not.")}
+            <br><br>
+            ${_("A multi-colored card has all the colors at the same time. This means that it counts for the player’s color zone of course, but also for all their special cards as well.")}
         </div>
         `;
         
