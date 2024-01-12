@@ -449,6 +449,7 @@ class Pixies implements PixiesGame {
     }
 
     notif_newRound(args: NotifNewRoundArgs) {
+        document.getElementById(`result`).innerHTML = ``;
         const { round } = args;
         this.roundCounter.toValue(round);
     }
@@ -480,7 +481,6 @@ class Pixies implements PixiesGame {
     }
 
     async notif_endRound(args: NotifEndRoundArgs) {
-        document.getElementById(`result`).innerHTML = ``;
         const cards = this.tableCenter.getTableCards();
 
         this.playersTables.forEach(playerTable => cards.push(...playerTable.getAllCards()));

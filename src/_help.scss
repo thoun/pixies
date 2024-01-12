@@ -8,21 +8,20 @@
     grid-template-columns: 40px 80px;
     align-items: center;
     justify-items: center;
-    background: #ebdbcb;
+    background: #c3dfa5;
     
     .color-icon {
         display: inline-block;
-        width: 18px;
-        height: 18px;
+        width: 28px;
+        height: 28px;
         background-image: url('img/cards0.jpg');
-        background-position-x: -80px;
+        background-position-y: 56px;
         border-radius: 5px;
 
-        @for $i from 0 through 4 {
-            &[data-row="#{$i}"] {
-                background-position-y: #{-9px - 282px * $i};
-            }
-        }
+        &[data-row="0"] { background-position-x: -185px; }
+        &[data-row="1"] { background-position-x: -86px; }
+        &[data-row="2"] { background-position-x: -119px; }
+        &[data-row="3"] { background-position-x: -152px; }
     }
 
     .label {
