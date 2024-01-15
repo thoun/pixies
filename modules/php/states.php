@@ -71,6 +71,8 @@ trait StateTrait {
     
 
     function stBeforeEndRound() {
+        $roundNumber = intval($this->getStat('roundNumber'));
+
         $scoreRound = $this->scoreRound();
         
         foreach ($scoreRound as $playerId => $detailledScore) {
@@ -78,9 +80,12 @@ trait StateTrait {
                 'detailledScore' => $detailledScore,
             ]);
         }
-        $this->setGlobalVariable(ROUND_RESULT, $scoreRound);
+        $this->setGlobalVariable(ROUND_RESULT.$roundNumber, $scoreRound);
+        self::notifyAllPlayers('roundResult', '', [
+            'roundResult' => $scoreRound,
+            'round' => $roundNumber,
+        ]);
 
-        $roundNumber = intval($this->getStat('roundNumber'));
         $lastRound = $roundNumber >= 3;
         if ($lastRound) {
             $this->gamestate->nextState('endRound');
@@ -103,17 +108,11 @@ trait StateTrait {
                 'remainingCardsInDeck' => $this->getRemainingCardsInDeck(),
             ]);
 
-            $this->deleteGlobalVariable(ROUND_RESULT);
             $this->gamestate->nextState('newRound');
         }
     }
 
     function stEndScore() {
-        $playersIds = $this->getPlayersIds();
-
-        foreach ($playersIds as $playerId) {
-        }
-
         $this->gamestate->nextState('endGame');
     }
 }

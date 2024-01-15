@@ -40,7 +40,7 @@ interface PixiesGamedatas {
     // Add here variables you set up in getAllDatas
     remainingCardsInDeck: number;
     tableCards: Card[];
-    roundResult?: { [playerId: number]: DetailledScore };
+    roundResult: { [playerId: number]: DetailledScore }[];
     roundNumber: number;
 }
 
@@ -95,6 +95,11 @@ interface NotifScoreArgs {
     newScore: number;
     incScore: number;
     detailledScore: DetailledScore;
+    round: number;
+}
+
+interface NotifRoundResultArgs {
+    roundResult: { [playerId: number]: DetailledScore };
     round: number;
 }
 

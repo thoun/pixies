@@ -268,8 +268,6 @@ trait UtilTrait {
             $this->incStat($detailledScore->largestColorZonePoints, 'pointsColorZone', $playerId);
         }
 
-        $this->setGlobalVariable(ROUND_RESULT, $result);
-
         return $result;
     }
 }

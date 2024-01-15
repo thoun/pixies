@@ -928,6 +928,8 @@ html, .mode_3d #game_play_area_background {
 #result {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 #result .round-result {
   margin: 10px;

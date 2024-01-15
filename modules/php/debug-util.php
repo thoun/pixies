@@ -25,6 +25,9 @@ trait DebugUtilTrait {
         $this->debugSetCard(2343492, 3, 12);
         $this->debugSetCard(2343492, 1, 14);
         $this->debugSetCard(2343492, 3, 16);
+
+        $card7 = $this->debugGetCardByTypes(3, 14);
+        $this->cards->moveCard($card7->id, 'table');
     }
 
     private function debugGetCardByTypes(int $color, int $index) {

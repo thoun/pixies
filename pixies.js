@@ -2444,8 +2444,8 @@ var Pixies = /** @class */ (function () {
                 }),
             ]
         });
-        if (gamedatas.roundResult) {
-            this.setRoundResult(gamedatas.roundResult, gamedatas.roundNumber);
+        if (gamedatas.roundResult[gamedatas.roundNumber]) {
+            this.setRoundResult(gamedatas.roundResult[gamedatas.roundNumber], gamedatas.roundNumber);
         }
         log("Ending game setup");
     };
@@ -2616,21 +2616,24 @@ var Pixies = /** @class */ (function () {
         return [1, 2, 3, 4].map(function (number, index) { return "<div class=\"color-icon\" data-row=\"".concat(index, "\"></div><span class=\"label\"> ").concat(_this.cardsManager.getColor(number), "</span>"); }).join('');
     };
     Pixies.prototype.setRoundResultForPlayer = function (playerId, detailledScore, round) {
-        if (!document.getElementById("points-".concat(playerId))) {
+        if (!document.getElementById("points-".concat(round, "-").concat(playerId))) {
             var emptyRoundResult_1 = [];
             Object.keys(this.gamedatas.players).forEach(function (id) { return emptyRoundResult_1[id] = null; });
             this.setRoundResult(emptyRoundResult_1, round);
         }
         Object.entries(detailledScore).forEach(function (_a) {
             var key = _a[0], value = _a[1];
-            return document.getElementById("".concat(key, "-").concat(playerId)).innerText = "".concat(value);
+            return document.getElementById("".concat(key, "-").concat(round, "-").concat(playerId)).innerText = "".concat(value);
         });
     };
     Pixies.prototype.setRoundResult = function (roundResult, round) {
         var _this = this;
+        if (this.gamedatas.roundResult[round - 1]) {
+            this.setRoundResult(this.gamedatas.roundResult[round - 1], round - 1);
+        }
         var playersIds = Object.keys(roundResult).map(Number);
-        var html = "<table class='round-result'>\n            <tr><th class=\"empty\"></th>".concat(playersIds.map(function (playerId) { return "<th class=\"name\"><strong style='color: #".concat(_this.getPlayer(playerId).color, ";'>").concat(_this.getPlayer(playerId).name, "</strong></th>"); }).join(''), "</tr>\n            <tr><th class=\"type\"><div class=\"score-icon validated\"></div></th>").concat(playersIds.map(function (playerId) { var _a, _b; return "<td id=\"validatedCardPoints-".concat(playerId, "\">").concat((_b = (_a = roundResult[playerId]) === null || _a === void 0 ? void 0 : _a.validatedCardPoints) !== null && _b !== void 0 ? _b : '', "</td>"); }).join(''), "</tr>\n            <tr><th class=\"type\"><div class=\"score-icon zone\" data-round=\"").concat(round, "\"></div></th>").concat(playersIds.map(function (playerId) { var _a, _b; return "<td id=\"largestColorZonePoints-".concat(playerId, "\">").concat((_b = (_a = roundResult[playerId]) === null || _a === void 0 ? void 0 : _a.largestColorZonePoints) !== null && _b !== void 0 ? _b : '', "</td>"); }).join(''), "</tr>\n            <tr><th class=\"type\"><div class=\"score-icon spirals\"></div></th>").concat(playersIds.map(function (playerId) { var _a, _b; return "<td id=\"spiralsAndCrossesPoints-".concat(playerId, "\">").concat((_b = (_a = roundResult[playerId]) === null || _a === void 0 ? void 0 : _a.spiralsAndCrossesPoints) !== null && _b !== void 0 ? _b : '', "</td>"); }).join(''), "</tr>\n            <tr><th class=\"type\"><div class=\"score-icon sum\"></div></th>").concat(playersIds.map(function (playerId) { var _a, _b; return "<th class=\"sum\" id=\"points-".concat(playerId, "\">").concat((_b = (_a = roundResult[playerId]) === null || _a === void 0 ? void 0 : _a.points) !== null && _b !== void 0 ? _b : '', "</th>"); }).join(''), "</tr>\n        </table>");
-        document.getElementById("result").innerHTML = html;
+        var html = "<table class='round-result'>\n            <tr><th class=\"empty\"></th><th colspan=\"".concat(playersIds.length, "\" class=\"round\">").concat(_("Round"), " <strong>").concat(round, "</strong></th></tr>\n            <tr><th class=\"empty\"></th>").concat(playersIds.map(function (playerId) { return "<th class=\"name\"><strong style='color: #".concat(_this.getPlayer(playerId).color, ";'>").concat(_this.getPlayer(playerId).name, "</strong></th>"); }).join(''), "</tr>\n            <tr><th class=\"type\"><div class=\"score-icon validated\"></div></th>").concat(playersIds.map(function (playerId) { var _a, _b; return "<td id=\"validatedCardPoints-".concat(round, "-").concat(playerId, "\">").concat((_b = (_a = roundResult[playerId]) === null || _a === void 0 ? void 0 : _a.validatedCardPoints) !== null && _b !== void 0 ? _b : '', "</td>"); }).join(''), "</tr>\n            <tr><th class=\"type\"><div class=\"score-icon zone\" data-round=\"").concat(round, "\"></div></th>").concat(playersIds.map(function (playerId) { var _a, _b; return "<td id=\"largestColorZonePoints-".concat(round, "-").concat(playerId, "\">").concat((_b = (_a = roundResult[playerId]) === null || _a === void 0 ? void 0 : _a.largestColorZonePoints) !== null && _b !== void 0 ? _b : '', "</td>"); }).join(''), "</tr>\n            <tr><th class=\"type\"><div class=\"score-icon spirals\"></div></th>").concat(playersIds.map(function (playerId) { var _a, _b; return "<td id=\"spiralsAndCrossesPoints-".concat(round, "-").concat(playerId, "\">").concat((_b = (_a = roundResult[playerId]) === null || _a === void 0 ? void 0 : _a.spiralsAndCrossesPoints) !== null && _b !== void 0 ? _b : '', "</td>"); }).join(''), "</tr>\n            <tr><th class=\"type\"><div class=\"score-icon sum\"></div></th>").concat(playersIds.map(function (playerId) { var _a, _b; return "<th class=\"sum\" id=\"points-".concat(round, "-").concat(playerId, "\">").concat((_b = (_a = roundResult[playerId]) === null || _a === void 0 ? void 0 : _a.points) !== null && _b !== void 0 ? _b : '', "</th>"); }).join(''), "</tr>\n        </table>");
+        document.getElementById("result").insertAdjacentHTML('beforeend', html);
     };
     Pixies.prototype.chooseCard = function (id) {
         if (!this.checkAction('chooseCard')) {
@@ -2694,6 +2697,7 @@ var Pixies = /** @class */ (function () {
             ['keepCard', undefined],
             ['endRound', undefined],
             ['score', ANIMATION_MS * 3],
+            ['roundResult', 0],
         ];
         notifs.forEach(function (notif) {
             dojo.subscribe(notif[0], _this, function (notifDetails) {
@@ -2763,6 +2767,14 @@ var Pixies = /** @class */ (function () {
         (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.toValue(newScore);
         this.displayScoring("player-table-".concat(playerId, "-cards"), this.getPlayerColor(playerId), detailledScore.points, ANIMATION_MS * 3);
         this.setRoundResultForPlayer(playerId, detailledScore, round);
+    };
+    Pixies.prototype.notif_roundResult = function (args) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                this.gamedatas.roundResult[args.round] = args.roundResult;
+                return [2 /*return*/];
+            });
+        });
     };
     Pixies.prototype.notif_endRound = function (args) {
         return __awaiter(this, void 0, void 0, function () {

@@ -135,8 +135,11 @@ class Pixies extends Table {
 
         $result['remainingCardsInDeck'] = $this->getRemainingCardsInDeck();
         $result['tableCards'] = $this->getCardsFromDb($this->cards->getCardsInLocation('table'));
-        $result['roundResult'] = $this->getGlobalVariable(ROUND_RESULT);
         $result['roundNumber'] = intval($this->getStat('roundNumber'));
+        $result['roundResult'] = [];
+        for($i = 1; $i <= 3; $i++) {
+            $result['roundResult'][$i] = $this->getGlobalVariable(ROUND_RESULT.$i);
+        }
   
         return $result;
     }
@@ -152,10 +155,22 @@ class Pixies extends Table {
         (see states.inc.php)
     */
     function getGameProgression() {
-        $maxScore = 100; // TODO
-        $topScore = 0; // TODO
+        $roundNumber = intval($this->getStat('roundNumber'));
+        
+        $playersIds = $this->getPlayersIds();
+        $maxCards = 0;
 
-        return min(100, 100 * $topScore / $maxScore);
+        foreach ($playersIds as $playerId) {
+            $playerCards = $this->getCardsFromSpaces($playerId);
+            $playerCardCount = array_reduce(array_map(fn($cards) => count($cards) > 0 ? 1 : 0, $playerCards), fn($a, $b) => $a + $b, 0);
+
+            if ($playerCardCount > $maxCards) {
+                $maxCards = $playerCardCount;
+            }
+        }
+        $inRoundProgress = $maxCards / 9.0;
+
+        return ($roundNumber - 1 + $inRoundProgress) * 100 / 3;
     }
 
 //////////////////////////////////////////////////////////////////////////////
