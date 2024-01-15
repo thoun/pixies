@@ -60,16 +60,20 @@ html, .mode_3d #game_play_area_background {
   vertical-align: middle;
   
   &.validated {
-    background-position-x: #{0 * 100% / 3};
+    background-position-x: #{0 * 100% / 5};
   }
   &.zone {
-    background-position-x: #{1 * 100% / 3};
+    @for $round from 1 through 6 {
+      &[data-round="#{$round}"] {
+        background-position-x: #{$round * 100% / 5};
+      }
+    }
   }
   &.spirals {
-    background-position-x: #{2 * 100% / 3};
+    background-position-x: #{4 * 100% / 5};
   }
   &.sum {
-    background-position-x: #{3 * 100% / 3};
+    background-position-x: #{5 * 100% / 5};
   }
 }
 

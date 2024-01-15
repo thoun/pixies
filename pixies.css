@@ -900,11 +900,26 @@ html, .mode_3d #game_play_area_background {
 .score-icon.validated {
   background-position-x: 0%;
 }
-.score-icon.zone {
-  background-position-x: 33.3333333333%;
+.score-icon.zone[data-round="1"] {
+  background-position-x: 20%;
+}
+.score-icon.zone[data-round="2"] {
+  background-position-x: 40%;
+}
+.score-icon.zone[data-round="3"] {
+  background-position-x: 60%;
+}
+.score-icon.zone[data-round="4"] {
+  background-position-x: 80%;
+}
+.score-icon.zone[data-round="5"] {
+  background-position-x: 100%;
+}
+.score-icon.zone[data-round="6"] {
+  background-position-x: 120%;
 }
 .score-icon.spirals {
-  background-position-x: 66.6666666667%;
+  background-position-x: 80%;
 }
 .score-icon.sum {
   background-position-x: 100%;

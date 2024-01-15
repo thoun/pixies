@@ -84,7 +84,7 @@ class Pixies implements PixiesGame {
         });
 
         if (gamedatas.roundResult) {
-            this.setRoundResult(gamedatas.roundResult);
+            this.setRoundResult(gamedatas.roundResult, gamedatas.roundNumber);
         }
 
         log( "Ending game setup" );
@@ -306,22 +306,22 @@ class Pixies implements PixiesGame {
         return [1, 2, 3, 4].map((number, index) => `<div class="color-icon" data-row="${index}"></div><span class="label"> ${this.cardsManager.getColor(number)}</span>`).join('');
     }
 
-    private setRoundResultForPlayer(playerId: number, detailledScore: DetailledScore) {
+    private setRoundResultForPlayer(playerId: number, detailledScore: DetailledScore, round: number) {
         if (!document.getElementById(`points-${playerId}`)) {
             const emptyRoundResult = [];
             Object.keys(this.gamedatas.players).forEach(id => emptyRoundResult[id] = null);
-            this.setRoundResult(emptyRoundResult);
+            this.setRoundResult(emptyRoundResult, round);
         }
 
         Object.entries(detailledScore).forEach(([key, value]) => document.getElementById(`${key}-${playerId}`).innerText = `${value}`);
     }
 
-    private setRoundResult(roundResult: { [playerId: number]: DetailledScore }) {
+    private setRoundResult(roundResult: { [playerId: number]: DetailledScore }, round: number) {
         const playersIds = Object.keys(roundResult).map(Number);
         let html = `<table class='round-result'>
             <tr><th class="empty"></th>${playersIds.map(playerId => `<th class="name"><strong style='color: #${this.getPlayer(playerId).color};'>${this.getPlayer(playerId).name}</strong></th>`).join('')}</tr>
             <tr><th class="type"><div class="score-icon validated"></div></th>${playersIds.map(playerId => `<td id="validatedCardPoints-${playerId}">${roundResult[playerId]?.validatedCardPoints ?? ''}</td>`).join('')}</tr>
-            <tr><th class="type"><div class="score-icon zone"></div></th>${playersIds.map(playerId => `<td id="largestColorZonePoints-${playerId}">${roundResult[playerId]?.largestColorZonePoints ?? ''}</td>`).join('')}</tr>
+            <tr><th class="type"><div class="score-icon zone" data-round="${round}"></div></th>${playersIds.map(playerId => `<td id="largestColorZonePoints-${playerId}">${roundResult[playerId]?.largestColorZonePoints ?? ''}</td>`).join('')}</tr>
             <tr><th class="type"><div class="score-icon spirals"></div></th>${playersIds.map(playerId => `<td id="spiralsAndCrossesPoints-${playerId}">${roundResult[playerId]?.spiralsAndCrossesPoints ?? ''}</td>`).join('')}</tr>
             <tr><th class="type"><div class="score-icon sum"></div></th>${playersIds.map(playerId => `<th class="sum" id="points-${playerId}">${roundResult[playerId]?.points ?? ''}</th>`).join('')}</tr>
         </table>`;
@@ -442,12 +442,12 @@ class Pixies implements PixiesGame {
     }
 
     notif_score(args: NotifScoreArgs) {
-        const { playerId, newScore, detailledScore } = args;
+        const { playerId, newScore, detailledScore, round } = args;
         (this as any).scoreCtrl[playerId]?.toValue(newScore);
 
         (this as any).displayScoring(`player-table-${playerId}-cards`, this.getPlayerColor(playerId), detailledScore.points, ANIMATION_MS * 3);
         
-        this.setRoundResultForPlayer(playerId, detailledScore);
+        this.setRoundResultForPlayer(playerId, detailledScore, round);
     }
 
     async notif_endRound(args: NotifEndRoundArgs) {

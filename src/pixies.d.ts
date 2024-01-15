@@ -95,6 +95,7 @@ interface NotifScoreArgs {
     newScore: number;
     incScore: number;
     detailledScore: DetailledScore;
+    round: number;
 }
 
 interface NotifEndRoundArgs {

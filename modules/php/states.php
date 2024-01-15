@@ -92,19 +92,17 @@ trait StateTrait {
     function stEndRound() {
         $roundNumber = intval($this->getStat('roundNumber'));
         $lastRound = $roundNumber >= 3;
-        
-        if (!$lastRound) {
-            $this->cards->moveAllCardsInLocation(null, 'deck');
-            $this->cards->shuffle('deck');
-        }
-
-        self::notifyAllPlayers('endRound', '', [
-            'remainingCardsInDeck' => $this->getRemainingCardsInDeck(),
-        ]);
 
         if ($lastRound) {
             $this->gamestate->nextState('endScore');
-        } else {            
+        } else {
+            $this->cards->moveAllCardsInLocation(null, 'deck');
+            $this->cards->shuffle('deck');
+
+            self::notifyAllPlayers('endRound', '', [
+                'remainingCardsInDeck' => $this->getRemainingCardsInDeck(),
+            ]);
+
             $this->deleteGlobalVariable(ROUND_RESULT);
             $this->gamestate->nextState('newRound');
         }
