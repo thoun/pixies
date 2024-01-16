@@ -295,7 +295,7 @@ class Pixies implements PixiesGame {
             <h1>${_("The player’s largest color zone")}</h1>
             ${_("A color zone is made up of at least 2 cards of the same color touching along a side. Diagonals do not count. Each card that is part of the player’s largest zone earns:")}
             <ul>
-            ${[1, 2, 3].map(roundNumber => _("<li>${points} points in round ${round}</li>").replace('${points}', `${roundNumber + 1}`).replace('${round}', `${roundNumber}`)).join('')}
+            ${[1, 2, 3].map(roundNumber => `<li>${_("${points} points in round ${round}")}</li>`.replace('${points}', `${roundNumber + 1}`).replace('${round}', `${roundNumber}`)).join('')}
             </ul>
             ${_("<strong>Note:</strong> All faceup cards are taken into account, whether they are validated or not.")}
             <br><br>
