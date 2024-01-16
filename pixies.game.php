@@ -42,7 +42,9 @@ class Pixies extends Table {
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
         
-        self::initGameStateLabels([]);  
+        self::initGameStateLabels([
+            LAST_TURN => LAST_TURN,
+        ]);  
 
         $this->cards = self::getNew("module.common.deck");
         $this->cards->init("card");        
@@ -121,6 +123,7 @@ class Pixies extends Table {
     protected function getAllDatas() {
         $result = [];
     
+        $isEndScore = intval($this->gamestate->state_id()) >= ST_END_SCORE;
         $currentPlayerId = intval($this->getCurrentPlayerId());    // !! We must only return informations visible by this player !!
     
         // Get information about players
@@ -140,6 +143,7 @@ class Pixies extends Table {
         for($i = 1; $i <= 3; $i++) {
             $result['roundResult'][$i] = $this->getGlobalVariable(ROUND_RESULT.$i);
         }
+        $result['lastTurn'] = !$isEndScore && boolval($this->getGameStateValue(LAST_TURN));
   
         return $result;
     }
@@ -161,8 +165,7 @@ class Pixies extends Table {
         $maxCards = 0;
 
         foreach ($playersIds as $playerId) {
-            $playerCards = $this->getCardsFromSpaces($playerId);
-            $playerCardCount = array_reduce(array_map(fn($cards) => count($cards) > 0 ? 1 : 0, $playerCards), fn($a, $b) => $a + $b, 0);
+            $playerCardCount = $this->getPlayerCardCount($playerId);
 
             if ($playerCardCount > $maxCards) {
                 $maxCards = $playerCardCount;

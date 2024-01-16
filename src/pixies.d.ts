@@ -42,6 +42,7 @@ interface PixiesGamedatas {
     tableCards: Card[];
     roundResult: { [playerId: number]: DetailledScore }[];
     roundNumber: number;
+    lastTurn: boolean;
 }
 
 interface PixiesGame extends Game {

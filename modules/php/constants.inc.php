@@ -25,6 +25,8 @@ const END_SCORE = 100;
 /*
  * Constants
  */
+const LAST_TURN = 10;
+
 const SELECTED_CARD_ID = 'SELECTED_CARD_ID';
 const ROUND_RESULT = 'ROUND_RESULT';
 

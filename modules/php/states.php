@@ -48,7 +48,7 @@ trait StateTrait {
 
         $playersIds = $this->getPlayersIds();
         if (!$endTurn && count($playersIds) == 2 && $tableCount == 2) {
-            if ($this->array_some($playersIds, fn($pId) => $this->array_every($this->getCardsFromSpaces($pId), fn($space) => count($space) > 0))) {
+            if (boolval($this->getGameStateValue(LAST_TURN))) {
                 $endTurn = true;
             }
         }
@@ -63,8 +63,7 @@ trait StateTrait {
     function stEndTurn() {
         $this->incStat(1, 'turnsNumber');
 
-        $playersIds = $this->getPlayersIds();
-        $endRound = $this->array_some($playersIds, fn($pId) => $this->array_every($this->getCardsFromSpaces($pId), fn($space) => count($space) > 0));
+        $endRound = boolval($this->getGameStateValue(LAST_TURN));
 
         $this->gamestate->nextState($endRound ? 'endRound' : 'newTurn');
     }

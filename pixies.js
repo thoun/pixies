@@ -2426,6 +2426,9 @@ var Pixies = /** @class */ (function () {
         this.roundCounter = new ebg.counter();
         this.roundCounter.create('round-counter');
         this.roundCounter.setValue(gamedatas.roundNumber);
+        if (gamedatas.lastTurn) {
+            this.notif_lastTurn(false);
+        }
         this.setupNotifications();
         this.setupPreferences();
         new HelpManager(this, {
@@ -2698,6 +2701,7 @@ var Pixies = /** @class */ (function () {
             ['endRound', undefined],
             ['score', ANIMATION_MS * 3],
             ['roundResult', 0],
+            ['lastTurn', 1],
         ];
         notifs.forEach(function (notif) {
             dojo.subscribe(notif[0], _this, function (notifDetails) {
@@ -2710,7 +2714,9 @@ var Pixies = /** @class */ (function () {
         });
     };
     Pixies.prototype.notif_newRound = function (args) {
+        var _a;
         document.getElementById("result").innerHTML = "";
+        (_a = document.getElementById("last-round")) === null || _a === void 0 ? void 0 : _a.remove();
         var round = args.round;
         this.roundCounter.toValue(round);
     };
@@ -2761,16 +2767,31 @@ var Pixies = /** @class */ (function () {
             });
         });
     };
+    /**
+     * Show last turn banner.
+     */
+    Pixies.prototype.notif_lastTurn = function (animate) {
+        if (animate === void 0) { animate = true; }
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                dojo.place("<div id=\"last-round\">\n            <span class=\"last-round-text ".concat(animate ? 'animate' : '', "\">").concat(_("This is the final turn of the round!"), "</span>\n        </div>"), 'page-title');
+                return [2 /*return*/];
+            });
+        });
+    };
     Pixies.prototype.notif_score = function (args) {
-        var _a;
+        var _a, _b;
+        (_a = document.getElementById("last-round")) === null || _a === void 0 ? void 0 : _a.remove();
         var playerId = args.playerId, newScore = args.newScore, detailledScore = args.detailledScore, round = args.round;
-        (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.toValue(newScore);
+        (_b = this.scoreCtrl[playerId]) === null || _b === void 0 ? void 0 : _b.toValue(newScore);
         this.displayScoring("player-table-".concat(playerId, "-cards"), this.getPlayerColor(playerId), detailledScore.points, ANIMATION_MS * 3);
         this.setRoundResultForPlayer(playerId, detailledScore, round);
     };
     Pixies.prototype.notif_roundResult = function (args) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
+            return __generator(this, function (_b) {
+                (_a = document.getElementById("last-round")) === null || _a === void 0 ? void 0 : _a.remove();
                 this.gamedatas.roundResult[args.round] = args.roundResult;
                 return [2 /*return*/];
             });

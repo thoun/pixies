@@ -76,6 +76,15 @@ trait ActionTrait {
             'i18n' => ['color'],
         ]);
 
+        if (!boolval($this->getGameStateValue(LAST_TURN)) && $this->getPlayerCardCount($playerId) >= 9) {
+            $this->setGameStateValue(LAST_TURN, 1);
+
+            self::notifyAllPlayers('lastTurn', clienttranslate('${player_name} has filled all 9 of their spaces, triggering the end of the round!'), [
+                'playerId' => $playerId,
+                'player_name' => $this->getPlayerName($playerId),
+            ]);
+        }
+
         $this->gamestate->nextState('next');
     }
 

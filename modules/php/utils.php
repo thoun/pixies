@@ -270,4 +270,11 @@ trait UtilTrait {
 
         return $result;
     }
+
+    function getPlayerCardCount(int $playerId) {
+        $playerCards = $this->getCardsFromSpaces($playerId);
+        $playerCardCount = array_reduce(array_map(fn($cards) => count($cards) > 0 ? 1 : 0, $playerCards), fn($a, $b) => $a + $b, 0);
+
+        return $playerCardCount;
+    }
 }

@@ -64,6 +64,10 @@ class Pixies implements PixiesGame {
         this.roundCounter.create('round-counter');
         this.roundCounter.setValue(gamedatas.roundNumber);
 
+        if (gamedatas.lastTurn) {
+            this.notif_lastTurn(false);
+        }
+
         this.setupNotifications();
         this.setupPreferences();
         new HelpManager(this, { 
@@ -409,6 +413,7 @@ class Pixies implements PixiesGame {
             ['endRound', undefined],
             ['score', ANIMATION_MS * 3],
             ['roundResult', 0],
+            ['lastTurn', 1],
         ];
     
         notifs.forEach((notif) => {
@@ -426,6 +431,7 @@ class Pixies implements PixiesGame {
 
     notif_newRound(args: NotifNewRoundArgs) {
         document.getElementById(`result`).innerHTML = ``;
+        document.getElementById(`last-round`)?.remove();
         const { round } = args;
         this.roundCounter.toValue(round);
     }
@@ -446,8 +452,18 @@ class Pixies implements PixiesGame {
         const playerTable = this.getPlayerTable(playerId);
         await playerTable.keepCard(hiddenCard, visibleCard, space);
     }
+    
+    /** 
+     * Show last turn banner.
+     */ 
+    async notif_lastTurn(animate: boolean = true) {
+        dojo.place(`<div id="last-round">
+            <span class="last-round-text ${animate ? 'animate' : ''}">${_("This is the final turn of the round!")}</span>
+        </div>`, 'page-title');
+    }
 
     notif_score(args: NotifScoreArgs) {
+        document.getElementById(`last-round`)?.remove();
         const { playerId, newScore, detailledScore, round } = args;
         (this as any).scoreCtrl[playerId]?.toValue(newScore);
 
@@ -457,6 +473,7 @@ class Pixies implements PixiesGame {
     }
 
     async notif_roundResult(args: NotifRoundResultArgs) {
+        document.getElementById(`last-round`)?.remove();
         this.gamedatas.roundResult[args.round] = args.roundResult;
     }
 
