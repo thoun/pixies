@@ -2311,7 +2311,7 @@ var PlayerTable = /** @class */ (function () {
         this.tableCards = [];
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
-        var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"border-color: #").concat(player.color, ";\">\n            <div class=\"name-wrapper\">\n                <span class=\"name\" style=\"color: #").concat(player.color, ";\">").concat(player.name, "</span>\n            </div>\n            <div id=\"player-table-").concat(this.playerId, "-cards\" class=\"player-cards\">");
+        var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"border-color: #").concat(player.color, ";\">\n            <div class=\"name-wrapper\">\n                <span class=\"name\" style=\"color: #").concat(player.color, ";\" data-color=\"").concat(player.color, "\">").concat(player.name, "</span>\n            </div>\n            <div id=\"player-table-").concat(this.playerId, "-cards\" class=\"player-cards\">");
         for (var i = 1; i <= 9; i++) {
             html += "\n                <div id=\"player-table-".concat(this.playerId, "-cards-").concat(i, "\" class=\"space\" style=\"--value: '").concat(i, "';\"></div>");
         }

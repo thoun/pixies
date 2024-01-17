@@ -742,6 +742,10 @@ body > .card {
   font-size: 20pt;
   font-weight: bold;
   font-family: "pixies";
+  text-shadow: 0 0 1px white, 0 0 2px white, 0 0 3px white;
+}
+.player-table .name-wrapper .name[data-color=FFFFFF], .player-table .name-wrapper .name[data-color=ffffff] {
+  text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;
 }
 .player-table .player-cards {
   display: grid;

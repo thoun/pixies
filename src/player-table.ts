@@ -19,7 +19,7 @@ class PlayerTable {
         let html = `
         <div id="player-table-${this.playerId}" class="player-table" style="border-color: #${player.color};">
             <div class="name-wrapper">
-                <span class="name" style="color: #${player.color};">${player.name}</span>
+                <span class="name" style="color: #${player.color};" data-color="${player.color}">${player.name}</span>
             </div>
             <div id="player-table-${this.playerId}-cards" class="player-cards">`;
         for (let i = 1; i <= 9; i++) {
