@@ -34,7 +34,7 @@ $gameinfos = [
 'publisher_bgg_id' => 19260,
 
 // Board game geek ID of the game
-'bgg_id' => 0, // TODO
+'bgg_id' => 411875, 
 
 
 // Players configuration that can be played (ex: 2 to 4 players)
@@ -132,9 +132,8 @@ $gameinfos = [
 // Each paragraph must be wrapped with totranslate() for translation and should not contain html (plain text without formatting).
 // A good length for this text is between 100 and 150 words (about 6 to 9 lines on a standard display)
 'presentation' => [
-    // TODO
-    //totranslate("During their turn, you assemble your hand, maybe place cards for their effect, and decide if you want to end the round. But do you think you are the one with the most points in hand?"),
-    //totranslate("You will have to choose: stop the round immediately or give the others an extra turn to try to extend the gap? Is it worth taking the risk?"),
+    totranslate("In Pixies, you move through the seasons to meet little creatures emerging from a flower or sheltering in the hollow of a tree. Choose one of the revealed cards, but be careful which ones you leave to your opponents!"),
+    totranslate("Place that card in your playing area according to its number. Cards placed one on top of another are validated and earn you points at the end of the round, as do your largest color zone and your spirals. Easy...yet you'll find that the other players won't be short of bad advice."),
 ],
 
 //////// BGA SANDBOX ONLY PARAMETERS (DO NOT MODIFY)
