@@ -12,6 +12,7 @@ trait StateTrait {
     */
 
     function stNewRound() {
+        $this->setGameStateValue(LAST_TURN, 0);
 
         $this->incStat(1, 'roundNumber');
 
