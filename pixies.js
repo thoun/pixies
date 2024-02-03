@@ -2539,6 +2539,7 @@ var Pixies = /** @class */ (function () {
                         _this.addActionButton("keepCard".concat(index, "_button"), "".concat(labels_1[index], "<br><div id=\"keepCard").concat(index, "\"></div>"), function () { return _this.keepCard(index); });
                         _this.cardsManager.setForHelp(args.cards[index], "keepCard".concat(index));
                     });
+                    this.addActionButton("cancel_button", _('Cancel'), function () { return _this.cancel(); }, null, null, 'gray');
                     break;
                 case 'beforeEndRound':
                     this.addActionButton("seen_button", _("Seen"), function () { return _this.seen(); });

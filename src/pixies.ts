@@ -188,6 +188,7 @@ class Pixies implements PixiesGame {
                         (this as any).addActionButton(`keepCard${index}_button`, `${labels[index]}<br><div id="keepCard${index}"></div>`, () => this.keepCard(index));
                         this.cardsManager.setForHelp(args.cards[index], `keepCard${index}`);
                     });
+                    (this as any).addActionButton(`cancel_button`, _('Cancel'), () => this.cancel(), null, null, 'gray');
                     break;
                 case 'beforeEndRound':
                     (this as any).addActionButton(`seen_button`, _("Seen"), () => this.seen());
