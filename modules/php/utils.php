@@ -252,6 +252,11 @@ trait UtilTrait {
                 }
             }
 
+            // largest zone must be 2 cards min to score
+            if ($largestColorZone == 1) {
+                $largestColorZone = 0;
+            }
+
             $detailledScore->spiralsAndCrossesPoints = $spiralsPoints - $crossesPoints;
             $detailledScore->largestColorZonePoints = $largestColorZone * ($roundNumber + 1);
 
