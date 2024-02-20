@@ -4,6 +4,7 @@ declare const $;
 declare const dojo: Dojo;
 declare const _;
 declare const g_gamethemeurl;
+declare const bgaConfig;
 
 const ANIMATION_MS = 500;
 const ACTION_TIMER_DURATION = 5;
@@ -415,6 +416,7 @@ class Pixies implements PixiesGame {
             ['score', ANIMATION_MS * 3],
             ['roundResult', 0],
             ['lastTurn', 1],
+            ['loadBug', 1],
         ];
     
         notifs.forEach((notif) => {
@@ -488,6 +490,53 @@ class Pixies implements PixiesGame {
 
         return await this.tableCenter.deck.shuffle();
     }
+    
+    /**
+    * Load production bug report handler
+    */
+   notif_loadBug(args) {
+     const that: any = this;
+     function fetchNextUrl() {
+       var url = args.urls.shift();
+       console.log('Fetching URL', url, '...');
+       // all the calls have to be made with ajaxcall in order to add the csrf token, otherwise you'll get "Invalid session information for this action. Please try reloading the page or logging in again"
+       that.ajaxcall(
+         url,
+         {
+           lock: true,
+         },
+         that,
+         function (success) {
+           console.log('=> Success ', success);
+
+           if (args.urls.length > 1) {
+             fetchNextUrl();
+           } else if (args.urls.length > 0) {
+             //except the last one, clearing php cache
+             url = args.urls.shift();
+             (dojo as any).xhrGet({
+               url: url,
+               headers: {
+                 'X-Request-Token': bgaConfig.requestToken,
+               },
+               load: success => {
+                 console.log('Success for URL', url, success);
+                 console.log('Done, reloading page');
+                 window.location.reload();
+               },
+               handleAs: 'text',
+               error: error => console.log('Error while loading : ', error),
+             });
+           }
+         },
+         error => {
+           if (error) console.log('=> Error ', error);
+         },
+       );
+     }
+     console.log('Notif: load bug', args);
+     fetchNextUrl();
+   }
 
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */

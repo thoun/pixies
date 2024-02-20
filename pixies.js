@@ -1142,7 +1142,9 @@ var CardStock = /** @class */ (function () {
                     case 4:
                         if (typeof shift === 'number') {
                             _loop_2 = function (i) {
-                                setTimeout(function () { return promises.push(_this.addCard(cards[i], animation, settings)); }, i * shift);
+                                promises.push(new Promise(function (resolve) {
+                                    setTimeout(function () { return _this.addCard(cards[i], animation, settings).then(function (result) { return resolve(result); }); }, i * shift);
+                                }));
                             };
                             for (i = 0; i < cards.length; i++) {
                                 _loop_2(i);
@@ -2282,14 +2284,9 @@ var TableCenter = /** @class */ (function () {
         return this.tableCards.getCards();
     };
     TableCenter.prototype.newTurn = function (cards) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                this.tableCards.addCards(cards, {
-                    fromStock: this.deck,
-                }, undefined, 250);
-                return [2 /*return*/];
-            });
-        });
+        return this.tableCards.addCards(cards, {
+            fromStock: this.deck,
+        }, undefined, 250);
     };
     TableCenter.prototype.makeCardsSelectable = function (selectable) {
         this.tableCards.setSelectionMode(selectable ? 'single' : 'none');
@@ -2705,6 +2702,7 @@ var Pixies = /** @class */ (function () {
             ['score', ANIMATION_MS * 3],
             ['roundResult', 0],
             ['lastTurn', 1],
+            ['loadBug', 1],
         ];
         notifs.forEach(function (notif) {
             dojo.subscribe(notif[0], _this, function (notifDetails) {
@@ -2817,6 +2815,47 @@ var Pixies = /** @class */ (function () {
                 }
             });
         });
+    };
+    /**
+    * Load production bug report handler
+    */
+    Pixies.prototype.notif_loadBug = function (args) {
+        var that = this;
+        function fetchNextUrl() {
+            var url = args.urls.shift();
+            console.log('Fetching URL', url, '...');
+            // all the calls have to be made with ajaxcall in order to add the csrf token, otherwise you'll get "Invalid session information for this action. Please try reloading the page or logging in again"
+            that.ajaxcall(url, {
+                lock: true,
+            }, that, function (success) {
+                console.log('=> Success ', success);
+                if (args.urls.length > 1) {
+                    fetchNextUrl();
+                }
+                else if (args.urls.length > 0) {
+                    //except the last one, clearing php cache
+                    url = args.urls.shift();
+                    dojo.xhrGet({
+                        url: url,
+                        headers: {
+                            'X-Request-Token': bgaConfig.requestToken,
+                        },
+                        load: function (success) {
+                            console.log('Success for URL', url, success);
+                            console.log('Done, reloading page');
+                            window.location.reload();
+                        },
+                        handleAs: 'text',
+                        error: function (error) { return console.log('Error while loading : ', error); },
+                    });
+                }
+            }, function (error) {
+                if (error)
+                    console.log('=> Error ', error);
+            });
+        }
+        console.log('Notif: load bug', args);
+        fetchNextUrl();
     };
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */

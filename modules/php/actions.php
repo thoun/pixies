@@ -18,7 +18,7 @@ trait ActionTrait {
 
         $card = $this->getCardFromDb($this->cards->getCard($cardId));
         if ($card->location != 'table') {
-            throw new BgaUserException("You annot choose this card");
+            throw new BgaUserException("You cannot choose this card");
         }
         
         $stateName = $this->gamestate->state()['name']; 

@@ -21,8 +21,8 @@ class TableCenter {
         return this.tableCards.getCards();
     }
     
-    public async newTurn(cards: Card[]) {
-        this.tableCards.addCards(cards, {
+    public newTurn(cards: Card[]): Promise<any> {
+        return this.tableCards.addCards(cards, {
             fromStock: this.deck,
         }, undefined, 250);
     }
