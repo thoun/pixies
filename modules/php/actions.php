@@ -11,7 +11,7 @@ trait ActionTrait {
         (note: each method below must match an input method in nicodemus.action.php)
     */
 
-    public function chooseCard(int $cardId) {
+    public function chooseCard(int $cardId, ?bool $autoplace) {
         $this->checkAction('chooseCard'); 
         
         $playerId = intval($this->getActivePlayerId());
@@ -28,6 +28,13 @@ trait ActionTrait {
         }
 
         $this->applyChooseCard($playerId, $card);
+
+        if ($autoplace && $this->gamestate->state()['name'] === 'playCard') {
+            $spaces = $this->argPlayCard()['spaces'];
+            if (count($spaces) == 1) {
+                $this->applyPlayCard($playerId, $spaces[0]);
+            }
+        }
     }
 
     function applyChooseCard(int $playerId, Card $card) {

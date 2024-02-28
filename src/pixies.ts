@@ -117,13 +117,6 @@ class Pixies implements PixiesGame {
         }
     }
     
-    private setGamestateDescription(property: string = '') {
-        const originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
-        this.gamedatas.gamestate.description = `${originalState['description' + property]}`; 
-        this.gamedatas.gamestate.descriptionmyturn = `${originalState['descriptionmyturn' + property]}`;
-        (this as any).updatePageTitle();
-    }
-    
     private onEnteringChooseCard(args: EnteringChooseCardArgs) {
         if ((this as any).isCurrentPlayerActive()) {
             this.tableCenter.makeCardsSelectable(true);
@@ -346,7 +339,8 @@ class Pixies implements PixiesGame {
         }
 
         this.takeAction('chooseCard', {
-            id
+            id,
+            autoplace: (this as any).prefs[201]?.value === 1
         });
     }
 

@@ -1,1 +1,15 @@
-{}
+{
+    "201": {
+        "name": "Auto-place card when only one slot is available",
+        "needReload": false,
+        "values": {
+            "1": {
+                "name": "Enabled"
+            },
+            "0": {
+                "name": "Disabled"
+            }
+        },
+        "default": 0
+    }
+}

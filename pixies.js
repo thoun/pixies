@@ -2470,13 +2470,6 @@ var Pixies = /** @class */ (function () {
                 break;
         }
     };
-    Pixies.prototype.setGamestateDescription = function (property) {
-        if (property === void 0) { property = ''; }
-        var originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
-        this.gamedatas.gamestate.description = "".concat(originalState['description' + property]);
-        this.gamedatas.gamestate.descriptionmyturn = "".concat(originalState['descriptionmyturn' + property]);
-        this.updatePageTitle();
-    };
     Pixies.prototype.onEnteringChooseCard = function (args) {
         if (this.isCurrentPlayerActive()) {
             this.tableCenter.makeCardsSelectable(true);
@@ -2639,11 +2632,13 @@ var Pixies = /** @class */ (function () {
         document.getElementById("result").insertAdjacentHTML('beforeend', html);
     };
     Pixies.prototype.chooseCard = function (id) {
+        var _a;
         if (!this.checkAction('chooseCard')) {
             return;
         }
         this.takeAction('chooseCard', {
-            id: id
+            id: id,
+            autoplace: ((_a = this.prefs[201]) === null || _a === void 0 ? void 0 : _a.value) === 1
         });
     };
     Pixies.prototype.playCard = function (space) {

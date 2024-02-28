@@ -40,8 +40,9 @@
         self::setAjaxMode();
 
         $id = self::getArg("id", AT_posint, true);
+        $autoplace = self::getArg("autoplace", AT_bool, false);
 
-        $this->game->chooseCard($id);
+        $this->game->chooseCard($id, $autoplace);
 
         self::ajaxResponse();
     }
