@@ -15,15 +15,6 @@ $gameinfos = [
 // Name of the game in English (will serve as the basis for translation) 
 'game_name' => "Pixies",
 
-// Game designer (or game designers, separated by commas)
-'designer' => 'Johannes Goupy',       
-
-// Game artist (or game artists, separated by commas)
-'artist' => 'Sylvain Trabut',         
-
-// Year of FIRST publication of this game. Can be negative.
-'year' => 2024,
-
 // Game publisher (use empty string if there is no publisher)
 'publisher' => 'Bombyx',
 
@@ -85,19 +76,7 @@ $gameinfos = [
 // Language dependency. If false or not set, there is no language dependency. If true, all players at the table must speak the same language.
 // If an array of shortcode languages such as array( 1 => 'en', 2 => 'fr', 3 => 'it' ) then all players at the table must speak the same language, and this language must be one of the listed languages.
 // NB: the default will be the first language in this list spoken by the player, so you should list them by popularity/preference.
-'language_dependency' => false,
-
-// Complexity of the game, from 0 (extremely simple) to 5 (extremely complex)
-'complexity' => 1,    
-
-// Luck of the game, from 0 (absolutely no luck in this game) to 5 (totally luck driven)
-'luck' => 4,    
-
-// Strategy of the game, from 0 (no strategy can be setup) to 5 (totally based on strategy)
-'strategy' => 2,    
-
-// Diplomacy of the game, from 0 (no interaction in this game) to 5 (totally based on interaction and discussion between players)
-'diplomacy' => 3,    
+'language_dependency' => false,  
 
 // Colors attributed to players
 'player_colors' => ['ff0000', '008000', '0000ff', 'ffa500', '000000', 'e94190', '982fff', '72c3b1', 'f07f16', 'bdd002', '7b7b7b'],
@@ -125,15 +104,6 @@ $gameinfos = [
     //  maximum possible value: unlimited
     //  minimum possible value: 740
     'max' => null
-],
-
-// Game presentation
-// Short game presentation text that will appear on the game description page, structured as an array of paragraphs.
-// Each paragraph must be wrapped with totranslate() for translation and should not contain html (plain text without formatting).
-// A good length for this text is between 100 and 150 words (about 6 to 9 lines on a standard display)
-'presentation' => [
-    totranslate("In Pixies, you move through the seasons to meet little creatures emerging from a flower or sheltering in the hollow of a tree. Choose one of the revealed cards, but be careful which ones you leave to your opponents!"),
-    totranslate("Place that card in your playing area according to its number. Cards placed one on top of another are validated and earn you points at the end of the round, as do your largest color zone and your spirals. Easy...yet you'll find that the other players won't be short of bad advice."),
 ],
 
 //////// BGA SANDBOX ONLY PARAMETERS (DO NOT MODIFY)
