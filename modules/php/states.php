@@ -64,6 +64,11 @@ trait StateTrait {
     function stEndTurn() {
         $this->incStat(1, 'turnsNumber');
 
+        if (intval($this->cards->countCardInLocation('deck')) < count($this->getPlayersIds())) {
+            self::notifyAllPlayers('log', clienttranslate('The deck is empty, so the round must end'), []);
+            $this->setGameStateValue(LAST_TURN, 1);
+        }
+
         $endRound = boolval($this->getGameStateValue(LAST_TURN));
 
         $this->gamestate->nextState($endRound ? 'endRound' : 'newTurn');

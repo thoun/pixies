@@ -46,6 +46,10 @@ trait DebugUtilTrait {
         $this->cards->moveCard($card->id, $location, $locationArg);
     }
 
+    function emptyDeck() {
+      $this->cards->moveAllCardsInLocation('deck', 'void');
+    }
+
     public function debugReplacePlayersIds() {
         if ($this->getBgaEnvironment() != 'studio') { 
             return;
