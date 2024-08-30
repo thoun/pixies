@@ -16,6 +16,10 @@ trait DebugUtilTrait {
         //$this->gamestate->changeActivePlayer(2343492);
     }
 
+    function debug_setCardType(int $id, int $type, int $typeArg = 0) {
+      $this->DbQuery("UPDATE card SET card_type = $type, card_type_arg = $typeArg WHERE card_id = $id" );
+    }
+
     function d() {
         $this->debugSetCard(2343492, 4, 2);
         $this->debugSetCard(2343492, 3, 2);
