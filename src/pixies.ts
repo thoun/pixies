@@ -171,7 +171,7 @@ class Pixies implements PixiesGame {
         if ((this as any).isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'playCard':
-                    (this as any).addActionButton(`cancel_button`, _('Cancel'), () => this.cancel(), null, null, 'gray');
+                    (this as any).addActionButton(`cancel_button`, _('Cancel'), () => (this as any).bgaPerformAction('actCancel'), null, null, 'gray');
                     break;
                 case 'keepCard':
                     const labels = [
@@ -179,13 +179,13 @@ class Pixies implements PixiesGame {
                         _("Keep the new card"),
                     ];
                     [0, 1].forEach(index => {
-                        (this as any).addActionButton(`keepCard${index}_button`, `${labels[index]}<br><div id="keepCard${index}"></div>`, () => this.keepCard(index));
+                        (this as any).addActionButton(`keepCard${index}_button`, `${labels[index]}<br><div id="keepCard${index}"></div>`, () => (this as any).bgaPerformAction('actKeepCard', { index }));
                         this.cardsManager.setForHelp(args.cards[index], `keepCard${index}`);
                     });
-                    (this as any).addActionButton(`cancel_button`, _('Cancel'), () => this.cancel(), null, null, 'gray');
+                    (this as any).addActionButton(`cancel_button`, _('Cancel'), () => (this as any).bgaPerformAction('actCancel'), null, null, 'gray');
                     break;
                 case 'beforeEndRound':
-                    (this as any).addActionButton(`seen_button`, _("Seen"), () => this.seen());
+                    (this as any).addActionButton(`seen_button`, _("Seen"), () => (this as any).bgaPerformAction('actSeen'));
                     break;
             }
         }
@@ -271,7 +271,7 @@ class Pixies implements PixiesGame {
     }
 
     public onSpaceClick(space: number): void {
-        this.playCard(space);
+        (this as any).bgaPerformAction('actPlayCard', { space });
     }
 
     private getHelpHtml() {
@@ -334,56 +334,10 @@ class Pixies implements PixiesGame {
     }
 
     public chooseCard(id: number) {
-        if(!(this as any).checkAction('chooseCard')) {
-            return;
-        }
-
-        this.takeAction('chooseCard', {
+        (this as any).bgaPerformAction('actChooseCard', {
             id,
             autoplace: (this as any).prefs[201]?.value === 1
         });
-    }
-
-    public playCard(space: number) {
-        if(!(this as any).checkAction('playCard')) {
-            return;
-        }
-
-        this.takeAction('playCard', {
-            space
-        });
-    }
-
-    public keepCard(index: number) {
-        if(!(this as any).checkAction('keepCard')) {
-            return;
-        }
-
-        this.takeAction('keepCard', {
-            index
-        });
-    }
-
-    public seen() {
-        if(!(this as any).checkAction('seen')) {
-            return;
-        }
-
-        this.takeAction('seen');
-    }
-
-    public cancel() {
-        if(!(this as any).checkAction('cancel')) {
-            return;
-        }
-
-        this.takeAction('cancel');
-    }
-
-    public takeAction(action: string, data?: any) {
-        data = data || {};
-        data.lock = true;
-        (this as any).ajaxcall(`/pixies/pixies/${action}.html`, data, this, () => {});
     }
 
     ///////////////////////////////////////////////////

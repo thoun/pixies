@@ -13,12 +13,15 @@ trait ActionTrait {
 
     public function chooseCard(int $cardId, ?bool $autoplace) {
         $this->checkAction('chooseCard'); 
-        
+        $this->actChooseCard($cardId, $autoplace);
+    }
+
+    public function actChooseCard(int $id, bool $autoplace) {        
         $playerId = intval($this->getActivePlayerId());
 
-        $card = $this->getCardFromDb($this->cards->getCard($cardId));
+        $card = $this->getCardFromDb($this->cards->getCard($id));
         if ($card->location != 'table') {
-            throw new BgaUserException("You cannot choose this card");
+            throw new \BgaUserException("You cannot choose this card");
         }
         
         $stateName = $this->gamestate->state()['name']; 
@@ -51,10 +54,14 @@ trait ActionTrait {
 
     public function playCard(int $space) {
         $this->checkAction('playCard'); 
+        $this->actPlayCard($space);
+    }
+
+    public function actPlayCard(int $space) {
 
         $args = $this->argPlayCard();
         if (!in_array($space, $args['spaces'])) {
-            throw new BgaUserException("Invalid space");
+            throw new \BgaUserException("Invalid space");
         }
 
         $playerId = intval($this->getActivePlayerId());
@@ -97,9 +104,13 @@ trait ActionTrait {
 
     public function keepCard(int $index) {
         $this->checkAction('keepCard');
+        $this->actKeepCard($index);
+    }
+
+    public function actKeepCard(int $index) {
 
         if (!in_array($index, [0, 1])) {
-            throw new BgaUserException("Invalid index");
+            throw new \BgaUserException("Invalid index");
         }
 
         $playerId = intval($this->getActivePlayerId());
@@ -138,17 +149,25 @@ trait ActionTrait {
         $this->gamestate->nextState('next');
     }
 
+    // TODO remove
     public function seen() {
         $this->checkAction('seen');
+        $this->actSeen();
+    }
 
+    public function actSeen() {
         $playerId = intval($this->getCurrentPlayerId());
 
         $this->gamestate->setPlayerNonMultiactive($playerId, 'endRound');
     }
 
+    // TODO remove
     public function cancel() {
         $this->checkAction('cancel');
+        $this->actCancel();
+    }
 
+    public function actCancel() {
         $this->gamestate->nextState('cancel');
     }
 }

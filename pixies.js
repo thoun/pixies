@@ -2518,7 +2518,7 @@ var Pixies = /** @class */ (function () {
         if (this.isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'playCard':
-                    this.addActionButton("cancel_button", _('Cancel'), function () { return _this.cancel(); }, null, null, 'gray');
+                    this.addActionButton("cancel_button", _('Cancel'), function () { return _this.bgaPerformAction('actCancel'); }, null, null, 'gray');
                     break;
                 case 'keepCard':
                     var labels_1 = [
@@ -2526,13 +2526,13 @@ var Pixies = /** @class */ (function () {
                         _("Keep the new card"),
                     ];
                     [0, 1].forEach(function (index) {
-                        _this.addActionButton("keepCard".concat(index, "_button"), "".concat(labels_1[index], "<br><div id=\"keepCard").concat(index, "\"></div>"), function () { return _this.keepCard(index); });
+                        _this.addActionButton("keepCard".concat(index, "_button"), "".concat(labels_1[index], "<br><div id=\"keepCard").concat(index, "\"></div>"), function () { return _this.bgaPerformAction('actKeepCard', { index: index }); });
                         _this.cardsManager.setForHelp(args.cards[index], "keepCard".concat(index));
                     });
-                    this.addActionButton("cancel_button", _('Cancel'), function () { return _this.cancel(); }, null, null, 'gray');
+                    this.addActionButton("cancel_button", _('Cancel'), function () { return _this.bgaPerformAction('actCancel'); }, null, null, 'gray');
                     break;
                 case 'beforeEndRound':
-                    this.addActionButton("seen_button", _("Seen"), function () { return _this.seen(); });
+                    this.addActionButton("seen_button", _("Seen"), function () { return _this.bgaPerformAction('actSeen'); });
                     break;
             }
         }
@@ -2601,7 +2601,7 @@ var Pixies = /** @class */ (function () {
         this.chooseCard(card.id);
     };
     Pixies.prototype.onSpaceClick = function (space) {
-        this.playCard(space);
+        this.bgaPerformAction('actPlayCard', { space: space });
     };
     Pixies.prototype.getHelpHtml = function () {
         var html = "\n        <div id=\"help-popin\">\n            <h1>".concat(_("Validated cards"), "</h1>\n            ").concat(_("Each validated card earns as many points as the number on it."), "\n\n            <h1>").concat(_("Symbols"), "</h1>\n            ").concat(_("A spiral earns 1 point."), "<br>\n            ").concat(_("A cross makes the player lose 1 point."), "<br>\n            ").concat(_("Spiral"), " / <div class=\"color-icon\" data-row=\"0\"></div> : ").concat(_("1 spiral for each faceup card of the indicated color."), "<br><br>            \n            ").concat(_("<strong>Note:</strong> All faceup cards are taken into account, whether they are validated or not."), "\n\n            <h1>").concat(_("The player’s largest color zone"), "</h1>\n            ").concat(_("A color zone is made up of at least 2 cards of the same color touching along a side. Diagonals do not count. Each card that is part of the player’s largest zone earns:"), "\n            <ul>\n            ").concat([1, 2, 3].map(function (roundNumber) { return "<li>".concat(_("${points} points in round ${round}"), "</li>").replace('${points}', "".concat(roundNumber + 1)).replace('${round}', "".concat(roundNumber)); }).join(''), "\n            </ul>\n            ").concat(_("<strong>Note:</strong> All faceup cards are taken into account, whether they are validated or not."), "\n            <br><br>\n            ").concat(_("A multi-colored card has all the colors at the same time. This means that it counts for the player’s color zone of course, but also for all their special cards as well."), "\n        </div>\n        ");
@@ -2633,46 +2633,10 @@ var Pixies = /** @class */ (function () {
     };
     Pixies.prototype.chooseCard = function (id) {
         var _a;
-        if (!this.checkAction('chooseCard')) {
-            return;
-        }
-        this.takeAction('chooseCard', {
+        this.bgaPerformAction('actChooseCard', {
             id: id,
             autoplace: ((_a = this.prefs[201]) === null || _a === void 0 ? void 0 : _a.value) === 1
         });
-    };
-    Pixies.prototype.playCard = function (space) {
-        if (!this.checkAction('playCard')) {
-            return;
-        }
-        this.takeAction('playCard', {
-            space: space
-        });
-    };
-    Pixies.prototype.keepCard = function (index) {
-        if (!this.checkAction('keepCard')) {
-            return;
-        }
-        this.takeAction('keepCard', {
-            index: index
-        });
-    };
-    Pixies.prototype.seen = function () {
-        if (!this.checkAction('seen')) {
-            return;
-        }
-        this.takeAction('seen');
-    };
-    Pixies.prototype.cancel = function () {
-        if (!this.checkAction('cancel')) {
-            return;
-        }
-        this.takeAction('cancel');
-    };
-    Pixies.prototype.takeAction = function (action, data) {
-        data = data || {};
-        data.lock = true;
-        this.ajaxcall("/pixies/pixies/".concat(action, ".html"), data, this, function () { });
     };
     ///////////////////////////////////////////////////
     //// Reaction to cometD notifications

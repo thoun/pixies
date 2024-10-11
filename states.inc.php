@@ -84,6 +84,7 @@ $playerActionsGameStates = [
         "args" => "argChooseCard",  
         "possibleactions" => [ 
             "chooseCard",
+            'actChooseCard',
         ],
         "transitions" => [
             "playCard" => ST_PLAYER_PLAY_CARD,
@@ -102,6 +103,9 @@ $playerActionsGameStates = [
             "chooseCard",
             "playCard",
             "cancel",
+            'actChooseCard',
+            'actPlayCard',
+            'actCancel',
         ],
         "transitions" => [
             "next" => ST_NEXT_PLAYER,
@@ -120,6 +124,9 @@ $playerActionsGameStates = [
             "chooseCard",
             "keepCard",
             "cancel",
+            'actChooseCard',
+            'actKeepCard',
+            'actCancel',
         ],
         "transitions" => [
             "next" => ST_NEXT_PLAYER,
@@ -134,7 +141,10 @@ $playerActionsGameStates = [
         "descriptionmyturn" => clienttranslate('End round result'),
         "type" => "multipleactiveplayer",
         "action" => "stBeforeEndRound",
-        "possibleactions" => [ "seen" ],
+        "possibleactions" => [ 
+            "seen",
+            'actSeen',
+        ],
         "transitions" => [
             "next" => ST_END_ROUND, // for zombie
             "endRound" => ST_END_ROUND,
