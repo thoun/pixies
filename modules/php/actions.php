@@ -11,11 +11,6 @@ trait ActionTrait {
         (note: each method below must match an input method in nicodemus.action.php)
     */
 
-    public function chooseCard(int $cardId, ?bool $autoplace) {
-        $this->checkAction('chooseCard'); 
-        $this->actChooseCard($cardId, $autoplace);
-    }
-
     public function actChooseCard(int $id, bool $autoplace) {        
         $playerId = intval($this->getActivePlayerId());
 
@@ -50,11 +45,6 @@ trait ActionTrait {
         } else  {
             $this->gamestate->nextState('playCard');
         }
-    }
-
-    public function playCard(int $space) {
-        $this->checkAction('playCard'); 
-        $this->actPlayCard($space);
     }
 
     public function actPlayCard(int $space) {
@@ -102,11 +92,6 @@ trait ActionTrait {
         $this->gamestate->nextState('next');
     }
 
-    public function keepCard(int $index) {
-        $this->checkAction('keepCard');
-        $this->actKeepCard($index);
-    }
-
     public function actKeepCard(int $index) {
 
         if (!in_array($index, [0, 1])) {
@@ -149,22 +134,10 @@ trait ActionTrait {
         $this->gamestate->nextState('next');
     }
 
-    // TODO remove
-    public function seen() {
-        $this->checkAction('seen');
-        $this->actSeen();
-    }
-
     public function actSeen() {
         $playerId = intval($this->getCurrentPlayerId());
 
         $this->gamestate->setPlayerNonMultiactive($playerId, 'endRound');
-    }
-
-    // TODO remove
-    public function cancel() {
-        $this->checkAction('cancel');
-        $this->actCancel();
     }
 
     public function actCancel() {

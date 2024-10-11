@@ -83,7 +83,6 @@ $playerActionsGameStates = [
         "type" => "activeplayer",
         "args" => "argChooseCard",  
         "possibleactions" => [ 
-            "chooseCard",
             'actChooseCard',
         ],
         "transitions" => [
@@ -100,9 +99,6 @@ $playerActionsGameStates = [
         "type" => "activeplayer",    
         "args" => "argPlayCard",    
         "possibleactions" => [ 
-            "chooseCard",
-            "playCard",
-            "cancel",
             'actChooseCard',
             'actPlayCard',
             'actCancel',
@@ -121,9 +117,6 @@ $playerActionsGameStates = [
         "type" => "activeplayer", 
         "args" => "argKeepCard",    
         "possibleactions" => [ 
-            "chooseCard",
-            "keepCard",
-            "cancel",
             'actChooseCard',
             'actKeepCard',
             'actCancel',
@@ -142,7 +135,6 @@ $playerActionsGameStates = [
         "type" => "multipleactiveplayer",
         "action" => "stBeforeEndRound",
         "possibleactions" => [ 
-            "seen",
             'actSeen',
         ],
         "transitions" => [
