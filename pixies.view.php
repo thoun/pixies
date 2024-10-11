@@ -37,7 +37,6 @@
         $players_nbr = count($players);
 
         /*********** Place your code below:  ************/
-        $this->tpl['ROUND'] = self::_("Round");
         /*********** Do not change anything below this line  ************/
   	}
   }

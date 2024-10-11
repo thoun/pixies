@@ -32,54 +32,5 @@
             $this->view = "pixies_pixies";
             self::trace( "Complete reinitialization of board game" );
       }
-  	} 
-  	
-  	// define your action entry points there
-
-    public function chooseCard() {
-        self::setAjaxMode();
-
-        $id = self::getArg("id", AT_posint, true);
-        $autoplace = self::getArg("autoplace", AT_bool, false);
-
-        $this->game->chooseCard($id, $autoplace);
-
-        self::ajaxResponse();
-    }
-
-    public function playCard() {
-        self::setAjaxMode();
-
-        $space = self::getArg("space", AT_posint, true);
-
-        $this->game->playCard($space);
-
-        self::ajaxResponse();
-    }
-
-    public function keepCard() {
-        self::setAjaxMode();
-
-        $index = self::getArg("index", AT_posint, true);
-
-        $this->game->keepCard($index);
-
-        self::ajaxResponse();
-    }
-
-    public function seen() {
-        self::setAjaxMode();
-
-        $this->game->seen();
-
-        self::ajaxResponse();
-    }
-
-    public function cancel() {
-        self::setAjaxMode();
-
-        $this->game->cancel();
-
-        self::ajaxResponse();
-    }
+  	}
 }

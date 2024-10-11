@@ -2407,6 +2407,7 @@ var Pixies = /** @class */ (function () {
     */
     Pixies.prototype.setup = function (gamedatas) {
         log("Starting game setup");
+        document.getElementById('game_play_area').insertAdjacentHTML('beforeend', "\n            <div id=\"result\"></div>\n\n            <div id=\"full-table\">\n                <div id=\"centered-table\">\n                    <div id=\"table-center\">\n                        <div id=\"round-counter-wrapper\" class=\"whiteblock\">\n                            <div>".concat(_("Round"), "</div>\n                            <div class=\"counter\"><span id=\"round-counter\"></span><span>&nbsp;/&nbsp;3</span></div>\n                        </div>\n                        <div id=\"deck\" class=\"cards-stack\"></div>\n                        <div id=\"table-cards\"></div>\n                    </div>\n                    <div id=\"tables\"></div>\n                </div>\n            </div>\n        "));
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
         this.animationManager = new AnimationManager(this);
