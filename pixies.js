@@ -2407,7 +2407,7 @@ var Pixies = /** @class */ (function () {
     */
     Pixies.prototype.setup = function (gamedatas) {
         log("Starting game setup");
-        document.getElementById('game_play_area').insertAdjacentHTML('beforeend', "\n            <div id=\"result\"></div>\n\n            <div id=\"full-table\">\n                <div id=\"centered-table\">\n                    <div id=\"table-center\">\n                        <div id=\"round-counter-wrapper\" class=\"whiteblock\">\n                            <div>".concat(_("Round"), "</div>\n                            <div class=\"counter\"><span id=\"round-counter\"></span><span>&nbsp;/&nbsp;3</span></div>\n                        </div>\n                        <div id=\"deck\" class=\"cards-stack\"></div>\n                        <div id=\"table-cards\"></div>\n                    </div>\n                    <div id=\"tables\"></div>\n                </div>\n            </div>\n        "));
+        this.getGameAreaElement().insertAdjacentHTML('beforeend', "\n            <div id=\"result\"></div>\n\n            <div id=\"full-table\">\n                <div id=\"centered-table\">\n                    <div id=\"table-center\">\n                        <div id=\"round-counter-wrapper\" class=\"whiteblock\">\n                            <div>".concat(_("Round"), "</div>\n                            <div class=\"counter\"><span id=\"round-counter\"></span><span>&nbsp;/&nbsp;3</span></div>\n                        </div>\n                        <div id=\"deck\" class=\"cards-stack\"></div>\n                        <div id=\"table-cards\"></div>\n                    </div>\n                    <div id=\"tables\"></div>\n                </div>\n            </div>\n        "));
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
         this.animationManager = new AnimationManager(this);
@@ -2519,7 +2519,7 @@ var Pixies = /** @class */ (function () {
         if (this.isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'playCard':
-                    this.addActionButton("cancel_button", _('Cancel'), function () { return _this.bgaPerformAction('actCancel'); }, null, null, 'gray');
+                    this.statusBar.addActionButton(_('Cancel'), function () { return _this.bgaPerformAction('actCancel'); }, { color: 'secondary' });
                     break;
                 case 'keepCard':
                     var labels_1 = [
@@ -2527,13 +2527,13 @@ var Pixies = /** @class */ (function () {
                         _("Keep the new card"),
                     ];
                     [0, 1].forEach(function (index) {
-                        _this.addActionButton("keepCard".concat(index, "_button"), "".concat(labels_1[index], "<br><div id=\"keepCard").concat(index, "\"></div>"), function () { return _this.bgaPerformAction('actKeepCard', { index: index }); });
+                        _this.statusBar.addActionButton("".concat(labels_1[index], "<br><div id=\"keepCard").concat(index, "\"></div>"), function () { return _this.bgaPerformAction('actKeepCard', { index: index }); }, { id: "keepCard".concat(index, "_button") });
                         _this.cardsManager.setForHelp(args.cards[index], "keepCard".concat(index));
                     });
-                    this.addActionButton("cancel_button", _('Cancel'), function () { return _this.bgaPerformAction('actCancel'); }, null, null, 'gray');
+                    this.statusBar.addActionButton(_('Cancel'), function () { return _this.bgaPerformAction('actCancel'); }, { color: 'secondary' });
                     break;
                 case 'beforeEndRound':
-                    this.addActionButton("seen_button", _("Seen"), function () { return _this.bgaPerformAction('actSeen'); });
+                    this.statusBar.addActionButton(_("Seen"), function () { return _this.bgaPerformAction('actSeen'); });
                     break;
             }
         }
@@ -2633,10 +2633,9 @@ var Pixies = /** @class */ (function () {
         document.getElementById("result").insertAdjacentHTML('beforeend', html);
     };
     Pixies.prototype.chooseCard = function (id) {
-        var _a;
         this.bgaPerformAction('actChooseCard', {
             id: id,
-            autoplace: ((_a = this.prefs[201]) === null || _a === void 0 ? void 0 : _a.value) === 1
+            autoplace: this.getGameUserPreference(201) === 1
         });
     };
     ///////////////////////////////////////////////////
@@ -2652,34 +2651,26 @@ var Pixies = /** @class */ (function () {
     */
     Pixies.prototype.setupNotifications = function () {
         //log( 'notifications subscriptions setup' );
-        var _this = this;
-        var notifs = [
-            ['newRound', ANIMATION_MS],
-            ['newTurn', undefined],
-            ['playCard', undefined],
-            ['keepCard', undefined],
-            ['endRound', undefined],
-            ['score', ANIMATION_MS * 3],
-            ['roundResult', 0],
-            ['lastTurn', 1],
-            ['loadBug', 1],
-        ];
-        notifs.forEach(function (notif) {
-            dojo.subscribe(notif[0], _this, function (notifDetails) {
-                log("notif_".concat(notif[0]), notifDetails.args);
-                var promise = _this["notif_".concat(notif[0])](notifDetails.args);
-                // tell the UI notification ends, if the function returned a promise
-                promise === null || promise === void 0 ? void 0 : promise.then(function () { return _this.notifqueue.onSynchronousNotificationEnd(); });
-            });
-            _this.notifqueue.setSynchronous(notif[0], notif[1]);
-        });
+        this.bgaSetupPromiseNotifications();
     };
     Pixies.prototype.notif_newRound = function (args) {
-        var _a;
-        document.getElementById("result").innerHTML = "";
-        (_a = document.getElementById("last-round")) === null || _a === void 0 ? void 0 : _a.remove();
-        var round = args.round;
-        this.roundCounter.toValue(round);
+        return __awaiter(this, void 0, void 0, function () {
+            var round;
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        document.getElementById("result").innerHTML = "";
+                        (_a = document.getElementById("last-round")) === null || _a === void 0 ? void 0 : _a.remove();
+                        round = args.round;
+                        this.roundCounter.toValue(round);
+                        return [4 /*yield*/, this.wait(ANIMATION_MS)];
+                    case 1:
+                        _b.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     Pixies.prototype.notif_newTurn = function (args) {
         return __awaiter(this, void 0, void 0, function () {
@@ -2741,12 +2732,24 @@ var Pixies = /** @class */ (function () {
         });
     };
     Pixies.prototype.notif_score = function (args) {
-        var _a, _b;
-        (_a = document.getElementById("last-round")) === null || _a === void 0 ? void 0 : _a.remove();
-        var playerId = args.playerId, newScore = args.newScore, detailledScore = args.detailledScore, round = args.round;
-        (_b = this.scoreCtrl[playerId]) === null || _b === void 0 ? void 0 : _b.toValue(newScore);
-        this.displayScoring("player-table-".concat(playerId, "-cards"), this.getPlayerColor(playerId), detailledScore.points, ANIMATION_MS * 3);
-        this.setRoundResultForPlayer(playerId, detailledScore, round);
+        return __awaiter(this, void 0, void 0, function () {
+            var playerId, newScore, detailledScore, round;
+            var _a, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        (_a = document.getElementById("last-round")) === null || _a === void 0 ? void 0 : _a.remove();
+                        playerId = args.playerId, newScore = args.newScore, detailledScore = args.detailledScore, round = args.round;
+                        (_b = this.scoreCtrl[playerId]) === null || _b === void 0 ? void 0 : _b.toValue(newScore);
+                        this.displayScoring("player-table-".concat(playerId, "-cards"), this.getPlayerColor(playerId), detailledScore.points, ANIMATION_MS * 3);
+                        this.setRoundResultForPlayer(playerId, detailledScore, round);
+                        return [4 /*yield*/, this.wait(ANIMATION_MS * 3)];
+                    case 1:
+                        _c.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     Pixies.prototype.notif_roundResult = function (args) {
         return __awaiter(this, void 0, void 0, function () {
@@ -2775,47 +2778,6 @@ var Pixies = /** @class */ (function () {
                 }
             });
         });
-    };
-    /**
-    * Load production bug report handler
-    */
-    Pixies.prototype.notif_loadBug = function (args) {
-        var that = this;
-        function fetchNextUrl() {
-            var url = args.urls.shift();
-            console.log('Fetching URL', url, '...');
-            // all the calls have to be made with ajaxcall in order to add the csrf token, otherwise you'll get "Invalid session information for this action. Please try reloading the page or logging in again"
-            that.ajaxcall(url, {
-                lock: true,
-            }, that, function (success) {
-                console.log('=> Success ', success);
-                if (args.urls.length > 1) {
-                    fetchNextUrl();
-                }
-                else if (args.urls.length > 0) {
-                    //except the last one, clearing php cache
-                    url = args.urls.shift();
-                    dojo.xhrGet({
-                        url: url,
-                        headers: {
-                            'X-Request-Token': bgaConfig.requestToken,
-                        },
-                        load: function (success) {
-                            console.log('Success for URL', url, success);
-                            console.log('Done, reloading page');
-                            window.location.reload();
-                        },
-                        handleAs: 'text',
-                        error: function (error) { return console.log('Error while loading : ', error); },
-                    });
-                }
-            }, function (error) {
-                if (error)
-                    console.log('=> Error ', error);
-            });
-        }
-        console.log('Notif: load bug', args);
-        fetchNextUrl();
     };
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */

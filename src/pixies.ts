@@ -42,7 +42,7 @@ class Pixies implements PixiesGame {
     public setup(gamedatas: PixiesGamedatas) {
         log( "Starting game setup" );
 
-        document.getElementById('game_play_area').insertAdjacentHTML('beforeend', `
+        (this as any).getGameAreaElement().insertAdjacentHTML('beforeend', `
             <div id="result"></div>
 
             <div id="full-table">
@@ -189,7 +189,7 @@ class Pixies implements PixiesGame {
         if ((this as any).isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'playCard':
-                    (this as any).addActionButton(`cancel_button`, _('Cancel'), () => (this as any).bgaPerformAction('actCancel'), null, null, 'gray');
+                    (this as any).statusBar.addActionButton(_('Cancel'), () => (this as any).bgaPerformAction('actCancel'), { color: 'secondary' });
                     break;
                 case 'keepCard':
                     const labels = [
@@ -197,13 +197,13 @@ class Pixies implements PixiesGame {
                         _("Keep the new card"),
                     ];
                     [0, 1].forEach(index => {
-                        (this as any).addActionButton(`keepCard${index}_button`, `${labels[index]}<br><div id="keepCard${index}"></div>`, () => (this as any).bgaPerformAction('actKeepCard', { index }));
+                        (this as any).statusBar.addActionButton(`${labels[index]}<br><div id="keepCard${index}"></div>`, () => (this as any).bgaPerformAction('actKeepCard', { index }), { id: `keepCard${index}_button` });
                         this.cardsManager.setForHelp(args.cards[index], `keepCard${index}`);
                     });
-                    (this as any).addActionButton(`cancel_button`, _('Cancel'), () => (this as any).bgaPerformAction('actCancel'), null, null, 'gray');
+                    (this as any).statusBar.addActionButton(_('Cancel'), () => (this as any).bgaPerformAction('actCancel'), { color: 'secondary' });
                     break;
                 case 'beforeEndRound':
-                    (this as any).addActionButton(`seen_button`, _("Seen"), () => (this as any).bgaPerformAction('actSeen'));
+                    (this as any).statusBar.addActionButton(_("Seen"), () => (this as any).bgaPerformAction('actSeen'));
                     break;
             }
         }
@@ -354,7 +354,7 @@ class Pixies implements PixiesGame {
     public chooseCard(id: number) {
         (this as any).bgaPerformAction('actChooseCard', {
             id,
-            autoplace: (this as any).prefs[201]?.value === 1
+            autoplace: (this as any).getGameUserPreference(201) === 1
         });
     }
 
@@ -373,36 +373,16 @@ class Pixies implements PixiesGame {
     setupNotifications() {
         //log( 'notifications subscriptions setup' );
 
-        const notifs = [
-            ['newRound', ANIMATION_MS],
-            ['newTurn', undefined],
-            ['playCard', undefined],
-            ['keepCard', undefined],
-            ['endRound', undefined],
-            ['score', ANIMATION_MS * 3],
-            ['roundResult', 0],
-            ['lastTurn', 1],
-            ['loadBug', 1],
-        ];
-    
-        notifs.forEach((notif) => {
-            dojo.subscribe(notif[0], this, (notifDetails: Notif<any>) => {
-                log(`notif_${notif[0]}`, notifDetails.args);
-
-                const promise = this[`notif_${notif[0]}`](notifDetails.args);
-
-                // tell the UI notification ends, if the function returned a promise
-                promise?.then(() => (this as any).notifqueue.onSynchronousNotificationEnd());
-            });
-            (this as any).notifqueue.setSynchronous(notif[0], notif[1]);
-        });
+        (this as any).bgaSetupPromiseNotifications();
     }
 
-    notif_newRound(args: NotifNewRoundArgs) {
+    async notif_newRound(args: NotifNewRoundArgs) {
         document.getElementById(`result`).innerHTML = ``;
         document.getElementById(`last-round`)?.remove();
         const { round } = args;
         this.roundCounter.toValue(round);
+
+        await (this as any).wait(ANIMATION_MS);
     }
 
     async notif_newTurn(args: NotifNewTurnArgs) {
@@ -431,7 +411,7 @@ class Pixies implements PixiesGame {
         </div>`, 'page-title');
     }
 
-    notif_score(args: NotifScoreArgs) {
+    async notif_score(args: NotifScoreArgs) {
         document.getElementById(`last-round`)?.remove();
         const { playerId, newScore, detailledScore, round } = args;
         (this as any).scoreCtrl[playerId]?.toValue(newScore);
@@ -439,6 +419,8 @@ class Pixies implements PixiesGame {
         (this as any).displayScoring(`player-table-${playerId}-cards`, this.getPlayerColor(playerId), detailledScore.points, ANIMATION_MS * 3);
         
         this.setRoundResultForPlayer(playerId, detailledScore, round);
+
+        await (this as any).wait(ANIMATION_MS * 3);
     }
 
     async notif_roundResult(args: NotifRoundResultArgs) {
@@ -456,53 +438,6 @@ class Pixies implements PixiesGame {
 
         return await this.tableCenter.deck.shuffle();
     }
-    
-    /**
-    * Load production bug report handler
-    */
-   notif_loadBug(args) {
-     const that: any = this;
-     function fetchNextUrl() {
-       var url = args.urls.shift();
-       console.log('Fetching URL', url, '...');
-       // all the calls have to be made with ajaxcall in order to add the csrf token, otherwise you'll get "Invalid session information for this action. Please try reloading the page or logging in again"
-       that.ajaxcall(
-         url,
-         {
-           lock: true,
-         },
-         that,
-         function (success) {
-           console.log('=> Success ', success);
-
-           if (args.urls.length > 1) {
-             fetchNextUrl();
-           } else if (args.urls.length > 0) {
-             //except the last one, clearing php cache
-             url = args.urls.shift();
-             (dojo as any).xhrGet({
-               url: url,
-               headers: {
-                 'X-Request-Token': bgaConfig.requestToken,
-               },
-               load: success => {
-                 console.log('Success for URL', url, success);
-                 console.log('Done, reloading page');
-                 window.location.reload();
-               },
-               handleAs: 'text',
-               error: error => console.log('Error while loading : ', error),
-             });
-           }
-         },
-         error => {
-           if (error) console.log('=> Error ', error);
-         },
-       );
-     }
-     console.log('Notif: load bug', args);
-     fetchNextUrl();
-   }
 
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */
