@@ -16,9 +16,6 @@
   *
   */
 
-
-require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
-
 require_once('modules/php/constants.inc.php');
 require_once('modules/php/utils.php');
 require_once('modules/php/actions.php');
@@ -26,12 +23,14 @@ require_once('modules/php/states.php');
 require_once('modules/php/args.php');
 require_once('modules/php/debug-util.php');
 
-class Pixies extends Table {
+class Pixies extends \Bga\GameFramework\Table {
     use UtilTrait;
     use ActionTrait;
     use StateTrait;
     use ArgsTrait;
     use DebugUtilTrait;
+
+    public \Deck $cards;
 
 	function __construct() {
         // Your global variables labels:
@@ -93,7 +92,7 @@ class Pixies extends Table {
         foreach(['table', 'player'] as $statType) {
             foreach([
                 'cardPlayedEmptySpaceVisible', 'cardPlayedEmptySpaceHidden', 'validatedCard', 
-                'pointsValidatedCard', 'pointsSpirals', 'pointsLostCrosses', 'pointsColorZone',
+                'pointsValidatedCard', 'pointsSpirals', 'pointsLostCrosses', 'pointsColorZone', 'pointsFacedownCards',
             ] as $statName) {
                 $this->initStat($statType, $statName, 0);
             }
@@ -120,7 +119,7 @@ class Pixies extends Table {
         _ when the game starts
         _ when a player refreshes the game page (F5)
     */
-    protected function getAllDatas() {
+    protected function getAllDatas(): array {
         $result = [];
     
         $isEndScore = intval($this->gamestate->state_id()) >= ST_END_SCORE;
@@ -144,6 +143,7 @@ class Pixies extends Table {
             $result['roundResult'][$i] = $this->getGlobalVariable(ROUND_RESULT.$i);
         }
         $result['lastTurn'] = !$isEndScore && boolval($this->getGameStateValue(LAST_TURN));
+        $result['flowerPowerExpansion'] = $this->isFlowerPowerExpansion();
   
         return $result;
     }
@@ -193,7 +193,7 @@ class Pixies extends Table {
         you must _never_ use getCurrentPlayerId() or getCurrentPlayerName(), otherwise it will fail with a "Not logged" error message. 
     */
 
-    function zombieTurn($state, $active_player) {
+    function zombieTurn($state, $active_player): void {
     	$statename = $state['name'];
     	
         if ($state['type'] === "activeplayer") {
@@ -224,7 +224,7 @@ class Pixies extends Table {
             return;
         }
 
-        throw new feException( "Zombie mode not supported at this game state: ".$statename );
+        throw new \feException( "Zombie mode not supported at this game state: ".$statename );
     }
     
 ///////////////////////////////////////////////////////////////////////////////////:

@@ -10,7 +10,7 @@
     "files": [
         "src/framework.d.ts",
         "src/counter.d.ts",
-        "node_modules/bga-zoom/src/zoom-manager.ts",
+        "src/bga-zoom.d.ts",
         "node_modules/bga-help/src/help-manager.ts",
         "node_modules/bga-animations/src/framework.d.ts",
         "node_modules/bga-animations/src/animations.ts",

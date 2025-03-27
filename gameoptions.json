@@ -1,1 +1,26 @@
-{}
+{
+    "101": {
+        "name": "Flower Power expansion",
+        "values": {
+            "1": {
+                "name": "Disabled"
+            },
+            "2": {
+                "name": "Enabled",
+                "tmdisplay": "Flower Power expansion",
+                "description": "An additional set of 14 cards, and facedown cards earns 5 points",
+                "nobeginner": true
+            }
+        },
+        "default": 1,
+        "startcondition": {
+            "1": [
+                {
+                    "type": "maxplayers",
+                    "value": 5,
+                    "message": "You can only play with 5 players if Flower Power expansion is activated"
+                }
+            ]
+        }
+    }
+}

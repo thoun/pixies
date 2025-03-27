@@ -21,14 +21,14 @@ trait DebugUtilTrait {
     }
 
     function d() {
-        $this->debugSetCard(2343492, 4, 2);
-        $this->debugSetCard(2343492, 3, 2);
-        $this->debugSetCard(2343492, 3, 4);
-        $this->debugSetCard(2343492, 4, 5);
-        $this->debugSetCard(2343492, 3, 10);
-        $this->debugSetCard(2343492, 3, 12);
-        $this->debugSetCard(2343492, 1, 14);
-        $this->debugSetCard(2343492, 3, 16);
+        $this->debug_setCard(2343492, 4, 2);
+        $this->debug_setCard(2343492, 3, 2);
+        $this->debug_setCard(2343492, 3, 4);
+        $this->debug_setCard(2343492, 4, 5);
+        $this->debug_setCard(2343492, 3, 10);
+        $this->debug_setCard(2343492, 3, 12);
+        $this->debug_setCard(2343492, 1, 14);
+        $this->debug_setCard(2343492, 3, 16);
 
         $card7 = $this->debugGetCardByTypes(3, 14);
         $this->cards->moveCard($card7->id, 'table');
@@ -38,7 +38,7 @@ trait DebugUtilTrait {
         return $this->getCardsFromDb($this->cards->getCardsOfType($color, $index))[0];
     }
 
-    private function debugSetCard(int $playerId, int $color, int $index, ?int $space = null, ?int $locationArg = null) {
+    private function debug_setCard(int $playerId, int $color, int $index, ?int $space = null, ?int $locationArg = null) {
         $card = $this->debugGetCardByTypes($color, $index);
         if ($space === null) {
             $space = $card->value;
@@ -50,36 +50,39 @@ trait DebugUtilTrait {
         $this->cards->moveCard($card->id, $location, $locationArg);
     }
 
-    function emptyDeck() {
+    function debug_emptyDeck() {
       $this->cards->moveAllCardsInLocation('deck', 'void');
     }
 
-    public function debugReplacePlayersIds() {
-        if ($this->getBgaEnvironment() != 'studio') { 
-            return;
-        } 
+    function debug_playToEndRound() {
+      while (intval($this->gamestate->state_id()) < ST_MULTIPLAYER_BEFORE_END_ROUND) {
+        $state = intval($this->gamestate->state_id());
+        switch ($state) {
+          case ST_PLAYER_CHOOSE_CARD:
+            $playerId = intval($this->getActivePlayerId());
 
-		// These are the id's from the BGAtable I need to debug.
-		$ids = array_map(fn($dbPlayer) => intval($dbPlayer['player_id']), array_values($this->getCollectionFromDb('select player_id from player order by player_no')));
+            $cards = $this->getCardsFromDb($this->cards->getCardsInLocation('table'));
+            $card = $cards[bga_rand(0, count($cards) - 1)];
 
-		// Id of the first player in BGA Studio
-		$sid = 2343492;
-		
-		foreach ($ids as $id) {
-			// basic tables
-			$this->DbQuery("UPDATE player SET player_id=$sid WHERE player_id = $id" );
-			$this->DbQuery("UPDATE global SET global_value=$sid WHERE global_value = $id" );
-			$this->DbQuery("UPDATE card SET card_location_arg=$sid WHERE card_location_arg = $id" );
+            $this->applyChooseCard($playerId, $card);
+            break;
+    
+          case ST_PLAYER_PLAY_CARD:
+            $playerId = intval($this->getActivePlayerId());
+            $args = $this->argPlayCard();
+            $spaces = $args['spaces'];
+            $space = $spaces[bga_rand(0, count($spaces) - 1)];
 
-			// 'other' game specific tables. example:
-			// tables specific to your schema that use player_ids
-            for ($value = 1; $value <= 9; $value++) {
-			    $this->DbQuery("UPDATE card SET card_location='player-$sid-$value' WHERE card_location = 'player-$id-$value'" );
-            }
-			
-			++$sid;
-		}
-	}
+            $this->applyPlayCard($playerId, $space);
+            break;
+
+          case ST_PLAYER_KEEP_CARD:
+            $playerId = intval($this->getActivePlayerId());
+            $this->applyKeepCard($playerId, 0);
+            break;
+        }
+      }
+    }
 
     function debug($debugData) {
         if ($this->getBgaEnvironment() != 'studio') { 

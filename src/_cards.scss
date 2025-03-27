@@ -25,7 +25,7 @@
             }
 
             &.front {
-                &[data-color="0"] {
+                &[data-type="0"] {
                     background-image: url('img/cards0.jpg');
                     @for $index from 1 through 6 {
                         &[data-index="#{$index}"] {
@@ -34,15 +34,19 @@
                     }
                 }
                 
-                @for $color from 1 through 4 {
-                    &[data-color="#{$color}"] {
-                        background-image: url('img/cards#{$color}.jpg');
+                @for $type from 1 through 4 {
+                    &[data-type="#{$type}"] {
+                        background-image: url('img/cards#{$type}.jpg');
                         @for $index from 1 through 16 {
                             &[data-index="#{$index}"] {
                                 background-position-x: #{($index - 1) * 100% / 15};
                             }
                         }
                     }
+                }
+
+                &.flower-power {
+                    background-image: url('img/flower-power-cards.jpg');
                 }
             }
         }

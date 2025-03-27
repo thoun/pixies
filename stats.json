@@ -44,6 +44,11 @@
             "id": 23,
             "name": "Points gained with largest color zone",
             "type": "int"
+        },
+        "pointsFacedownCards": {
+            "id": 24,
+            "name": "Points gained with facedown cards",
+            "type": "int"
         }
     },
     "player": {
@@ -80,6 +85,11 @@
         "pointsColorZone": {
             "id": 23,
             "name": "Points gained with largest color zone",
+            "type": "int"
+        },
+        "pointsFacedownCards": {
+            "id": 24,
+            "name": "Points gained with facedown cards",
             "type": "int"
         }
     }

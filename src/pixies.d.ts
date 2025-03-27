@@ -2,21 +2,11 @@
  * Your game interfaces
  */
 
-interface Card {
-    id: number;
-    location: string;
-    locationArg: number;
-    color: number;
-    index: number;
-    value: number;
-    spirals: number;
-    crosses: number;
-}
-
 interface DetailledScore {
     validatedCardPoints: number;
     largestColorZonePoints: number;
     spiralsAndCrossesPoints: number;
+    facedownCardsPoints: number;
     points: number;
 }
 
@@ -43,6 +33,7 @@ interface PixiesGamedatas {
     roundResult: { [playerId: number]: DetailledScore }[];
     roundNumber: number;
     lastTurn: boolean;
+    flowerPowerExpansion: boolean;
 }
 
 interface PixiesGame extends Game {

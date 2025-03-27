@@ -5,11 +5,14 @@ declare const dojo: Dojo;
 declare const _;
 declare const g_gamethemeurl;
 declare const bgaConfig;
+declare const loadBgaGameLib;
 
 const ANIMATION_MS = 500;
 const ACTION_TIMER_DURATION = 5;
 
 const LOCAL_STORAGE_ZOOM_KEY = 'Pixies-zoom';
+
+loadBgaGameLib('bga-zoom', '0.x');
 
 class Pixies implements PixiesGame {
     public animationManager: AnimationManager;
@@ -41,6 +44,13 @@ class Pixies implements PixiesGame {
 
     public setup(gamedatas: PixiesGamedatas) {
         log( "Starting game setup" );
+
+        if (gamedatas.flowerPowerExpansion) {
+            (this as any).dontPreloadImage('background.jpg');
+            document.getElementsByTagName('html')[0].classList.add('flower-power-expansion');
+        } else {
+            (this as any).dontPreloadImage('background-expansion.jpg');
+        }
 
         (this as any).getGameAreaElement().insertAdjacentHTML('beforeend', `
             <div id="result"></div>
@@ -345,6 +355,7 @@ class Pixies implements PixiesGame {
             <tr><th class="type"><div class="score-icon validated"></div></th>${playersIds.map(playerId => `<td id="validatedCardPoints-${round}-${playerId}">${roundResult[playerId]?.validatedCardPoints ?? ''}</td>`).join('')}</tr>
             <tr><th class="type"><div class="score-icon zone" data-round="${round}"></div></th>${playersIds.map(playerId => `<td id="largestColorZonePoints-${round}-${playerId}">${roundResult[playerId]?.largestColorZonePoints ?? ''}</td>`).join('')}</tr>
             <tr><th class="type"><div class="score-icon spirals"></div></th>${playersIds.map(playerId => `<td id="spiralsAndCrossesPoints-${round}-${playerId}">${roundResult[playerId]?.spiralsAndCrossesPoints ?? ''}</td>`).join('')}</tr>
+            ${this.gamedatas.flowerPowerExpansion ? `<tr><th class="type"><div class="score-icon facedown"></div></th>${playersIds.map(playerId => `<td id="facedownCardsPoints-${round}-${playerId}">${roundResult[playerId]?.facedownCardsPoints ?? ''}</td>`).join('')}</tr>` : ``}
             <tr><th class="type"><div class="score-icon sum"></div></th>${playersIds.map(playerId => `<th class="sum" id="points-${round}-${playerId}">${roundResult[playerId]?.points ?? ''}</th>`).join('')}</tr>
         </table>`;
 

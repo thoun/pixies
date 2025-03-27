@@ -70,22 +70,18 @@ trait ActionTrait {
         $this->incStat(1, $statName);
         $this->incStat(1, $statName, $playerId);
 
-        self::notifyAllPlayers('playCard', clienttranslate('${player_name} plays a ${color} card on space ${value}'), [
+        $this->notify->all('playCard', clienttranslate('${player_name} plays a ${color} card on space ${value}'), [
             'playerId' => $playerId,
-            'player_name' => $this->getPlayerName($playerId),
             'card' => $space == $card->value ? $card : Card::onlyId($card),
             'space' => $space,
-            'color' => $this->COLORS[$card->color], // for log
-            'value' => $space, // for log
-            'i18n' => ['color'],
+            'visibleCard' => $card, // only used for logs
         ]);
 
         if (!boolval($this->getGameStateValue(LAST_TURN)) && $this->getPlayerCardCount($playerId) >= 9) {
             $this->setGameStateValue(LAST_TURN, 1);
 
-            self::notifyAllPlayers('lastTurn', clienttranslate('${player_name} has filled all 9 of their spaces, triggering the end of the round!'), [
+            $this->notify->all('lastTurn', clienttranslate('${player_name} has filled all 9 of their spaces, triggering the end of the round!'), [
                 'playerId' => $playerId,
-                'player_name' => $this->getPlayerName($playerId),
             ]);
         }
 
@@ -117,15 +113,11 @@ trait ActionTrait {
         $this->cards->moveCard($hiddenCard->id, "player-$playerId-$space", $hiddenCard->locationArg);
         $this->cards->moveCard($visibleCard->id, "player-$playerId-$space", $visibleCard->locationArg);
 
-        self::notifyAllPlayers('keepCard', clienttranslate('${player_name} keeps the ${color} card on space ${value}'), [
+        $this->notify->all('keepCard', clienttranslate('${player_name} keeps the ${color} card on space ${value}'), [
             'playerId' => $playerId,
-            'player_name' => $this->getPlayerName($playerId),
             'hiddenCard' => Card::onlyId($hiddenCard),
             'visibleCard' => $visibleCard,
             'space' => $space,
-            'color' => $this->COLORS[$card->color], // for log
-            'value' => $space, // for log
-            'i18n' => ['color'],
         ]);
         
         $this->incStat(1, 'validatedCard');

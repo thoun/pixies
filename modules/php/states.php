@@ -18,7 +18,7 @@ trait StateTrait {
 
         $roundNumber = intval($this->getStat('roundNumber'));
 
-        self::notifyAllPlayers('newRound', clienttranslate('Round ${roundNumber}/3 begins!'), [
+        $this->notify->all('newRound', clienttranslate('Round ${roundNumber}/3 begins!'), [
             'round' => $roundNumber,
             'roundNumber' => $roundNumber, // for logs
         ]);
@@ -32,7 +32,7 @@ trait StateTrait {
 
         $cards = $this->getCardsFromDb($this->cards->pickCardsForLocation($cardCount, 'deck', 'table'));
 
-        self::notifyAllPlayers('newTurn', '', [
+        $this->notify->all('newTurn', '', [
             'cards' => $cards,
         ]);
 
@@ -65,7 +65,7 @@ trait StateTrait {
         $this->incStat(1, 'turnsNumber');
 
         if (intval($this->cards->countCardInLocation('deck')) < count($this->getPlayersIds())) {
-            self::notifyAllPlayers('log', clienttranslate('The deck is empty, so the round must end'), []);
+            $this->notify->all('log', clienttranslate('The deck is empty, so the round must end'), []);
             $this->setGameStateValue(LAST_TURN, 1);
         }
 
@@ -86,7 +86,7 @@ trait StateTrait {
             ]);
         }
         $this->setGlobalVariable(ROUND_RESULT.$roundNumber, $scoreRound);
-        self::notifyAllPlayers('roundResult', '', [
+        $this->notify->all('roundResult', '', [
             'roundResult' => $scoreRound,
             'round' => $roundNumber,
         ]);
@@ -109,7 +109,7 @@ trait StateTrait {
             $this->cards->moveAllCardsInLocation(null, 'deck');
             $this->cards->shuffle('deck');
 
-            self::notifyAllPlayers('endRound', '', [
+            $this->notify->all('endRound', '', [
                 'remainingCardsInDeck' => $this->getRemainingCardsInDeck(),
             ]);
 

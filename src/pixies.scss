@@ -1,4 +1,3 @@
-@import '../node_modules/bga-zoom/bga-zoom';
 @import '../node_modules/bga-help/bga-help';
 @import '../node_modules/bga-cards/bga-cards';
 @import 'cards';
@@ -30,6 +29,10 @@ html, .mode_3d #game_play_area_background {
   background-size: 100% 100%;
 }
 
+html.flower-power-expansion, html.flower-power-expansion .mode_3d #game_play_area_background {
+  background: url('img/background-expansion.jpg') #e88e96;
+  background-size: 100% 100%;
+}
 #full-table {
   position: relative;
 
@@ -88,20 +91,23 @@ html, .mode_3d #game_play_area_background {
   vertical-align: middle;
   
   &.validated {
-    background-position-x: #{0 * 100% / 5};
+    background-position-x: #{0 * 100% / 6};
   }
   &.zone {
-    @for $round from 1 through 6 {
+    @for $round from 1 through 3 {
       &[data-round="#{$round}"] {
-        background-position-x: #{$round * 100% / 5};
+        background-position-x: #{$round * 100% / 6};
       }
     }
   }
   &.spirals {
-    background-position-x: #{4 * 100% / 5};
+    background-position-x: #{4 * 100% / 6};
+  }
+  &.facedown {
+    background-position-x: #{5 * 100% / 6};
   }
   &.sum {
-    background-position-x: #{5 * 100% / 5};
+    background-position-x: #{6 * 100% / 6};
   }
 }
 
