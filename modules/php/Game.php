@@ -15,20 +15,23 @@
   * In this PHP file, you are going to defines the rules of the game.
   *
   */
+declare(strict_types=1);
 
-require_once('modules/php/constants.inc.php');
-require_once('modules/php/utils.php');
-require_once('modules/php/actions.php');
-require_once('modules/php/states.php');
-require_once('modules/php/args.php');
-require_once('modules/php/debug-util.php');
+namespace Bga\Games\Pixies;
 
-class Pixies extends \Bga\GameFramework\Table {
-    use UtilTrait;
-    use ActionTrait;
-    use StateTrait;
-    use ArgsTrait;
-    use DebugUtilTrait;
+require_once('constants.inc.php');
+require_once('utils.php');
+require_once('actions.php');
+require_once('states.php');
+require_once('args.php');
+require_once('debug-util.php');
+
+class Game extends \Bga\GameFramework\Table {
+    use \UtilTrait;
+    use \ActionTrait;
+    use \StateTrait;
+    use \ArgsTrait;
+    use \DebugUtilTrait;
 
     public \Deck $cards;
 
@@ -41,11 +44,11 @@ class Pixies extends \Bga\GameFramework\Table {
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
         
-        self::initGameStateLabels([
+        $this->initGameStateLabels([
             LAST_TURN => LAST_TURN,
         ]);  
 
-        $this->cards = self::getNew("module.common.deck");
+        $this->cards = $this->getNew("module.common.deck");
         $this->cards->init("card");        
 	}
 	
@@ -65,7 +68,7 @@ class Pixies extends \Bga\GameFramework\Table {
         // Set the colors of the players with HTML color code
         // The default below is red/green/blue/orange/brown
         // The number of colors defined here must correspond to the maximum number of players allowed for the gams
-        $gameinfos = self::getGameinfos();
+        $gameinfos = $this->getGameinfos();
         $default_colors = $gameinfos['player_colors'];
  
         // Create players
@@ -77,9 +80,9 @@ class Pixies extends \Bga\GameFramework\Table {
             $values[] = "('".$player_id."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."')";
         }
         $sql .= implode(',', $values);
-        self::DbQuery( $sql );
-        self::reattributeColorsBasedOnPreferences( $players, $gameinfos['player_colors'] );
-        self::reloadPlayersBasicInfos();
+        $this->DbQuery( $sql );
+        $this->reattributeColorsBasedOnPreferences( $players, $gameinfos['player_colors'] );
+        $this->reloadPlayersBasicInfos();
         
         /************ Start the game initialization *****/
 
@@ -128,7 +131,7 @@ class Pixies extends \Bga\GameFramework\Table {
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
         $sql = "SELECT player_id id, player_score score, player_no playerNo FROM player ";
-        $result['players'] = self::getCollectionFromDb( $sql );
+        $result['players'] = $this->getCollectionFromDb( $sql );
 
         foreach($result['players'] as $playerId => &$player) {
             $player['playerNo'] = intval($player['playerNo']);
@@ -142,7 +145,7 @@ class Pixies extends \Bga\GameFramework\Table {
         for($i = 1; $i <= 3; $i++) {
             $result['roundResult'][$i] = $this->getGlobalVariable(ROUND_RESULT.$i);
         }
-        $result['lastTurn'] = !$isEndScore && boolval($this->getGameStateValue(LAST_TURN));
+        $result['lastTurn'] = !$isEndScore && boolval($this->getGameStateValue((string)LAST_TURN));
         $result['flowerPowerExpansion'] = $this->isFlowerPowerExpansion();
   
         return $result;
@@ -249,7 +252,7 @@ class Pixies extends \Bga\GameFramework\Table {
         
         if ($from_version <= 2305281437) {
             // ! important ! Use DBPREFIX_<table_name> for all tables
-            self::applyDbUpgradeToAllDB("ALTER TABLE DBPREFIX_card MODIFY COLUMN `card_location` varchar(25) NOT NULL");
+            $this->applyDbUpgradeToAllDB("ALTER TABLE DBPREFIX_card MODIFY COLUMN `card_location` varchar(25) NOT NULL");
         }
 
     }    
