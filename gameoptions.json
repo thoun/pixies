@@ -18,7 +18,7 @@
                 {
                     "type": "maxplayers",
                     "value": 5,
-                    "message": "You can only play with 5 players if Flower Power expansion is activated"
+                    "message": "You can only play with 6 players if Flower Power expansion is activated"
                 }
             ]
         }

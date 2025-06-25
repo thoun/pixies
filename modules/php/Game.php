@@ -43,6 +43,8 @@ class Game extends \Bga\GameFramework\Table {
         //  the corresponding ID in gameoptions.inc.php.
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
+
+        include 'material.inc.php';
         
         $this->initGameStateLabels([
             LAST_TURN => LAST_TURN,
@@ -51,11 +53,6 @@ class Game extends \Bga\GameFramework\Table {
         $this->cards = $this->getNew("module.common.deck");
         $this->cards->init("card");        
 	}
-	
-    protected function getGameName() {
-		// Used for translations and stuff. Please do not modify.
-        return "pixies";
-    }	
 
     /*
         setupNewGame:

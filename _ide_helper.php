@@ -82,6 +82,145 @@ namespace Bga\GameFramework\Actions\Types {
 }
 
 namespace Bga\GameFramework {
+    enum StateType: string
+    {
+        case ACTIVE_PLAYER = 'activeplayer';
+        case MULTIPLE_ACTIVE_PLAYER = 'multipleactiveplayer';
+        case PRIVATE = 'private';
+        case GAME = 'game';
+        case MANAGER = 'manager';
+    }
+
+    /**
+     * A builder for game states.
+     * To be called with `[game state id] => GameStateBuilder::create()->...[set all necessary properties]->build()`
+     * in the states.inc.php file. 
+     */
+    final class GameStateBuilder
+    {
+        /**
+         * Create a new GameStateBuilder.
+         */
+        public static function create(): self
+        {
+            return new self();
+        }
+
+        /**
+         * Return the game setup state (should have id 1).
+         * To be called with `[game state id] => GameStateBuilder::gameSetup(10)->build()` if your first game state is 10.
+         * If not set in the GameState array, it will be automatically created with a transition to state 2.
+         * 
+         * @param $nextStateId the first real game state, just after the setup (default 2).
+         */
+        public static function gameSetup(int $nextStateId = 2): self
+        {
+            return self::create();
+        }
+
+        /**
+         * Return the game end state (should have id 99).
+         * If not set in the GameState array, it will be automatically created.
+         */
+        public static function gameEnd(): self
+        {
+            return self::create();
+        }
+
+        /**
+         * The name of the state.
+         */
+        public function name(string $name): self
+        {
+            return $this;
+        }
+
+        /**
+         * The type of the state. MANAGER should not be used, except for setup and end game states.
+         */
+        public function type(StateType $type): self
+        {
+            return $this;
+        }
+
+        /**
+         * The description for inactive players. Should be `clienttranslate('...')` if not empty.
+         */
+        public function description(string $description): self
+        {
+            return $this;
+        }
+
+        /**
+         * The description for active players. Should be `clienttranslate('...')` if not empty.
+         */
+        public function descriptionMyTurn(string $descriptionMyTurn): self
+        {
+            return $this;
+        }
+
+        /**
+         * The PHP function to call when entering the state.
+         * Usually prefixed by `st`.
+         */
+        public function action(string $action): self
+        {
+            return $this;
+        }
+
+        /**
+         * The PHP function returning the arguments to send to the front when entering the state.
+         * Usually prefixed by `arg`.
+         */
+        public function args(string $args): self
+        {
+            return $this;
+        }
+
+        /**
+         * The list of possible actions in the state.
+         * Usually prefixed by `act`.
+         */
+        public function possibleActions(array $possibleActions): self
+        {
+            return $this;
+        }
+
+        /**
+         * The list of transitions to other states. The key is the transition name and the value is the state to transition to.
+         * Example: `['endTurn' => ST_END_TURN]`.
+         */
+        public function transitions(array $transitions): self
+        {
+            return $this;
+        }
+
+        /**
+         * Set to true if the game progression has changed (to be recalculated with `getGameProgression`)
+         */
+        public function updateGameProgression(bool $update): self
+        {
+            return $this;
+        }
+
+        /**
+         * For multi active states with inner private states, the initial state to go to.
+         */
+        public function initialPrivate(int $initial): self
+        {
+            return $this;
+        }
+
+        /**
+         * Export the built GameState as an array.
+         */
+        public function build(): array
+        {
+            return [];
+        }
+    }
+
+
     abstract class Notify {
         /**
          * Add a decorator function, to be applied on args when a notif function is called.
@@ -940,15 +1079,6 @@ namespace Bga\GameFramework {
         }
 
         /**
-         * Returns the game name.
-         *
-         * NOTE: Do not modify, it's automatically replaced.
-         *
-         * @return string
-         */
-        abstract protected function getGameName();
-
-        /**
          * Return an associative array which associate each player with the previous player around the table.
          *
          * @return array<int, int>
@@ -1270,6 +1400,14 @@ namespace {
         final protected function raw(string $string): array
         {
             return [];
+        }
+
+        /**
+         * Get the player id of the player requesting the view.
+         */
+        protected function getCurrentPlayerId(): int
+        {
+            return 0;
         }
     }
 
@@ -1705,6 +1843,14 @@ namespace {
         {
             //
         }
+
+        /**
+         * Get the player id of the player requesting the action.
+         */
+        protected function getCurrentPlayerId(): int
+        {
+            return 0;
+        }
     }
 
     /**
@@ -1739,7 +1885,8 @@ namespace {
      */
     class feException extends Exception
     {
-        //
+        public function __construct($message, $expected = false, $visibility = true, $code=FEX_NOCODE, $publicMsg='', public ?array $args = null) {
+        }
     }
 
     /**
@@ -1751,7 +1898,8 @@ namespace {
      */
     abstract class BgaSystemException extends feException
     {
-        //
+        public function __construct($message, $code=FEX_NOCODE, ?array $args = null) {
+        }
     }
 
     /**
@@ -1762,7 +1910,8 @@ namespace {
      */
     class BgaVisibleSystemException extends BgaSystemException
     {
-        //
+        public function __construct($message, $code=FEX_NOCODE, ?array $args = null) {
+        }
     }
 
     /**
@@ -1775,7 +1924,8 @@ namespace {
      */
     class BgaUserException extends BgaVisibleSystemException
     {
-        //
+        public function __construct($message, $code=FEX_NOCODE, ?array $args = null) {
+        }
     }
 
     class Deck

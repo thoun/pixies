@@ -1,6 +1,6 @@
 <?php
 
-require_once(__DIR__.'/objects/cards-points.php');
+require_once(__DIR__.'/objects/card.php');
 
 trait UtilTrait {
 
@@ -94,7 +94,7 @@ trait UtilTrait {
         if ($dbCard == null) {
             return null;
         }
-        return new Card($dbCard, $this->CARDS + $this->FLOWER_POWER_CARDS);
+        return new \Card($dbCard, $this->CARDS + $this->FLOWER_POWER_CARDS);
     }
 
     function getCardsFromDb(array $dbCards) {
@@ -111,7 +111,7 @@ trait UtilTrait {
         for ($i = 1; $i <= 9; $i++) {
             $spaces[$i] = $this->getCardsFromSpace($playerId, $i);
             if (count($spaces[$i]) == 2 || (count($spaces[$i]) == 1 && $spaces[$i][0]->value != $i)) {
-                $spaces[$i][0] = Card::onlyId($spaces[$i][0]);
+                $spaces[$i][0] = \Card::onlyId($spaces[$i][0]);
             }
         }
 

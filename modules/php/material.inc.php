@@ -19,8 +19,6 @@
  *
  */
 
-require_once('modules/php/objects/card.php');
-
 $this->CARDS = [
   0 => [
     1 => new CardType(2),
