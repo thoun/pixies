@@ -8,8 +8,7 @@
       "outFile": "pixies.js",
     },
     "files": [
-        "src/framework.d.ts",
-        "src/counter.d.ts",
+        "bga-framework.d.ts",
         "src/bga-zoom.d.ts",
         "node_modules/bga-help/src/help-manager.ts",
         "node_modules/bga-animations/src/framework.d.ts",

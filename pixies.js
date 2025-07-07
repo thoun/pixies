@@ -2201,11 +2201,18 @@ var PlayerTable = /** @class */ (function () {
 var ANIMATION_MS = 500;
 var ACTION_TIMER_DURATION = 5;
 var LOCAL_STORAGE_ZOOM_KEY = 'Pixies-zoom';
-loadBgaGameLib('bga-zoom', '0.x');
-var Pixies = /** @class */ (function () {
+// @ts-ignore
+GameGui = (function () {
+    function GameGui() { }
+    return GameGui;
+})();
+var Pixies = /** @class */ (function (_super) {
+    __extends(Pixies, _super);
     function Pixies() {
-        this.playersTables = [];
-        this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
+        var _this = _super.call(this) || this;
+        _this.playersTables = [];
+        _this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
+        return _this;
     }
     /*
         setup:
@@ -2235,9 +2242,8 @@ var Pixies = /** @class */ (function () {
         this.cardsManager = new CardsManager(this);
         this.tableCenter = new TableCenter(this, this.gamedatas);
         this.createPlayerTables(gamedatas);
-        this.zoomManager = new ZoomManager({
+        this.zoomManager = new BgaZoom.Manager({
             element: document.getElementById('full-table'),
-            smooth: false,
             zoomControls: {
                 color: 'white',
             },
@@ -2426,7 +2432,15 @@ var Pixies = /** @class */ (function () {
         this.bgaPerformAction('actPlayCard', { space: space });
     };
     Pixies.prototype.getHelpHtml = function () {
-        var html = "\n        <div id=\"help-popin\">\n            <h1>".concat(_("Validated cards"), "</h1>\n            ").concat(_("Each validated card earns as many points as the number on it."), "\n\n            <h1>").concat(_("Symbols"), "</h1>\n            ").concat(_("A spiral earns 1 point."), "<br>\n            ").concat(_("A cross makes the player lose 1 point."), "<br>\n            ").concat(_("Spiral"), " / <div class=\"color-icon\" data-row=\"0\"></div> : ").concat(_("1 spiral for each faceup card of the indicated color."), "<br><br>            \n            ").concat(_("<strong>Note:</strong> All faceup cards are taken into account, whether they are validated or not."), "\n\n            <h1>").concat(_("The player’s largest color zone"), "</h1>\n            ").concat(_("A color zone is made up of at least 2 cards of the same color touching along a side. Diagonals do not count. Each card that is part of the player’s largest zone earns:"), "\n            <ul>\n            ").concat([1, 2, 3].map(function (roundNumber) { return "<li>".concat(_("${points} points in round ${round}"), "</li>").replace('${points}', "".concat(roundNumber + 1)).replace('${round}', "".concat(roundNumber)); }).join(''), "\n            </ul>\n            ").concat(_("<strong>Note:</strong> All faceup cards are taken into account, whether they are validated or not."), "\n            <br><br>\n            ").concat(_("A multi-colored card has all the colors at the same time. This means that it counts for the player’s color zone of course, but also for all their special cards as well."), "\n        </div>\n        ");
+        var html = "\n        <div id=\"help-popin\">\n            <h1>".concat(_("Validated cards"), "</h1>\n            ").concat(_("Each validated card earns as many points as the number on it."), "\n\n            <h1>").concat(_("Symbols"), "</h1>\n            ").concat(_("A spiral earns 1 point."), "<br>\n            ").concat(_("A cross makes the player lose 1 point."), "<br>\n            ").concat(_("Spiral"), " / <div class=\"color-icon\" data-row=\"0\"></div> : ").concat(_("1 spiral for each faceup card of the indicated color."), "<br><br>\n        ");
+        if (this.gamedatas.flowerPowerExpansion) {
+            html += "\n                ".concat(_("Cross"), " / <div class=\"color-icon\" data-row=\"1\"></div> : ").concat(_("1 cross for each faceup card of the indicated color."), "<br><br>");
+        }
+        html += "\n            ".concat(_("<strong>Note:</strong> All faceup cards are taken into account, whether they are validated or not."), "\n        ");
+        if (this.gamedatas.flowerPowerExpansion) {
+            html += "\n                <h1>".concat(_("Facedown cards"), "</h1>\n                <i>").concat(_('Only with the Flower Power expansion'), "</i><br>\n                ").concat(_("Each facedown card that is not covered by a faceup card earns you 5 spirals."), "<br><br>\n                ").concat(_("Spiral(s) / facedown cards"), " : ").concat(_("Some cards earn you 1 to 3 spirals for each additional uncovered facedown card."), "\n            ");
+        }
+        html += "\n            <h1>".concat(_("The player’s largest color zone"), "</h1>\n            ").concat(_("A color zone is made up of at least 2 cards of the same color touching along a side. Diagonals do not count. Each card that is part of the player’s largest zone earns:"), "\n            <ul>\n            ").concat([1, 2, 3].map(function (roundNumber) { return "<li>".concat(_("${points} points in round ${round}"), "</li>").replace('${points}', "".concat(roundNumber + 1)).replace('${round}', "".concat(roundNumber)); }).join(''), "\n            </ul>\n            ").concat(_("<strong>Note:</strong> All faceup cards are taken into account, whether they are validated or not."), "\n            <br><br>\n            ").concat(_("A multi-colored card has all the colors at the same time. This means that it counts for the player’s color zone of course, but also for all their special cards as well."), "\n        </div>\n        ");
         return html;
     };
     Pixies.prototype.getColorAddHtml = function () {
@@ -2618,12 +2632,13 @@ var Pixies = /** @class */ (function () {
         return this.inherited(arguments);
     };
     return Pixies;
-}());
+}(GameGui));
 define([
     "dojo", "dojo/_base/declare",
     "ebg/core/gamegui",
     "ebg/counter",
-    "ebg/stock"
-], function (dojo, declare) {
+    getLibUrl('bga-zoom', '1.0.0'),
+], function (dojo, declare, gamegui, counter, BgaZoom) {
+    window.BgaZoom = BgaZoom;
     return declare("bgagame.pixies", ebg.core.gamegui, new Pixies());
 });

@@ -1,10 +1,3 @@
-declare const define;
-declare const ebg;
-declare const $;
-declare const dojo: Dojo;
-declare const _;
-declare const g_gamethemeurl;
-declare const bgaConfig;
 declare const loadBgaGameLib;
 
 const ANIMATION_MS = 500;
@@ -12,14 +5,18 @@ const ACTION_TIMER_DURATION = 5;
 
 const LOCAL_STORAGE_ZOOM_KEY = 'Pixies-zoom';
 
-loadBgaGameLib('bga-zoom', '0.x');
+// @ts-ignore
+GameGui = (function () { // this hack required so we fake extend GameGui
+  function GameGui() {}
+  return GameGui;
+})();
 
-class Pixies implements PixiesGame {
+class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
     public animationManager: AnimationManager;
     public cardsManager: CardsManager;
 
     private zoomManager: ZoomManager;
-    private gamedatas: PixiesGamedatas;
+    public gamedatas: PixiesGamedatas;
     private tableCenter: TableCenter;
     private playersTables: PlayerTable[] = [];
     private roundCounter: Counter;
@@ -27,6 +24,7 @@ class Pixies implements PixiesGame {
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
 
     constructor() {
+        super();
     }
     
     /*
@@ -79,9 +77,8 @@ class Pixies implements PixiesGame {
         this.tableCenter = new TableCenter(this, this.gamedatas);
         this.createPlayerTables(gamedatas);
         
-        this.zoomManager = new ZoomManager({
+        this.zoomManager = new BgaZoom.Manager({
             element: document.getElementById('full-table'),
-            smooth: false,
             zoomControls: {
                 color: 'white',
             },
@@ -312,9 +309,26 @@ class Pixies implements PixiesGame {
             <h1>${_("Symbols")}</h1>
             ${_("A spiral earns 1 point.")}<br>
             ${_("A cross makes the player lose 1 point.")}<br>
-            ${_("Spiral")} / <div class="color-icon" data-row="0"></div> : ${_("1 spiral for each faceup card of the indicated color.")}<br><br>            
+            ${_("Spiral")} / <div class="color-icon" data-row="0"></div> : ${_("1 spiral for each faceup card of the indicated color.")}<br><br>
+        `;
+        if (this.gamedatas.flowerPowerExpansion) {
+            html += `
+                ${_("Cross")} / <div class="color-icon" data-row="1"></div> : ${_("1 cross for each faceup card of the indicated color.")}<br><br>`;
+        }
+        html += `
             ${_("<strong>Note:</strong> All faceup cards are taken into account, whether they are validated or not.")}
+        `;
 
+        if (this.gamedatas.flowerPowerExpansion) {
+            html += `
+                <h1>${_("Facedown cards")}</h1>
+                <i>${_('Only with the Flower Power expansion')}</i><br>
+                ${_("Each facedown card that is not covered by a faceup card earns you 5 spirals.")}<br><br>
+                ${_("Spiral(s) / facedown cards")} : ${_("Some cards earn you 1 to 3 spirals for each additional uncovered facedown card.")}
+            `;
+        }
+
+        html += `
             <h1>${_("The player’s largest color zone")}</h1>
             ${_("A color zone is made up of at least 2 cards of the same color touching along a side. Diagonals do not count. Each card that is part of the player’s largest zone earns:")}
             <ul>
