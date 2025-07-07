@@ -247,12 +247,13 @@ trait UtilTrait {
                 4 => 0,
             ];
             foreach ($visibleCards as $visibleCard) {
-                if ($visibleCard?->type) {
+                if ($visibleCard?->type !== null) {
                     foreach ($visibleCard->colors as $color) {
                         $colorsCounts[$color]++;
                     }
                 }
             }
+            $playerId == 2343493 && debug($colorsCounts, $visibleCards);
 
             $detailledScore->validatedCardPoints = 0;
             $spiralsPoints = 0;

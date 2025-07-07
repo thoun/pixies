@@ -1,5 +1,11 @@
 <?php
 
+function debug(...$debugData) {
+    if (\Bga\GameFramework\Table::getBgaEnvironment() != 'studio') { 
+        return;
+    }die('debug data : <pre>'.substr(json_encode($debugData, JSON_PRETTY_PRINT), 1, -1).'</pre>');
+}
+
 trait DebugUtilTrait {
 
 //////////////////////////////////////////////////////////////////////////////
@@ -82,11 +88,5 @@ trait DebugUtilTrait {
             break;
         }
       }
-    }
-
-    function debug($debugData) {
-        if ($this->getBgaEnvironment() != 'studio') { 
-            return;
-        }die('debug data : '.json_encode($debugData));
     }
 }
