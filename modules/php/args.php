@@ -16,23 +16,30 @@ trait ArgsTrait {
         return [
         ];
     }
-   
-    function argPlayCard() {
-        $playerId = intval($this->getActivePlayerId());
 
-        $card = $this->getSelectedCard();
-        $spaceCards = $this->getCardsFromSpace($playerId, $card->value);
-
+    function getPossibleSpacesForCard(array $playerCards, $card): array {
+        $spaceCards = $playerCards[$card->value];
         $spaces = [];
         if (count($spaceCards) < 2) {
             $spaces[] = $card->value;
         } else {
             for ($i = 1; $i <= 9; $i++) {
-                if ($i != $card->value && count($this->getCardsFromSpace($playerId, $i)) == 0) {
+                if ($i != $card->value && count($playerCards[$i]) == 0) {
                     $spaces[] = $i;
                 }
             }
         }
+
+        return $spaces;
+    }
+   
+    function argPlayCard() {
+        $playerId = intval($this->getActivePlayerId());
+
+        $card = $this->getSelectedCard();
+        $playerCards = $this->getCardsFromSpaces($playerId);
+
+        $spaces = $this->getPossibleSpacesForCard($playerCards, $card);
     
         return [
             'selectedCard' => $card,

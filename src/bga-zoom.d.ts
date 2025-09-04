@@ -8,10 +8,10 @@ interface ZoomControls {
      */
     visible?: boolean;
     /**
-     * Set the position of the zoom controls. Start is left for LTR and right for LTR.
-     * Default : 'top-end'.
+     * Set the position of the zoom controls.
+     * Default : 'top-right'.
      */
-    position?: 'top-start' | 'top-end';
+    position?: 'top-left' | 'top-right';
     /**
      * Set the color of the zoom controls.
      * Default : 'black'.
@@ -44,6 +44,10 @@ interface ZoomManagerSettings {
      * The element that can be zoomed in/out.
      */
     element: HTMLElement;
+    /**
+     * Smooth transition when changing zoom level. Default true.
+     */
+    smooth?: boolean;
     /**
      * Default zoom, used at setup. If a zoom if stored in localStorage, the default zoom is ignored.
      */
@@ -81,6 +85,12 @@ interface ZoomManagerSettings {
      */
     throttleTime?: number;
 }
+declare const DEFAULT_ZOOM_LEVELS: number[];
+declare function throttle(callback: Function, delay: number): () => void;
+declare const advThrottle: (func: any, delay: any, options?: {
+    leading: boolean;
+    trailing: boolean;
+}) => (...args: any[]) => void;
 declare class ZoomManager {
     protected settings: ZoomManagerSettings;
     /**
@@ -150,7 +160,4 @@ declare class ZoomManager {
      */
     protected wrapElement(wrapper: HTMLElement, element: HTMLElement): void;
 }
-
-declare const BgaZoom: {
-    Manager: typeof ZoomManager;
-};
+declare const define: any;

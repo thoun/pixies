@@ -33,7 +33,7 @@ class Game extends \Bga\GameFramework\Table {
     use \ArgsTrait;
     use \DebugUtilTrait;
 
-    public \Deck $cards;
+    public \Bga\GameFramework\Components\Deck $cards;
 
 	function __construct() {
         // Your global variables labels:
@@ -193,21 +193,117 @@ class Game extends \Bga\GameFramework\Table {
         you must _never_ use getCurrentPlayerId() or getCurrentPlayerName(), otherwise it will fail with a "Not logged" error message. 
     */
 
+    private function getPointsFromChooseCardChoice(array $playerCards, int $roundNumber, bool $isFlowerPowerExpansion, $card): int {
+        if (count($playerCards[$card->value]) == 1 && $playerCards[$card->value][0]->value == $card->value) {
+            // it will be a keep card
+
+            $possibleAnswerPoints = array_map(
+            fn($choice) => $this->getPointsFromKeepCardChoice($playerCards, $roundNumber, $isFlowerPowerExpansion, $card, $choice),
+                [0, 1]
+            );
+            $maxPoints = max($possibleAnswerPoints);
+            
+            return $maxPoints;
+        } else {
+            // it will be play card
+            $possibleSpaces = $this->getPossibleSpacesForCard($playerCards, $card);
+
+            $possibleAnswerPoints = [];
+            foreach ($possibleSpaces as $choice) {
+                $possibleAnswerPoints[$choice] = $this->getPointsFromPlayCardChoice($playerCards, $roundNumber, $isFlowerPowerExpansion, $card, $choice);
+            }
+
+            $maxPoints = max($possibleAnswerPoints);
+            
+            return $maxPoints;
+        }
+    }
+
+    function zombieTurn_chooseCard(int $playerId): void {
+        $roundNumber = intval($this->getStat('roundNumber'));
+        $isFlowerPowerExpansion = $this->isFlowerPowerExpansion();
+        $playerCards = $this->getCardsFromSpaces($playerId);
+
+        $tableCards = $this->getCardsFromDb($this->cards->getCardsInLocation('table'));
+
+        $possibleAnswerPoints = [];
+        foreach ($tableCards as $choice => $card) {
+            $possibleAnswerPoints[$choice] = $this->getPointsFromChooseCardChoice($playerCards, $roundNumber, $isFlowerPowerExpansion, $card);
+        }
+
+        $maxPoints = max($possibleAnswerPoints);
+        $maxPointsAnswers = array_keys($possibleAnswerPoints, $maxPoints);
+        $zombieChoice = $maxPointsAnswers[bga_rand(0, count($maxPointsAnswers) - 1)];
+
+        $this->applyChooseCard($playerId, $tableCards[$zombieChoice]);
+    }
+
+    private function getPointsFromPlayCardChoice(array $playerCards, int $roundNumber, bool $isFlowerPowerExpansion, $card, int $choice): int {
+        $playerCardsCopy = $playerCards;
+        $playerCardsCopy[$choice] = array_merge($playerCardsCopy[$choice], [$card]);
+        return $this->getDetailledScore($playerCardsCopy, $roundNumber, $isFlowerPowerExpansion)->points;
+    }
+
+    function zombieTurn_playCard(int $playerId): void {
+        $roundNumber = intval($this->getStat('roundNumber'));
+        $isFlowerPowerExpansion = $this->isFlowerPowerExpansion();
+        $playerCards = $this->getCardsFromSpaces($playerId);
+
+        $card = $this->getSelectedCard();
+
+        $possibleSpaces = $this->getPossibleSpacesForCard($playerCards, $card);
+
+        $possibleAnswerPoints = [];
+        foreach ($possibleSpaces as $choice) {
+            $possibleAnswerPoints[$choice] = $this->getPointsFromPlayCardChoice($playerCards, $roundNumber, $isFlowerPowerExpansion, $card, $choice);
+        }
+
+        $maxPoints = max($possibleAnswerPoints);
+        $maxPointsAnswers = array_keys($possibleAnswerPoints, $maxPoints);
+        $zombieChoice = $maxPointsAnswers[bga_rand(0, count($maxPointsAnswers) - 1)];
+
+        $this->applyPlayCard($playerId, $zombieChoice);
+    }
+
+    private function getPointsFromKeepCardChoice(array $playerCards, int $roundNumber, bool $isFlowerPowerExpansion, $card, int $choice): int {
+        $space = $card->value;
+        $playerCardsCopy = $playerCards;
+        $playerCardsCopy[$space] = $choice === 0 ? [\Card::onlyId($card), $playerCards[$space][0]] : [\Card::onlyId($playerCards[$space][0]), $card];
+        return $this->getDetailledScore($playerCardsCopy, $roundNumber, $isFlowerPowerExpansion)->points;
+    }
+
+    function zombieTurn_keepCard(int $playerId): void {
+        $roundNumber = intval($this->getStat('roundNumber'));
+        $isFlowerPowerExpansion = $this->isFlowerPowerExpansion();
+        $playerCards = $this->getCardsFromSpaces($playerId);
+
+        $card = $this->getSelectedCard();
+
+        $possibleAnswerPoints = array_map(
+            fn($choice) => $this->getPointsFromKeepCardChoice($playerCards, $roundNumber, $isFlowerPowerExpansion, $card, $choice),
+            [0, 1]
+        );
+
+        $maxPoints = max($possibleAnswerPoints);
+        $maxPointsAnswers = array_keys($possibleAnswerPoints, $maxPoints);
+        $zombieChoice = $maxPointsAnswers[bga_rand(0, count($maxPointsAnswers) - 1)];
+
+        $this->applyKeepCard($playerId, $zombieChoice);
+    }
+
     function zombieTurn($state, $active_player): void {
     	$statename = $state['name'];
     	
         if ($state['type'] === "activeplayer") {
             switch ($statename) {
                 case 'chooseCard':
-                    $tableCards = $this->getCardsFromDb($this->cards->getCardsInLocation('table'));
-                    $this->applyChooseCard($active_player, $tableCards[bga_rand(0, count($tableCards) - 1)]);
+                    $this->zombieTurn_chooseCard((int)$active_player);
                     break;
                 case 'playCard':
-                    $spaces = $this->argPlayCard()['spaces'];
-                    $this->applyPlayCard($active_player, $spaces[bga_rand(0, count($spaces) - 1)]);
+                    $this->zombieTurn_playCard((int)$active_player);
                     break;
                 case 'keepCard':
-                    $this->applyKeepCard($active_player, bga_rand(0, 1));
+                    $this->zombieTurn_keepCard((int)$active_player);
                     break;
                 default:
                     $this->gamestate->nextState("zombiePass");

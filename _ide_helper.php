@@ -119,6 +119,16 @@ namespace Bga\GameFramework {
         }
 
         /**
+         * Return the game end score state (usually, id 98).
+         * This is a common state used for end game scores & stats computation.
+         * If the game dev uses it, they must define the function `stEndScore` with a call to `$this->gamestate->nextState();` at the end.
+         */
+        public static function endScore(): self
+        {
+            return self::create();
+        }
+
+        /**
          * Return the game end state (should have id 99).
          * If not set in the GameState array, it will be automatically created.
          */
@@ -253,11 +263,91 @@ namespace Bga\GameFramework {
         }
     }
 
+    abstract class Legacy {
+        /**
+         * Get data associated with $key for the current game.
+         * 
+         * This data is common to ALL tables from the same game for this player, and persist from one table to another.
+         * 
+         * Note: calling this function has an important cost => please call it few times (possibly: only ONCE) for each player for 1 game if possible
+         * 
+         * @param string $key the key of the legacy data to get
+         * @param int $playerId the player id (or 0 for data shared on all tables)
+         * @param mixed $defaultValue the value to return if the key doesn't exist in the legacy data for this player
+         */
+        public function get(string $key, int $playerId, mixed $defaultValue = null): mixed {
+            return null;
+        }
+
+        /**
+         * Store some data associated with $key for the given user / current game
+         * In the opposite of all other game data, this data will PERSIST after the end of this table, and can be re-used in a future table with the same game.
+         * 
+         * ⚠️ The only possible place where you can use this method is when the game is over at your table (last game action). Otherwise, there is a risk of conflicts between ongoing games.
+         * 
+         * In any way, the total data (= all keys) you can store for a given user+game is 64k
+         * 
+         * NOTICE: You can store some persistant data across all tables from your game using the specific player_id 0 which is unused. In such case, it's even more important to manage correctly the size of your data to avoid any exception or issue while storing updated data (ie. you can use this for some kind of leaderbord for solo game or contest)
+         * 
+         * 
+         * @param string $key the key of the legacy data to save
+         * @param int $playerId the player id (or 0 for data shared on all tables)
+         * @param mixed $value the value to save as the legacy data for this player
+         * @param int $ttl time-to-live: the maximum, and default, is 365 days.
+         */
+        public function set(string $key, int $playerId, mixed $value, int $ttl = 365): void {
+        }
+
+        /**
+         * Remove some legacy data with the given key
+         * 
+         * @param string $key the key of the legacy data to remove
+         * @param int $playerId the player id (or 0 for data shared on all tables)
+         */
+        public function delete(string $key, int $playerId): void {
+        }
+
+        /**
+         * Get data associated with the team for the current game.
+         * 
+         * This data is common to ALL tables from the same game for this team, and persist from one table to another.
+         * 
+         * Note: calling this function has an important cost => please call it few times (possibly: only ONCE) for 1 game if possible
+         * 
+         * @param mixed $defaultValue the value to return if the legacy data doesn't exist or is null for this team
+         */
+        public function getTeam(mixed $defaultValue = null): mixed {
+            return null;
+        }
+
+        /**
+         * Store some data associated to the team of the current table (all players at the table) / current game
+         * In the opposite of all other game data, this data will PERSIST after the end of this table, and can be re-used in a future table with the same game.
+         * 
+         * ⚠️ The only possible place where you can use this method is when the game is over at your table (last game action). Otherwise, there is a risk of conflicts between ongoing games.
+         * 
+         * In any way, the total data you can store for a given team+game is 64k
+         * 
+         * @param mixed $value the value to save as the legacy data for this team
+         * @param int $ttl time-to-live: the maximum, and default, is 365 days.
+         */
+        public function setTeam(mixed $value, int $ttl = 365): void {
+        }
+
+        /**
+         * Remove the legacy data for a team
+         */
+        public function deleteTeam(): void {
+        }
+    }
+
+
     abstract class TableOptions {
         /**
          * Get the value of a table option.
+         * Returns null if the option doesn't exist (for example on a table created before a new option was added).
          */
-        public function get(int $optionId): int {
+        public function get(int $optionId): ?int {
             return 0;
         }
     
@@ -303,6 +393,11 @@ namespace Bga\GameFramework {
          * Access the underlying Notify object.
          */
         readonly public \Bga\GameFramework\Notify $notify;
+
+        /**
+         * Access the underlying Legacy object.
+         */
+        readonly public \Bga\GameFramework\Legacy $legacy;
 
         /**
          * Access the underlying TableOptions object.
@@ -879,6 +974,8 @@ namespace Bga\GameFramework {
 
         /**
          * Remove some legacy data with the given key.
+         * 
+         * @deprecated use $this->legacy->delete(string $key, int $playerId). ⚠️ parameter order has changed.
          */
         final public function removeLegacyData(int $playerId, string $key): void
         {
@@ -886,8 +983,10 @@ namespace Bga\GameFramework {
         }
 
         /**
-         * Same as `Table::storeLegacyData()`, except that it stores some data for the whole team within the current
+         * Same as `Table::removeLegacyData()`, except that it deletes the data for the whole team within the current
          * table and does not use a key.
+         * 
+         * @deprecated use $this->legacy->delete
          */
         final public function removeLegacyTeamData(): void
         {
@@ -896,6 +995,8 @@ namespace Bga\GameFramework {
 
         /**
          * Get data associated with $key for the current game.
+         * 
+         * @deprecated use $this->legacy->get(string $key, int $playerId, mixed $defaultValue = null). ⚠️ parameter order has changed, and it will now return the real data instead of the JSON-encoded one.
          */
         final public function retrieveLegacyData($playerId, $key): array
         {
@@ -905,6 +1006,8 @@ namespace Bga\GameFramework {
         /**
          * Same as `Table::storeLegacyData()`, except that it stores some data for the whole team within the current
          * table and does not use a key.
+         * 
+         * @deprecated use $this->legacy->getTeam(mixed $defaultValue = null). ⚠️ it will now return the real data instead of the JSON-encoded one.
          */
         final public function retrieveLegacyTeamData(): array
         {
@@ -956,7 +1059,7 @@ namespace Bga\GameFramework {
          * In the opposite of all other game data, this data will PERSIST after the end of this table, and can be
          * re-used in a future table with the same game.
          *
-         * IMPORTANT: The only possible place where you can use this method is when the game is over at your table
+         * ⚠️ The only possible place where you can use this method is when the game is over at your table
          * (last game action). Otherwise, there is a risk of conflicts between ongoing games.
          *
          * In any way, the total data (= all keys) you can store for a given user+game is 64k (note: data is store
@@ -968,6 +1071,8 @@ namespace Bga\GameFramework {
          * game or contest).
          *
          * Note: This function cannot be called during game setup (will throw an error).
+         * 
+         * @deprecated use $this->legacy->set(string $key, int $playerId, mixed $value, int $ttl = 365). ⚠️ parameter order has changed.
          */
         final public function storeLegacyData(int $playerId, string $key, array $data, int $ttl = 365): void
         {
@@ -977,6 +1082,8 @@ namespace Bga\GameFramework {
         /**
          * Same as `Table::storeLegacyData()`, except that it stores some data for the whole team within the current
          * table and does not use a key.
+         * 
+         * @deprecated use $this->legacy->setTeam(mixed $value, int $ttl = 365).
          */
         final public function storeLegacyTeamData(array $data, int $ttl = 365): void
         {
@@ -1026,7 +1133,7 @@ namespace Bga\GameFramework {
          *
          * @return int the new active player id
          */
-        final protected function activePrevPlayer(): void
+        final public function activePrevPlayer(): void
         {
             //
         }
@@ -1040,7 +1147,7 @@ namespace Bga\GameFramework {
          *
          * @param array<int, ?int> $players
          */
-        final protected function createNextPlayerTable(array $players, bool $bLoop = true): void
+        final public function createNextPlayerTable(array $players, bool $bLoop = true): void
         {
             //
         }
@@ -1061,7 +1168,7 @@ namespace Bga\GameFramework {
          *
          * @throws \BgaSystemException if the current player is not at the table (i.e. spectator).
          */
-        final protected function getCurrentPlayerColor(): string
+        final public function getCurrentPlayerColor(): string
         {
             return '';
         }
@@ -1073,7 +1180,7 @@ namespace Bga\GameFramework {
          *
          * @throws \BgaSystemException if the current player is not at the table (i.e. spectator).
          */
-        final protected function getCurrentPlayerName($bReturnEmptyIfNotLogged = false): string
+        final public function getCurrentPlayerName($bReturnEmptyIfNotLogged = false): string
         {
             return '';
         }
@@ -1122,7 +1229,7 @@ namespace Bga\GameFramework {
          *
          * @throws \BgaSystemException if the current player is not at the table (i.e. spectator).
          */
-        final protected function isCurrentPlayerZombie(): bool
+        final public function isCurrentPlayerZombie(): bool
         {
             return false;
         }
@@ -1142,7 +1249,7 @@ namespace Bga\GameFramework {
          * You can do whatever you want in order to make sure the turn of this player ends appropriately
          * (ex: pass).
          *
-         * Important: your zombie code will be called when the player leaves the game. This action is triggered
+         * ⚠️ your zombie code will be called when the player leaves the game. This action is triggered
          * from the main site and propagated to the gameserver from a server, not from a browser.
          * As a consequence, there is no current player associated to this action. In your zombieTurn function,
          * you must _never_ use `getCurrentPlayerId()` or `getCurrentPlayerName()`, otherwise it will fail with a
@@ -1156,9 +1263,11 @@ namespace Bga\GameFramework {
 
         /**
          * To get a Deck instance with `$this->getNew("module.common.deck")`
+         * 
+         * @param string $objectName must be 'module.common.deck'
          */
-        protected function getNew(string $objectName): mixed {
-            return null;
+        protected function getNew(string $objectName): \Bga\GameFramework\Components\Deck {
+            return new \Bga\GameFramework\Components\Deck();
         }
     
         /**
@@ -1200,8 +1309,14 @@ namespace Bga\GameFramework\Db {
 
         /**
          * Returns the value of `$name` if it exists. Otherwise, fallback on `$defaultValue`.
+         * 
+         * @template T of object
+         * @param string $name the variable name
+         * @param mixed $defaultValue the value to return if the variable doesn't exist in database
+         * @param class-string<T>|string $class the class of the expected object, to returned a typed object. For example `Undo::class`.
+         * @return ($class is class-string<T> ? T : mixed)
          */
-        public function get(string $name, mixed $defaultValue = null): mixed
+        public function get(string $name, mixed $defaultValue = null, ?string $class = null): mixed
         {
             return null;
         }
@@ -1243,6 +1358,245 @@ namespace Bga\GameFramework\Db {
 
 }
 
+namespace Bga\GameFramework\Components {
+
+    class Deck extends \Deck
+    {
+        var $autoreshuffle;
+        var $autoreshuffle_trigger; 
+
+        /**
+         * Set the databasetable name.
+         * MUST be called before any other method.
+         */
+        function init(string $table) {}
+
+        /**
+         * This is the way cards are created and should not be called during the game.
+         * Cards are added to the deck (not shuffled)
+         * Cards is an array of "card types" with at least the followin fields:
+         * array( 
+         *      array(                              // This is my first card type
+         *          "type" => "name of this type"   // Note: <10 caracters
+         *          "type_arg" => <type arg>        // Argument that should be applied to all card of this card type
+         *          "nbr" => <nbr>                  // Number of cards with this card type to create in game
+         *
+         * If location_arg is not specified, cards are placed at location extreme position
+         */
+        function createCards(array $cards, string $location = 'deck', ?int $location_arg = null) {}
+        
+        /**
+         * Get position of extreme cards (top or back) on the specific location.
+         */
+        function getExtremePosition(bool $getMax , string $location): int
+        {
+            return false;
+        }
+        
+        /**
+         * Shuffle cards of a specified location.
+         */
+        function shuffle(string $location)
+        {
+        }
+        
+        /**
+         * Pick the first card on top of specified deck and give it to specified player.
+         * Return card infos or null if no card in the specified location.
+         */
+        function pickCard(string $location, int $player_id): ?array
+        {
+            return [];
+        }
+        
+        /**
+         * Pick the "nbr" first cards on top of specified deck and give it to specified player.
+         * Return card infos (array) or null if no card in the specified location.
+         */
+        function pickCards(int $nbr, string $location, int $player_id): ?array
+        {
+            return [];
+        }
+
+        /**
+         * Pick the first card on top of specified deck and place it in target location.
+         * Return card infos or null if no card in the specified location.
+         */
+        function pickCardForLocation(string $from_location, string $to_location, int $location_arg=0 ): ?array
+        {
+            return [];
+        }
+
+        /**
+         * Pick the first "$nbr" cards on top of specified deck and place it in target location.
+         * Return cards infos or void array if no card in the specified location.
+         */
+        function pickCardsForLocation(int $nbr, string $from_location, string $to_location, int $location_arg=0, bool $no_deck_reform=false ): ?array
+        {
+            return [];
+        }
+        
+        /**
+         * Return card on top of this location.
+         */
+        function getCardOnTop(string $location): ?array
+        {
+            return [];
+        }
+
+        /**
+         * Return "$nbr" cards on top of this location.
+         */
+        function getCardsOnTop(int $nbr, string $location): ?array
+        {
+            return [];
+        }
+        
+        /**
+         * Move a card to specific location.
+         */
+        function moveCard(int $card_id, string $location, int $location_arg=0): void
+        {
+        }
+
+        /**
+         * Move cards to specific location.
+         */
+        function moveCards(array $cards, string $location, int $location_arg=0): void
+        {
+        }
+        
+        /**
+         * Move a card to a specific location where card are ordered. If location_arg place is already taken, increment
+         * all cards after location_arg in order to insert new card at this precise location.
+         */
+        function insertCard(int $card_id, string $location, int $location_arg ): void
+        {
+        }
+
+        /**
+         * Move a card on top or at bottom of given "pile" type location. (Lower numbers: bottom of the deck. Higher numbers: top of the deck.)
+         */
+        function insertCardOnExtremePosition(int $card_id, string $location, bool $bOnTop): void
+        {
+        }
+
+        /**
+         * Move all cards from a location to another.
+         * !!! location arg is reseted to 0 or specified value !!!
+         * if "from_location" and "from_location_arg" are null: move ALL cards to specific location
+         */
+        function moveAllCardsInLocation(?string $from_location, ?string $to_location, ?int $from_location_arg=null, int $to_location_arg=0 ): void
+        {
+        }
+
+        /**
+         * Move all cards from a location to another.
+         * location arg stays with the same value
+         */
+        function moveAllCardsInLocationKeepOrder(string $from_location, string $to_location): void
+        {
+        }
+        
+        /**
+         * Return all cards in specific location.
+         * note: if "order by" is used, result object is NOT indexed by card ids
+         */
+        function getCardsInLocation(string|array $location, ?int $location_arg = null, ?string $order_by = null ): array
+        {
+            return [];
+        }
+        
+        /**
+         * Get all cards in given player hand.
+         * Note: This is an alias for: getCardsInLocation( "hand", $player_id ) 
+         */
+        function getPlayerHand(int $player_id): array
+        {
+            return [];
+        }
+        
+        /**
+         * Get specific card infos
+         */ 
+        function getCard(int $card_id ): ?array
+        {
+            return [];
+        }
+        
+        /**
+         * Get specific cards infos
+         */ 
+        function getCards(array $cards_array ): array
+        {
+            return [];
+        }
+        
+        /**
+         * Get cards from their IDs (same as getCards), but with a location specified. Raises an exception if the cards are not in the specified location.
+         */
+        function getCardsFromLocation(array $cards_array, string $location, ?int $location_arg = null ): array
+        {
+            return [];
+        }
+        
+        /**
+         * Get card of a specific type.
+         */
+        function getCardsOfType(mixed $type, ?int $type_arg=null ): array
+        {
+            return [];
+        }
+        
+        /**
+         * Get cards of a specific type in a specific location.
+         */
+        function getCardsOfTypeInLocation(mixed $type, ?int $type_arg=null, string $location, ?int $location_arg = null ): array
+        {
+            return [];
+        }
+        
+        /**
+         * Move a card to discard pile.
+         */
+        function playCard(int $card_id): void
+        {
+        }
+        
+        /**
+         * Return the number of cards in specified location. 
+         */
+        function countCardInLocation(string $location, ?int $location_arg=null): int|string
+        {
+            return '0';
+        }
+        
+        /**
+         * Return the number of cards in specified location. 
+         */
+        function countCardsInLocation(string $location, ?int $location_arg=null): int|string
+        {
+            return '0';
+        }
+        
+        /**
+         * Return an array "location" => number of cards.
+         */
+        function countCardsInLocations(): array
+        {
+            return [];
+        }
+        
+        /**
+         * Return an array "location_arg" => number of cards (for this location).
+         */
+        function countCardsByLocationArgs(string $location): array
+        {
+            return [];
+        }
+    }
+}
+
 namespace {
     exit("This file should not be included, only analyzed by your IDE");
 
@@ -1271,6 +1625,7 @@ namespace {
     /**
      * This function works exactly like 'clienttranslate', except it tells BGA that the string is not needed on client
      * side.
+     * @deprecated use JSON options/stats instead, where there is no need to mark translatable strings.
      */
     function totranslate(string $text): string
     {
@@ -1386,6 +1741,8 @@ namespace {
 
         /**
          * Translation function using appropriate gettext domain.
+         * 
+         * @deprecated use clienttranslate instead.
          */
         final protected function _(string $text): string
         {
@@ -1522,7 +1879,7 @@ namespace {
         }
 
         /**
-         * Change current state to a new state. Important: the $stateNum parameter is the key of the state.
+         * Change current state to a new state. ⚠️ the $nextState parameter is the key of the state, not the state name.
          *
          * NOTE: This is very advanced method, it should not be used in normal cases. Specific advanced cases
          * include - jumping to specific state from "do_anytime" actions, jumping to dispatcher state or jumping to
@@ -1896,7 +2253,7 @@ namespace {
      * You shouldn't use this type of exception except if you think the information shown could be critical. Indeed: a
      * generic error message will be shown to the user, so it's going to be difficult for you to see what happened.
      */
-    abstract class BgaSystemException extends feException
+    class BgaSystemException extends feException
     {
         public function __construct($message, $code=FEX_NOCODE, ?array $args = null) {
         }
@@ -1928,239 +2285,11 @@ namespace {
         }
     }
 
+    /**
+     * @deprecated Use \Bga\GameFramework\Components\Deck instead
+     */
     class Deck
     {
-        var $autoreshuffle;
-        var $autoreshuffle_trigger; 
-
-        /**
-         * Set the databasetable name.
-         * MUST be called before any other method.
-         */
-        function init(string $table) {}
-
-        /**
-         * This is the way cards are created and should not be called during the game.
-         * Cards are added to the deck (not shuffled)
-         * Cards is an array of "card types" with at least the followin fields:
-         * array( 
-         *      array(                              // This is my first card type
-         *          "type" => "name of this type"   // Note: <10 caracters
-         *          "type_arg" => <type arg>        // Argument that should be applied to all card of this card type
-         *          "nbr" => <nbr>                  // Number of cards with this card type to create in game
-         *
-         * If location_arg is not specified, cards are placed at location extreme position
-         */
-        function createCards(array $cards, string $location = 'deck', ?int $location_arg = null) {}
         
-        /**
-         * Get position of extreme cards (top or back) on the specific location.
-         */
-        function getExtremePosition(bool $getMax , string $location): int
-        {
-            return false;
-        }
-        
-        /**
-         * Shuffle cards of a specified location.
-         */
-        function shuffle(string $location)
-        {
-        }
-        
-        /**
-         * Pick the first card on top of specified deck and give it to specified player.
-         * Return card infos or null if no card in the specified location.
-         */
-        function pickCard(string $location, int $player_id): ?array
-        {
-            return [];
-        }
-        
-        /**
-         * Pick the "nbr" first cards on top of specified deck and give it to specified player.
-         * Return card infos (array) or null if no card in the specified location.
-         */
-        function pickCards(int $nbr, string $location, int $player_id): ?array
-        {
-            return [];
-        }
-
-        /**
-         * Pick the first card on top of specified deck and place it in target location.
-         * Return card infos or null if no card in the specified location.
-         */
-        function pickCardForLocation(string $from_location, string $to_location, int $location_arg=0 ): ?array
-        {
-            return [];
-        }
-
-        /**
-         * Pick the first "$nbr" cards on top of specified deck and place it in target location.
-         * Return cards infos or void array if no card in the specified location.
-         */
-        function pickCardsForLocation(int $nbr, string $from_location, string $to_location, int $location_arg=0, bool $no_deck_reform=false ): ?array
-        {
-            return [];
-        }
-        
-        /**
-         * Return card on top of this location.
-         */
-        function getCardOnTop(string $location): ?array
-        {
-            return [];
-        }
-
-        /**
-         * Return "$nbr" cards on top of this location.
-         */
-        function getCardsOnTop(int $nbr, string $location): ?array
-        {
-            return [];
-        }
-        
-        /**
-         * Move a card to specific location.
-         */
-        function moveCard(int $card_id, string $location, int $location_arg=0): void
-        {
-        }
-
-        /**
-         * Move cards to specific location.
-         */
-        function moveCards(array $cards, string $location, int $location_arg=0): void
-        {
-        }
-        
-        /**
-         * Move a card to a specific location where card are ordered. If location_arg place is already taken, increment
-         * all cards after location_arg in order to insert new card at this precise location.
-         */
-        function insertCard(int $card_id, string $location, int $location_arg ): void
-        {
-        }
-
-        /**
-         * Move a card on top or at bottom of given "pile" type location. (Lower numbers: bottom of the deck. Higher numbers: top of the deck.)
-         */
-        function insertCardOnExtremePosition(int $card_id, string $location, bool $bOnTop): void
-        {
-        }
-
-        /**
-         * Move all cards from a location to another.
-         * !!! location arg is reseted to 0 or specified value !!!
-         * if "from_location" and "from_location_arg" are null: move ALL cards to specific location
-         */
-        function moveAllCardsInLocation(?string $from_location, ?string $to_location, ?int $from_location_arg=null, int $to_location_arg=0 ): void
-        {
-        }
-
-        /**
-         * Move all cards from a location to another.
-         * location arg stays with the same value
-         */
-        function moveAllCardsInLocationKeepOrder(string $from_location, string $to_location): void
-        {
-        }
-        
-        /**
-         * Return all cards in specific location.
-         * note: if "order by" is used, result object is NOT indexed by card ids
-         */
-        function getCardsInLocation(string|array $location, ?int $location_arg = null, ?string $order_by = null ): array
-        {
-            return [];
-        }
-        
-        /**
-         * Get all cards in given player hand.
-         * Note: This is an alias for: getCardsInLocation( "hand", $player_id ) 
-         */
-        function getPlayerHand(int $player_id): array
-        {
-            return [];
-        }
-        
-        /**
-         * Get specific card infos
-         */ 
-        function getCard(int $card_id ): ?array
-        {
-            return [];
-        }
-        
-        /**
-         * Get specific cards infos
-         */ 
-        function getCards(array $cards_array ): array
-        {
-            return [];
-        }
-        
-        /**
-         * Get cards from their IDs (same as getCards), but with a location specified. Raises an exception if the cards are not in the specified location.
-         */
-        function getCardsFromLocation(array $cards_array, string $location, ?int $location_arg = null ): array
-        {
-            return [];
-        }
-        
-        /**
-         * Get card of a specific type.
-         */
-        function getCardsOfType(mixed $type, ?int $type_arg=null ): array
-        {
-            return [];
-        }
-        
-        /**
-         * Get cards of a specific type in a specific location.
-         */
-        function getCardsOfTypeInLocation(mixed $type, ?int $type_arg=null, string $location, ?int $location_arg = null ): array
-        {
-            return [];
-        }
-        
-        /**
-         * Move a card to discard pile.
-         */
-        function playCard(int $card_id): void
-        {
-        }
-        
-        /**
-         * Return the number of cards in specified location. 
-         */
-        function countCardInLocation(string $location, ?int $location_arg=null): int|string
-        {
-            return '0';
-        }
-        
-        /**
-         * Return the number of cards in specified location. 
-         */
-        function countCardsInLocation(string $location, ?int $location_arg=null): int|string
-        {
-            return '0';
-        }
-        
-        /**
-         * Return an array "location" => number of cards.
-         */
-        function countCardsInLocations(): array
-        {
-            return [];
-        }
-        
-        /**
-         * Return an array "location_arg" => number of cards (for this location).
-         */
-        function countCardsByLocationArgs(string $location): array
-        {
-            return [];
-        }
     }
 }

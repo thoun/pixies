@@ -1,5 +1,7 @@
 <?php
 
+use Bga\Games\Pixies\objects\DetailledScore;
+
 require_once(__DIR__.'/objects/card.php');
 
 trait UtilTrait {
@@ -118,24 +120,7 @@ trait UtilTrait {
         return $spaces;
     }
 
-    function getValidatedCards(int $playerId) {
-        $spaces = $this->getCardsFromSpaces($playerId);
-
-        $cards = array_map(fn($space) => count($space) == 2 ? $space[1] : null, $spaces);
-
-        return $cards;
-    }
-
-    function getVisibleCards(int $playerId) {
-        $spaces = $this->getCardsFromSpaces($playerId);
-
-        $cards = array_map(fn($space) => count($space) == 2 ? $space[1] : (count($space) == 1 && $space[0]->value !== null ? $space[0] : null), $spaces);
-
-        return $cards;
-    }
-
-    function countFacedownCards(int $playerId): int {
-        $spaces = $this->getCardsFromSpaces($playerId);
+    function countFacedownCards(array $spaces): int {
         $result = 0;
 
         foreach ($spaces as $space) {
@@ -228,6 +213,85 @@ trait UtilTrait {
 
         return $topCoalition->size;
     }
+
+    function getDetailledScore(array $spaces, int $roundNumber, bool $isFlowerPowerExpansion): DetailledScore {
+        $detailledScore = new DetailledScore();
+        $validatedCards = array_map(fn($space) => count($space) == 2 ? $space[1] : null, $spaces);
+        $visibleCards = array_map(fn($space) => count($space) == 2 ? $space[1] : (count($space) == 1 && $space[0]->value !== null ? $space[0] : null), $spaces);
+        $facedownCardsCount = $isFlowerPowerExpansion ? $this->countFacedownCards($spaces) : 0;
+        $colorsCounts = [
+            1 => 0,
+            2 => 0,
+            3 => 0,
+            4 => 0,
+        ];
+        foreach ($visibleCards as $visibleCard) {
+            if ($visibleCard?->type !== null) {
+                foreach ($visibleCard->colors as $color) {
+                    $colorsCounts[$color]++;
+                }
+            }
+        }
+
+        $detailledScore->validatedCardPoints = 0;
+        $spiralsPoints = 0;
+        $crossesPoints = 0;
+        $largestColorZone = 0;
+        $detailledScore->largestColorZonePoints = 0;
+        $facedownCardsPoints = $facedownCardsCount * 5;
+
+        foreach ($validatedCards as $space => $card) {
+            if ($card) {
+                $detailledScore->validatedCardPoints += $space;
+            }
+        }
+
+        foreach ($visibleCards as $space => $card) {
+            if ($card) {
+                if ($card->spirals != 0) {
+                    if ($card->spirals == -1) {
+                        $spiralsPoints += $colorsCounts[$card->colors[0]]; // spiral -1 is always of the single color of the card
+                    } else {
+                        $spiralsPoints += $card->spirals;
+                    }
+                }
+                if ($card->crosses != 0) {
+                    if ($card->crosses < 0) {
+                        $crossesPoints += $colorsCounts[-$card->crosses]; // X per color is coded as negative cross
+                    } else {
+                        $crossesPoints += $card->crosses;
+                    }
+                }
+                if ($card->spiralsPerFacedownCard > 0) {
+                    $facedownCardsPoints += $card->spiralsPerFacedownCard * $facedownCardsCount;
+                }
+                $colorZone = $this->getLargestColorZone($visibleCards);
+                if ($colorZone > $largestColorZone) {
+                    $largestColorZone = $colorZone;
+                }
+            }
+        }
+
+        // largest zone must be 2 cards min to score
+        if ($largestColorZone == 1) {
+            $largestColorZone = 0;
+        }
+
+        $detailledScore->spiralsAndCrossesPoints = $spiralsPoints - $crossesPoints;
+        $detailledScore->largestColorZonePoints = $largestColorZone * ($roundNumber + 1);
+        if ($isFlowerPowerExpansion) {
+            $detailledScore->facedownCardsPoints = $facedownCardsPoints;
+        }
+
+        $detailledScore->points = 
+            $detailledScore->validatedCardPoints + 
+            $detailledScore->spiralsAndCrossesPoints + 
+            $detailledScore->largestColorZonePoints;
+        if ($isFlowerPowerExpansion) {
+            $detailledScore->points += $detailledScore->facedownCardsPoints;
+        }
+        return $detailledScore;
+    }
     
     function scoreRound() {
         $roundNumber = intval($this->getStat('roundNumber'));
@@ -236,94 +300,20 @@ trait UtilTrait {
         $isFlowerPowerExpansion = $this->isFlowerPowerExpansion();
 
         foreach ($playersIds as $playerId) {
-            $detailledScore = new stdClass();
-            $validatedCards = $this->getValidatedCards($playerId);
-            $visibleCards = $this->getVisibleCards($playerId);
-            $facedownCardsCount = $isFlowerPowerExpansion ? $this->countFacedownCards($playerId) : 0;
-            $colorsCounts = [
-                1 => 0,
-                2 => 0,
-                3 => 0,
-                4 => 0,
-            ];
-            foreach ($visibleCards as $visibleCard) {
-                if ($visibleCard?->type !== null) {
-                    foreach ($visibleCard->colors as $color) {
-                        $colorsCounts[$color]++;
-                    }
-                }
-            }
-            $playerId == 2343493 && debug($colorsCounts, $visibleCards);
-
-            $detailledScore->validatedCardPoints = 0;
-            $spiralsPoints = 0;
-            $crossesPoints = 0;
-            $largestColorZone = 0;
-            $detailledScore->largestColorZonePoints = 0;
-            $facedownCardsPoints = $facedownCardsCount * 5;
-
-            foreach ($validatedCards as $space => $card) {
-                if ($card) {
-                    $detailledScore->validatedCardPoints += $space;
-                }
-            }
-
-            foreach ($visibleCards as $space => $card) {
-                if ($card) {
-                    if ($card->spirals != 0) {
-                        if ($card->spirals == -1) {
-                            $spiralsPoints += $colorsCounts[$card->colors[0]]; // spiral -1 is always of the single color of the card
-                        } else {
-                            $spiralsPoints += $card->spirals;
-                        }
-                    }
-                    if ($card->crosses != 0) {
-                        if ($card->crosses < 0) {
-                            $crossesPoints += $colorsCounts[-$card->crosses]; // X per color is coded as negative cross
-                        } else {
-                            $crossesPoints += $card->crosses;
-                        }
-                    }
-                    if ($card->spiralsPerFacedownCard > 0) {
-                        $facedownCardsPoints += $card->spiralsPerFacedownCard * $facedownCardsCount;
-                    }
-                    $colorZone = $this->getLargestColorZone($visibleCards);
-                    if ($colorZone > $largestColorZone) {
-                        $largestColorZone = $colorZone;
-                    }
-                }
-            }
-
-            // largest zone must be 2 cards min to score
-            if ($largestColorZone == 1) {
-                $largestColorZone = 0;
-            }
-
-            $detailledScore->spiralsAndCrossesPoints = $spiralsPoints - $crossesPoints;
-            $detailledScore->largestColorZonePoints = $largestColorZone * ($roundNumber + 1);
-            if ($isFlowerPowerExpansion) {
-                $detailledScore->facedownCardsPoints = $facedownCardsPoints;
-            }
-
-            $detailledScore->points = 
-                $detailledScore->validatedCardPoints + 
-                $detailledScore->spiralsAndCrossesPoints + 
-                $detailledScore->largestColorZonePoints;
-            if ($isFlowerPowerExpansion) {
-                $detailledScore->points += $detailledScore->facedownCardsPoints;
-            }
+            $playerCards = $this->getCardsFromSpaces($playerId);
+            $detailledScore = $this->getDetailledScore($playerCards, $roundNumber, $isFlowerPowerExpansion);
             $result[$playerId] = $detailledScore;  
         
             $this->incStat($detailledScore->validatedCardPoints, 'pointsValidatedCard');
             $this->incStat($detailledScore->validatedCardPoints, 'pointsValidatedCard', $playerId);
-            $this->incStat($spiralsPoints, 'pointsSpirals');
-            $this->incStat($spiralsPoints, 'pointsSpirals', $playerId);
-            $this->incStat($crossesPoints, 'pointsLostCrosses');
-            $this->incStat($crossesPoints, 'pointsLostCrosses', $playerId);
+            $this->incStat($detailledScore->spiralsPoints, 'pointsSpirals');
+            $this->incStat($detailledScore->spiralsPoints, 'pointsSpirals', $playerId);
+            $this->incStat($detailledScore->crossesPoints, 'pointsLostCrosses');
+            $this->incStat($detailledScore->crossesPoints, 'pointsLostCrosses', $playerId);
             $this->incStat($detailledScore->largestColorZonePoints, 'pointsColorZone');
             $this->incStat($detailledScore->largestColorZonePoints, 'pointsColorZone', $playerId);
-            $this->incStat($facedownCardsPoints, 'pointsFacedownCards');
-            $this->incStat($facedownCardsPoints, 'pointsFacedownCards', $playerId);
+            $this->incStat($detailledScore->facedownCardsPoints, 'pointsFacedownCards');
+            $this->incStat($detailledScore->facedownCardsPoints, 'pointsFacedownCards', $playerId);
         }
 
         return $result;

@@ -354,7 +354,12 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
             this.setRoundResult(emptyRoundResult, round);
         }
 
-        Object.entries(detailledScore).forEach(([key, value]) => document.getElementById(`${key}-${round}-${playerId}`).innerText = `${value}`);
+        Object.entries(detailledScore).forEach(([key, value]) => {
+            const div = document.getElementById(`${key}-${round}-${playerId}`);
+            if (div) {
+                div.innerText = `${value}`;
+            }
+        });
     }
 
     private setRoundResult(roundResult: { [playerId: number]: DetailledScore }, round: number) {

@@ -66,25 +66,17 @@ trait DebugUtilTrait {
         switch ($state) {
           case ST_PLAYER_CHOOSE_CARD:
             $playerId = intval($this->getActivePlayerId());
-
-            $cards = $this->getCardsFromDb($this->cards->getCardsInLocation('table'));
-            $card = $cards[bga_rand(0, count($cards) - 1)];
-
-            $this->applyChooseCard($playerId, $card);
+            $this->zombieTurn_chooseCard($playerId);
             break;
     
           case ST_PLAYER_PLAY_CARD:
             $playerId = intval($this->getActivePlayerId());
-            $args = $this->argPlayCard();
-            $spaces = $args['spaces'];
-            $space = $spaces[bga_rand(0, count($spaces) - 1)];
-
-            $this->applyPlayCard($playerId, $space);
+            $this->zombieTurn_playCard($playerId);
             break;
 
           case ST_PLAYER_KEEP_CARD:
             $playerId = intval($this->getActivePlayerId());
-            $this->applyKeepCard($playerId, 0);
+            $this->zombieTurn_keepCard($playerId);
             break;
         }
       }
