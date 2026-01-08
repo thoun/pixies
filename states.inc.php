@@ -54,10 +54,6 @@ use Bga\GameFramework\StateType;
 
 require_once("modules/php/constants.inc.php");
 
-$basicGameStates = [
-    ST_BGA_GAME_SETUP => GameStateBuilder::gameSetup(ST_NEW_ROUND)->build(),
-];
-
 $playerActionsGameStates = [
 
     ST_PLAYER_CHOOSE_CARD => GameStateBuilder::create()
@@ -197,4 +193,4 @@ $gameGameStates = [
         ->build(),
 ];
  
-$machinestates = $basicGameStates + $playerActionsGameStates + $gameGameStates;
+$machinestates = $playerActionsGameStates + $gameGameStates;

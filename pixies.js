@@ -2257,7 +2257,6 @@ var Pixies = /** @class */ (function (_super) {
             this.notif_lastTurn(false);
         }
         this.setupNotifications();
-        this.setupPreferences();
         new HelpManager(this, {
             buttons: [
                 new BgaHelpPopinButton({
@@ -2389,23 +2388,6 @@ var Pixies = /** @class */ (function (_super) {
     Pixies.prototype.getCurrentPlayerTable = function () {
         var _this = this;
         return this.playersTables.find(function (playerTable) { return playerTable.playerId === _this.getPlayerId(); });
-    };
-    Pixies.prototype.setupPreferences = function () {
-        var _this = this;
-        // Extract the ID and value from the UI control
-        var onchange = function (e) {
-            var match = e.target.id.match(/^preference_[cf]ontrol_(\d+)$/);
-            if (!match) {
-                return;
-            }
-            var prefId = +match[1];
-            var prefValue = +e.target.value;
-            _this.prefs[prefId].value = prefValue;
-        };
-        // Call onPreferenceChange() when any value changes
-        dojo.query(".preference_control").connect("onchange", onchange);
-        // Call onPreferenceChange() now
-        dojo.forEach(dojo.query("#ingame_menu_content .preference_control"), function (el) { return onchange({ target: el }); });
     };
     Pixies.prototype.getOrderedPlayers = function (gamedatas) {
         var _this = this;

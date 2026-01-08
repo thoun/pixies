@@ -95,7 +95,6 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
         }
 
         this.setupNotifications();
-        this.setupPreferences();
         new HelpManager(this, { 
             buttons: [
                 new BgaHelpPopinButton({
@@ -247,28 +246,6 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
 
     private getCurrentPlayerTable(): PlayerTable | null {
         return this.playersTables.find(playerTable => playerTable.playerId === this.getPlayerId());
-    }
-
-    private setupPreferences() {
-        // Extract the ID and value from the UI control
-        const onchange = (e) => {
-          var match = e.target.id.match(/^preference_[cf]ontrol_(\d+)$/);
-          if (!match) {
-            return;
-          }
-          var prefId = +match[1];
-          var prefValue = +e.target.value;
-          (this as any).prefs[prefId].value = prefValue;
-        }
-        
-        // Call onPreferenceChange() when any value changes
-        dojo.query(".preference_control").connect("onchange", onchange);
-        
-        // Call onPreferenceChange() now
-        dojo.forEach(
-          dojo.query("#ingame_menu_content .preference_control"),
-          el => onchange({ target: el })
-        );
     }
 
     private getOrderedPlayers(gamedatas: PixiesGamedatas) {

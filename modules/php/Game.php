@@ -19,6 +19,8 @@ declare(strict_types=1);
 
 namespace Bga\Games\Pixies;
 
+use Bga\GameFramework\VisibleSystemException;
+
 require_once('constants.inc.php');
 require_once('utils.php');
 require_once('actions.php');
@@ -50,8 +52,7 @@ class Game extends \Bga\GameFramework\Table {
             LAST_TURN => LAST_TURN,
         ]);  
 
-        $this->cards = $this->getNew("module.common.deck");
-        $this->cards->init("card");        
+        $this->cards = $this->deckFactory->createDeck("card");
 	}
 
     /*
@@ -104,10 +105,7 @@ class Game extends \Bga\GameFramework\Table {
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
 
-        // TODO TEMP card to test
-        $this->debugSetup();
-
-        /************ End of the game initialization *****/
+        return \ST_NEW_ROUND;
     }
 
     /*
@@ -122,7 +120,7 @@ class Game extends \Bga\GameFramework\Table {
     protected function getAllDatas(): array {
         $result = [];
     
-        $isEndScore = intval($this->gamestate->state_id()) >= ST_END_SCORE;
+        $isEndScore = $this->gamestate->getCurrentMainStateId() >= ST_END_SCORE;
         $currentPlayerId = intval($this->getCurrentPlayerId());    // !! We must only return informations visible by this player !!
     
         // Get information about players
@@ -320,7 +318,7 @@ class Game extends \Bga\GameFramework\Table {
             return;
         }
 
-        throw new \feException( "Zombie mode not supported at this game state: ".$statename );
+        throw new VisibleSystemException( "Zombie mode not supported at this game state: ".$statename );
     }
     
 ///////////////////////////////////////////////////////////////////////////////////:
