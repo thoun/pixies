@@ -421,7 +421,7 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
     async notif_score(args: NotifScoreArgs) {
         document.getElementById(`last-round`)?.remove();
         const { playerId, newScore, detailledScore, round } = args;
-        (this as any).scoreCtrl[playerId]?.toValue(newScore);
+        this.bga.playerPanels.getScoreCounter(playerId).toValue(newScore);
 
         (this as any).displayScoring(`player-table-${playerId}-cards`, this.getPlayerColor(playerId), detailledScore.points, ANIMATION_MS * 3);
         

@@ -61,8 +61,8 @@ trait DebugUtilTrait {
     }
 
     function debug_playToEndRound() {
-      while (intval($this->gamestate->state_id()) < ST_MULTIPLAYER_BEFORE_END_ROUND) {
-        $state = intval($this->gamestate->state_id());
+      while ($this->gamestate->getCurrentMainStateId() < ST_MULTIPLAYER_BEFORE_END_ROUND) {
+        $state = $this->gamestate->getCurrentMainStateId();
         switch ($state) {
           case ST_PLAYER_CHOOSE_CARD:
             $playerId = intval($this->getActivePlayerId());

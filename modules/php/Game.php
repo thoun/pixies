@@ -71,11 +71,11 @@ class Game extends \Bga\GameFramework\Table {
  
         // Create players
         // Note: if you added some extra field on "player" table in the database (dbmodel.sql), you can initialize it there.
-        $sql = "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar) VALUES ";
+        $sql = "INSERT INTO player (player_id, player_color, player_name) VALUES ";
         $values = array();
         foreach( $players as $player_id => $player ) {
             $color = array_shift( $default_colors );
-            $values[] = "('".$player_id."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."')";
+            $values[] = "('".$player_id."','$color','".addslashes( $player['player_name'] )."')";
         }
         $sql .= implode(',', $values);
         $this->DbQuery( $sql );
@@ -121,7 +121,6 @@ class Game extends \Bga\GameFramework\Table {
         $result = [];
     
         $isEndScore = $this->gamestate->getCurrentMainStateId() >= ST_END_SCORE;
-        $currentPlayerId = intval($this->getCurrentPlayerId());    // !! We must only return informations visible by this player !!
     
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.

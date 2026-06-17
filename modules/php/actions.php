@@ -19,7 +19,7 @@ trait ActionTrait {
             throw new \BgaUserException("You cannot choose this card");
         }
         
-        $stateName = $this->gamestate->state()['name']; 
+        $stateName = $this->gamestate->getCurrentMainState()->name; 
         $isChangeOfCard = $stateName === 'playCard' || $stateName === 'keepCard';
         if ($isChangeOfCard) {
             $this->gamestate->nextState('cancel');
@@ -27,7 +27,7 @@ trait ActionTrait {
 
         $this->applyChooseCard($playerId, $card);
 
-        if ($autoplace && $this->gamestate->state()['name'] === 'playCard') {
+        if ($autoplace && $this->gamestate->getCurrentMainState()->name === 'playCard') {
             $spaces = $this->argPlayCard()['spaces'];
             if (count($spaces) == 1) {
                 $this->applyPlayCard($playerId, $spaces[0]);

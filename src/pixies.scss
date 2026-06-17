@@ -9,8 +9,8 @@
 
 @font-face {
   font-family: 'pixies';
-  src: url('img/pixies.woff2') format('woff2'),
-       url('img/pixies.woff') format('woff');
+  src: url('fonts/pixies.woff2') format('woff2'),
+       url('fonts/pixies.woff') format('woff');
   font-weight: normal;
   font-style: normal;
 
@@ -139,4 +139,12 @@ html.flower-power-expansion, html.flower-power-expansion .mode_3d #game_play_are
     min-width: 100px;
     font-weight: bold;
   }
+}
+
+html[data-theme="dark"] {
+	.round-result td,
+	.round-result th:not(.empty) {
+		background: var(--game-palette-bga-gray-244);
+		color: var(--game-palette-bga-gray-950);
+	}
 }

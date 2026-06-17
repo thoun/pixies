@@ -41,9 +41,24 @@
     &[data-row="3"] { background-position-x: -152px; }
 }
 
+html[data-theme="light"] {
+    #popin_bgaHelpDialog {
+        color: black;
+        background: white;
+    }
+}
 
-#popin_bgaHelpDialog {
-    background: white;
+html[data-theme="dark"] {
+    #popin_bgaHelpDialog {
+        color: black;
+        background: unset;
+    }
+
+    #help-popin {
+        h1 {
+            color: #b8e599;
+        }
+    }
 }
 
 #help-popin {

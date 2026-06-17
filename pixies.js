@@ -2554,18 +2554,18 @@ var Pixies = /** @class */ (function (_super) {
     Pixies.prototype.notif_score = function (args) {
         return __awaiter(this, void 0, void 0, function () {
             var playerId, newScore, detailledScore, round;
-            var _a, _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         (_a = document.getElementById("last-round")) === null || _a === void 0 ? void 0 : _a.remove();
                         playerId = args.playerId, newScore = args.newScore, detailledScore = args.detailledScore, round = args.round;
-                        (_b = this.scoreCtrl[playerId]) === null || _b === void 0 ? void 0 : _b.toValue(newScore);
+                        this.bga.playerPanels.getScoreCounter(playerId).toValue(newScore);
                         this.displayScoring("player-table-".concat(playerId, "-cards"), this.getPlayerColor(playerId), detailledScore.points, ANIMATION_MS * 3);
                         this.setRoundResultForPlayer(playerId, detailledScore, round);
                         return [4 /*yield*/, this.wait(ANIMATION_MS * 3)];
                     case 1:
-                        _c.sent();
+                        _b.sent();
                         return [2 /*return*/];
                 }
             });

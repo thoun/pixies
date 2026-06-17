@@ -152,11 +152,11 @@ trait UtilTrait {
     }
 
     function getPlayerScore(int $playerId) {
-        return intval($this->getUniqueValueFromDB("SELECT player_score FROM player where `player_id` = $playerId"));
+        return $this->bga->playerScore->get($playerId);
     }
 
     function incPlayerScore(int $playerId, int $roundScore, $message = '', $args = []) {
-        $this->DbQuery("UPDATE player SET `player_score` = `player_score` + $roundScore WHERE player_id = $playerId");
+        $this->bga->playerScore->inc($playerId, $roundScore, null);
             
         $this->notify->all('score', $message, [
             'playerId' => $playerId,

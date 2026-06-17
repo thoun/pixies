@@ -658,11 +658,8 @@ body > .card {
   top: unset;
 }
 
-.player-board {
-  background-color: white;
-}
-.player-board.spectator-mode * {
-  background: white !important;
+html[data-theme=light] .player-board {
+  --game-bga-player-panel-background: white;
 }
 
 .player-table {
@@ -791,8 +788,17 @@ body > .card {
   background-position-x: -152px;
 }
 
-#popin_bgaHelpDialog {
+html[data-theme=light] #popin_bgaHelpDialog {
+  color: black;
   background: white;
+}
+
+html[data-theme=dark] #popin_bgaHelpDialog {
+  color: black;
+  background: unset;
+}
+html[data-theme=dark] #help-popin h1 {
+  color: #b8e599;
 }
 
 #help-popin h1 {
@@ -803,7 +809,7 @@ body > .card {
 
 @font-face {
   font-family: "pixies";
-  src: url("img/pixies.woff2") format("woff2"), url("img/pixies.woff") format("woff");
+  src: url("fonts/pixies.woff2") format("woff2"), url("fonts/pixies.woff") format("woff");
   font-weight: normal;
   font-style: normal;
 }
@@ -922,4 +928,10 @@ html.flower-power-expansion, html.flower-power-expansion .mode_3d #game_play_are
   background: #c3dfa5;
   min-width: 100px;
   font-weight: bold;
+}
+
+html[data-theme=dark] .round-result td,
+html[data-theme=dark] .round-result th:not(.empty) {
+  background: var(--game-palette-bga-gray-244);
+  color: var(--game-palette-bga-gray-950);
 }
