@@ -20,17 +20,17 @@ class EndTurn extends GameState
         );
     }
 
-    public function onEnteringState(): int|string
+    public function onEnteringState(): string
     {
         $this->bga->tableStats->inc('turnsNumber', 1);
 
-        if (intval($this->game->cards->countCardInLocation('deck')) < count($this->game->getPlayersIds())) {
+        if (intval($this->game->cards->countCardInLocation('deck')) < $this->game->getPlayerCount()) {
             $this->notify->all('log', clienttranslate('The deck is empty, so the round must end'), []);
-            $this->game->setGameStateValue(\LAST_TURN, 1);
+            $this->game->setGameStateValue((string)\LAST_TURN, 1);
         }
 
-        $endRound = boolval($this->game->getGameStateValue(\LAST_TURN));
+        $endRound = boolval($this->game->getGameStateValue((string)\LAST_TURN));
 
-        return $endRound ? \ST_MULTIPLAYER_BEFORE_END_ROUND : NewTurn::class;
+        return $endRound ? BeforeEndRound::class : NewTurn::class;
     }
 }

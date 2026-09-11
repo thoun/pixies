@@ -21,7 +21,7 @@ class NewTurn extends GameState
         );
     }
 
-    public function onEnteringState(): int
+    public function onEnteringState(): string
     {
         $playerCount = $this->game->getPlayerCount();
         $cardCount = $playerCount === 2 ? 4 : $playerCount;
@@ -34,6 +34,6 @@ class NewTurn extends GameState
             'cards' => $cards,
         ]);
 
-        return \ST_PLAYER_CHOOSE_CARD;
+        return ChooseCard::class;
     }
 }

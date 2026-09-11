@@ -1,5 +1,7 @@
 <?php
 
+namespace Bga\Games\Pixies;
+
 function debug(...$debugData) {
     if (\Bga\GameFramework\Table::getBgaEnvironment() != 'studio') { 
         return;
@@ -62,23 +64,12 @@ trait DebugUtilTrait {
 
     function debug_playToEndRound() {
       while ($this->gamestate->getCurrentMainStateId() < ST_MULTIPLAYER_BEFORE_END_ROUND) {
-        $state = $this->gamestate->getCurrentMainStateId();
-        switch ($state) {
-          case ST_PLAYER_CHOOSE_CARD:
-            $playerId = intval($this->getActivePlayerId());
-            $this->zombieTurn_chooseCard($playerId);
-            break;
-    
-          case ST_PLAYER_PLAY_CARD:
-            $playerId = intval($this->getActivePlayerId());
-            $this->zombieTurn_playCard($playerId);
-            break;
-
-          case ST_PLAYER_KEEP_CARD:
-            $playerId = intval($this->getActivePlayerId());
-            $this->zombieTurn_keepCard($playerId);
-            break;
+        $playerId = intval($this->getActivePlayerId());
+        $state = $this->gamestate->getCurrentMainState();
+        if ($state === null) {
+          throw new \BgaSystemException('Current game state not found');
         }
+        $this->gamestate->runStateClassZombie($state, $playerId);
       }
     }
 }

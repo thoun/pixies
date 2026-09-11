@@ -23,7 +23,7 @@ class NewRound extends GameState
 
     public function onEnteringState(): string
     {
-        $this->game->setGameStateValue(\LAST_TURN, 0);
+        $this->game->setGameStateValue((string)\LAST_TURN, 0);
         $this->bga->tableStats->inc('roundNumber', 1);
 
         $roundNumber = $this->bga->tableStats->get('roundNumber');

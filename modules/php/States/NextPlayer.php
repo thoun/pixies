@@ -29,13 +29,13 @@ class NextPlayer extends GameState
 
         $playersIds = $this->game->getPlayersIds();
         if (!$endTurn && count($playersIds) === 2 && $tableCount === 2) {
-            $endTurn = boolval($this->game->getGameStateValue(\LAST_TURN));
+            $endTurn = boolval($this->game->getGameStateValue((string)\LAST_TURN));
         }
 
         if (!$endTurn) {
             $this->game->activeNextPlayer();
         }
 
-        return $endTurn ? EndTurn::class : \ST_PLAYER_CHOOSE_CARD;
+        return $endTurn ? EndTurn::class : ChooseCard::class;
     }
 }

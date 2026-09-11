@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Bga\Games\Pixies\objects;
+namespace Bga\Games\Pixies\Objects;
 
 class DetailledScore {
     public int $validatedCardPoints = 0;

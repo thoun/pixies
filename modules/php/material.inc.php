@@ -18,6 +18,7 @@
  * are available everywhere in your game logic code.
  *
  */
+use Bga\Games\Pixies\Objects\CardType;
 
 $this->CARDS = [
   0 => [ // all colors
