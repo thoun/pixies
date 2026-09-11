@@ -16,6 +16,11 @@
 
 use Bga\GameFramework\GameStateBuilder;
 use Bga\GameFramework\StateType;
+use Bga\Games\Pixies\States\EndRound;
+use Bga\Games\Pixies\States\EndScore;
+use Bga\Games\Pixies\States\EndTurn;
+use Bga\Games\Pixies\States\NewRound;
+use Bga\Games\Pixies\States\NextPlayer;
 
 /*
    Game state machine is a tool used to facilitate game developpement by doing common stuff that can be set up
@@ -54,7 +59,7 @@ use Bga\GameFramework\StateType;
 
 require_once("modules/php/constants.inc.php");
 
-$playerActionsGameStates = [
+$machinestates = [
 
     ST_PLAYER_CHOOSE_CARD => GameStateBuilder::create()
         ->name("chooseCard")
@@ -68,7 +73,7 @@ $playerActionsGameStates = [
         ->transitions([
             "playCard" => ST_PLAYER_PLAY_CARD,
             "keepCard" => ST_PLAYER_KEEP_CARD,
-            "zombiePass" => ST_NEXT_PLAYER,
+            "zombiePass" => NextPlayer::class,
         ])
         ->build(),
 
@@ -84,9 +89,9 @@ $playerActionsGameStates = [
             'actCancel',
         ])
         ->transitions([
-            "next" => ST_NEXT_PLAYER,
+            "next" => NextPlayer::class,
             "cancel" => ST_PLAYER_CHOOSE_CARD,
-            "zombiePass" => ST_NEXT_PLAYER,
+            "zombiePass" => NextPlayer::class,
         ])
         ->build(),
 
@@ -102,9 +107,9 @@ $playerActionsGameStates = [
             'actCancel',
         ])
         ->transitions([
-            "next" => ST_NEXT_PLAYER,
+            "next" => NextPlayer::class,
             "cancel" => ST_PLAYER_CHOOSE_CARD,
-            "zombiePass" => ST_NEXT_PLAYER,
+            "zombiePass" => NextPlayer::class,
         ])
         ->build(),
     
@@ -118,79 +123,9 @@ $playerActionsGameStates = [
             'actSeen',
         ])
         ->transitions([
-            "next" => ST_END_ROUND, // for zombie
-            "endRound" => ST_END_ROUND,
-            "endScore" => ST_END_SCORE,
+            "next" => EndRound::class, // for zombie
+            "endRound" => EndRound::class,
+            "endScore" => EndScore::class,
         ])
         ->build(),
 ];
-
-$gameGameStates = [
-
-    ST_NEW_ROUND => GameStateBuilder::create()
-        ->name("newRound")
-        ->description("")
-        ->type(StateType::GAME)
-        ->action("stNewRound")
-        ->updateGameProgression(true)
-        ->transitions([
-            "start" => ST_NEW_TURN,
-        ])
-        ->build(),
-
-    ST_NEW_TURN => GameStateBuilder::create()
-        ->name("newTurn")
-        ->description("")
-        ->type(StateType::GAME)
-        ->action("stNewTurn")
-        ->updateGameProgression(true)
-        ->transitions([
-            "start" => ST_PLAYER_CHOOSE_CARD,
-        ])
-        ->build(),
-
-    ST_NEXT_PLAYER => GameStateBuilder::create()
-        ->name("nextPlayer")
-        ->description("")
-        ->type(StateType::GAME)
-        ->action("stNextPlayer")
-        ->transitions([
-            "next" => ST_PLAYER_CHOOSE_CARD, 
-            "endTurn" => ST_END_TURN,
-        ])
-        ->build(),
-
-    ST_END_TURN => GameStateBuilder::create()
-        ->name("endTurn")
-        ->description("")
-        ->type(StateType::GAME)
-        ->action("stEndTurn")
-        ->transitions([
-            "newTurn" => ST_NEW_TURN,
-            "endRound" => ST_MULTIPLAYER_BEFORE_END_ROUND,
-        ])
-        ->build(),
-
-    ST_END_ROUND => GameStateBuilder::create()
-        ->name("endRound")
-        ->description("")
-        ->type(StateType::GAME)
-        ->action("stEndRound")
-        ->transitions([
-            "newRound" => ST_NEW_ROUND,
-            "endScore" => ST_END_SCORE,
-        ])
-        ->build(),
-
-    ST_END_SCORE => GameStateBuilder::create()
-        ->name("endScore")
-        ->description("")
-        ->type(StateType::GAME)
-        ->action("stEndScore")
-        ->transitions([
-            "endGame" => ST_END_GAME,
-        ])
-        ->build(),
-];
- 
-$machinestates = $playerActionsGameStates + $gameGameStates;

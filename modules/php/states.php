@@ -11,70 +11,6 @@ trait StateTrait {
         The action method of state X is called everytime the current game state is set to X.
     */
 
-    function stNewRound() {
-        $this->setGameStateValue(LAST_TURN, 0);
-
-        $this->incStat(1, 'roundNumber');
-
-        $roundNumber = intval($this->getStat('roundNumber'));
-
-        $this->notify->all('newRound', clienttranslate('Round ${roundNumber}/3 begins!'), [
-            'round' => $roundNumber,
-            'roundNumber' => $roundNumber, // for logs
-        ]);
-
-        $this->gamestate->nextState('start');
-    }   
-    
-    function stNewTurn() {
-        $playerCount = count($this->getPlayersIds());
-        $cardCount = $playerCount == 2 ? 4 : $playerCount;
-
-        $cards = $this->getCardsFromDb($this->cards->pickCardsForLocation($cardCount, 'deck', 'table'));
-
-        $this->notify->all('newTurn', '', [
-            'cards' => $cards,
-        ]);
-
-        $this->gamestate->nextState('start');
-    }
-
-    function stNextPlayer() {
-        $playerId = intval($this->getActivePlayerId());
-
-        $this->giveExtraTime($playerId);
-
-        $tableCount = intval($this->cards->countCardInLocation('table'));
-        $endTurn = $tableCount == 0;
-
-        $playersIds = $this->getPlayersIds();
-        if (!$endTurn && count($playersIds) == 2 && $tableCount == 2) {
-            if (boolval($this->getGameStateValue(LAST_TURN))) {
-                $endTurn = true;
-            }
-        }
-
-        if (!$endTurn) {
-            $this->activeNextPlayer();
-        }
-
-        $this->gamestate->nextState($endTurn ? 'endTurn' : 'next');
-    } 
-    
-    function stEndTurn() {
-        $this->incStat(1, 'turnsNumber');
-
-        if (intval($this->cards->countCardInLocation('deck')) < count($this->getPlayersIds())) {
-            $this->notify->all('log', clienttranslate('The deck is empty, so the round must end'), []);
-            $this->setGameStateValue(LAST_TURN, 1);
-        }
-
-        $endRound = boolval($this->getGameStateValue(LAST_TURN));
-
-        $this->gamestate->nextState($endRound ? 'endRound' : 'newTurn');
-    }
-    
-
     function stBeforeEndRound() {
         $roundNumber = intval($this->getStat('roundNumber'));
 
@@ -99,25 +35,4 @@ trait StateTrait {
         }
     }
 
-    function stEndRound() {
-        $roundNumber = intval($this->getStat('roundNumber'));
-        $lastRound = $roundNumber >= 3;
-
-        if ($lastRound) {
-            $this->gamestate->nextState('endScore');
-        } else {
-            $this->cards->moveAllCardsInLocation(null, 'deck');
-            $this->cards->shuffle('deck');
-
-            $this->notify->all('endRound', '', [
-                'remainingCardsInDeck' => $this->getRemainingCardsInDeck(),
-            ]);
-
-            $this->gamestate->nextState('newRound');
-        }
-    }
-
-    function stEndScore() {
-        $this->gamestate->nextState('endGame');
-    }
 }

@@ -20,6 +20,7 @@ declare(strict_types=1);
 namespace Bga\Games\Pixies;
 
 use Bga\GameFramework\VisibleSystemException;
+use Bga\Games\Pixies\States\NewRound;
 
 require_once('constants.inc.php');
 require_once('utils.php');
@@ -105,7 +106,7 @@ class Game extends \Bga\GameFramework\Table {
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
 
-        return \ST_NEW_ROUND;
+        return NewRound::class;
     }
 
     /*
