@@ -582,6 +582,9 @@ body > .card {
 .card .card-sides .card-side.front.flower-power {
   background-image: url("img/flower-power-cards.jpg");
 }
+.card .card-sides .card-side.front.little-giants {
+  background-image: url("img/little-giants-cards.webp");
+}
 .card.bga-cards_selectable-card:not(.bga-cards_disabled-card):not(.bga-cards_selected-card) {
   animation: selectable-card-animation 1s alternate infinite ease-in-out;
 }
@@ -820,12 +823,12 @@ html[data-theme=dark] #help-popin h1 {
     margin-top: 8px;
   }
 }
-html, .mode_3d #game_play_area_background {
+html {
   background: url("img/background.jpg") #3d5c28;
   background-size: 100% 100%;
 }
 
-html.flower-power-expansion, html.flower-power-expansion .mode_3d #game_play_area_background {
+html.flower-power-expansion {
   background: url("img/background-expansion.jpg") #e88e96;
   background-size: 100% 100%;
 }

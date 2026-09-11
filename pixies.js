@@ -2023,6 +2023,10 @@ var CardsManager = /** @class */ (function (_super) {
                 div.classList.add('flower-power');
                 div.style.backgroundPositionX = "".concat(flowerPowerIndex * 100 / 13, "%");
             }
+            else if (card.index > 100) {
+                div.classList.add('little-giants');
+                div.style.backgroundPositionX = "".concat((card.index - 101) * 100 / 13, "%");
+            }
             var tooltip = this.getTooltip(card) + "<br><i>".concat(card.type === 0 ? this.COLORS[0] : card.colors.map(function (color) { return _this.COLORS[color]; }).join(' / '), "</i><br>\n            <div class=\"card double-size\">\n                <div class=\"card-sides\">\n                    <div class=\"card-side front ").concat(flowerPowerIndex !== null ? 'flower-power' : '', "\" data-type=\"").concat(card.type, "\" data-index=\"").concat(card.index, "\" ").concat(flowerPowerIndex !== null ? "style=\"background-position-x: ".concat(flowerPowerIndex * 100 / 13, "%") : '', "\">\n                    </div>\n                </div>\n            </div>");
             this.game.setTooltip(div.id, tooltip);
         }
@@ -2038,6 +2042,10 @@ var CardsManager = /** @class */ (function (_super) {
         if (flowerPowerIndex !== null) {
             div.classList.add('flower-power');
             div.style.backgroundPositionX = "".concat(flowerPowerIndex * 100 / 13, "%");
+        }
+        else if (card.index > 100) {
+            div.classList.add('little-giants');
+            div.style.backgroundPositionX = "".concat((card.index - 101) * 100 / 13, "%");
         }
         div.innerHTML = "\n        <div class=\"card-sides\">\n            <div class=\"card-side front ".concat(flowerPowerIndex !== null ? 'flower-power' : '', "\" ").concat(flowerPowerIndex !== null ? "style=\"background-position-x: ".concat(flowerPowerIndex * 100 / 13, "%") : '', "\">\n            </div>\n            <div class=\"card-side back\">\n            </div>\n        </div>");
         this.setupFrontDiv(card, div.querySelector('.front'), true);

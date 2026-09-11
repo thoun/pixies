@@ -92,11 +92,20 @@ trait UtilTrait {
         return $this->tableOptions->get(101) === 2;
     }
 
+    function isLittleGiantsExpansion(): bool {
+        return $this->tableOptions->get(102) === 1;
+    }
+
     function getCardFromDb(/*array|null*/ $dbCard) {
         if ($dbCard == null) {
             return null;
         }
-        return new \Card($dbCard, $this->CARDS + $this->FLOWER_POWER_CARDS);
+
+        $CARDS = $this->CARDS + $this->FLOWER_POWER_CARDS;
+        for ($i = 0; $i <= 4; $i++) {
+            $CARDS[$i] += $this->LITTLE_GIANTS_CARDS[$i];
+        }  
+        return new \Card($dbCard,  $CARDS);
     }
 
     function getCardsFromDb(array $dbCards) {
@@ -141,6 +150,11 @@ trait UtilTrait {
         $CARDS = $this->CARDS;
         if ($this->isFlowerPowerExpansion()) {
             $CARDS += $this->FLOWER_POWER_CARDS;
+        }
+        if ($this->isLittleGiantsExpansion()) {
+            for ($i = 0; $i <= 4; $i++) {
+                $CARDS[$i] += $this->LITTLE_GIANTS_CARDS[$i];
+            }            
         }
         foreach ($CARDS as $type => $cardsTypes) {
             foreach ($cardsTypes as $index => $cardType) {

@@ -20,7 +20,7 @@
  */
 
 $this->CARDS = [
-  0 => [
+  0 => [ // all colors
     1 => new CardType(2),
     2 => new CardType(3),
     3 => new CardType(4),
@@ -29,7 +29,7 @@ $this->CARDS = [
     6 => new CardType(8, crosses: 1),
   ],
 
-  1 => [
+  1 => [ // blue
     1 => new CardType(1, 6),
     2 => new CardType(2, 4),
     3 => new CardType(3, 3),
@@ -48,7 +48,7 @@ $this->CARDS = [
     16 => new CardType(9, crosses: 1),
   ],
 
-  2 => [
+  2 => [ // green
     1 => new CardType(1, 5),
     2 => new CardType(2, 3),
     3 => new CardType(3, 2),
@@ -67,7 +67,7 @@ $this->CARDS = [
     16 => new CardType(9, crosses: 4),
   ],
 
-  3 => [
+  3 => [ // yellow
     1 => new CardType(1, 4),
     2 => new CardType(2, 2),
     3 => new CardType(2, -1),
@@ -86,7 +86,7 @@ $this->CARDS = [
     16 => new CardType(9, crosses: 2),
   ],
 
-  4 => [
+  4 => [ // red
     1 => new CardType(1, 3),
     2 => new CardType(1, -1),
     3 => new CardType(2, 5),
@@ -134,6 +134,33 @@ $this->FLOWER_POWER_CARDS = [
     2 => new CardType(4, spirals: 4, crosses: -2),
   ],
 
+];
+
+$this->LITTLE_GIANTS_CARDS = [
+  0 => [ // all colors
+    107 => new CardType(columnEffect: 7),
+    114 => new CardType(rowEffect: 7),
+  ],
+  1 => [ // blue
+    104 => new CardType(columnEffect: 4),
+    110 => new CardType(rowEffect: 3),
+    111 => new CardType(rowEffect: 4),
+  ],
+  2 => [ // green
+    101 => new CardType(columnEffect: 1),
+    102 => new CardType(columnEffect: 2),
+    113 => new CardType(rowEffect: 6),
+  ],
+  3 => [ // yellow
+    103 => new CardType(columnEffect: 3),
+    108 => new CardType(rowEffect: 1),
+    109 => new CardType(rowEffect: 2),
+  ],
+  4 => [ // red
+    105 => new CardType(columnEffect: 5),
+    106 => new CardType(columnEffect: 6),
+    112 => new CardType(rowEffect: 5),
+  ],
 ];
 
 /*

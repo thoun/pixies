@@ -90,6 +90,9 @@ class CardsManager extends CardManager<Card> {
             if (flowerPowerIndex !== null) {
                 div.classList.add('flower-power');
                 div.style.backgroundPositionX = `${flowerPowerIndex * 100 / 13}%`;
+            } else if (card.index > 100) {
+                div.classList.add('little-giants');
+                div.style.backgroundPositionX = `${(card.index - 101) * 100 / 13}%`;
             }
 
             let tooltip = this.getTooltip(card) + `<br><i>${card.type === 0 ? this.COLORS[0] : card.colors.map(color => this.COLORS[color]).join(' / ')}</i><br>
@@ -119,6 +122,9 @@ class CardsManager extends CardManager<Card> {
         if (flowerPowerIndex !== null) {
             div.classList.add('flower-power');
             div.style.backgroundPositionX = `${flowerPowerIndex * 100 / 13}%`;
+        } else if (card.index > 100) {
+            div.classList.add('little-giants');
+            div.style.backgroundPositionX = `${(card.index - 101) * 100 / 13}%`;
         }
 
         div.innerHTML = `
