@@ -8,6 +8,7 @@ class Card extends CardType {
     public string $location;
     public int $locationArg;
     public ?int $type = null; // for hidden cards
+    /** @var int[] */
     public array $colors;
     public int $index;
 
@@ -29,7 +30,7 @@ class Card extends CardType {
             if ($this->type === 0) {
                 $this->colors = [1, 2, 3, 4];
             } else if ($this->type >= 10) {
-                $this->colors = [floor($this->type / 10), $this->type % 10];
+                $this->colors = [intdiv($this->type, 10), $this->type % 10];
             }
         } else {
             $this->value = null;
@@ -51,6 +52,56 @@ class Card extends CardType {
 
     public static function onlyIds(array $cards) {
         return array_map(fn($card) => self::onlyId($card), $cards);
+    }
+    
+    public function getRow(): ?int {
+        $locationSplit = explode('-', $this->location);
+        if (count($locationSplit) === 3) {
+            if (str_starts_with($locationSplit[2], 'row')) {
+                return intval(str_replace($locationSplit[2], 'row', ''));
+            }
+            if (str_starts_with($locationSplit[2], 'column')) {
+                return 0;
+            }
+        }
+
+        return match(intval($locationSplit[2])) {
+            1 => 1,
+            2 => 1,
+            3 => 1,
+            4 => 2,
+            5 => 2,
+            6 => 2,
+            7 => 3,
+            8 => 3,
+            9 => 3,
+            default => null,
+        };
+    }
+
+    public function getColumn(): ?int {
+        $locationSplit = explode('-', $this->location);
+        if (count($locationSplit) === 3) {
+            if (str_starts_with($locationSplit[2], 'row')) {
+                return 0;
+            }
+            if (str_starts_with($locationSplit[2], 'column')) {
+                return intval(str_replace($locationSplit[2], 'column', ''));
+            }
+        }
+
+        return match(intval($locationSplit[2])) {
+            1 => 1,
+            2 => 2,
+            3 => 3,
+            4 => 1,
+            5 => 2,
+            6 => 3,
+            7 => 1,
+            8 => 2,
+            9 => 3,
+            default => null,
+        };
     }
 }
 ?>

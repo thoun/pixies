@@ -163,31 +163,3 @@ $this->LITTLE_GIANTS_CARDS = [
     112 => new CardType(rowEffect: 5),
   ],
 ];
-
-/*
- * Color zone
- */
-$this->NEIGHBOURS = [
-  1 => [2, 4],
-  2 => [1, 3, 5],
-  3 => [2, 6],
-  4 => [1, 5, 7],
-  5 => [2, 4, 6, 8],
-  6 => [3, 5, 9],
-  7 => [4, 8],
-  8 => [5, 7, 9],
-  9 => [6, 8],
-];
-
-/*
- * Colors
- */
-$this->COLORS = [
-  0 => clienttranslate('Multicolor'),
-  1 => clienttranslate('Blue'),
-  2 => clienttranslate('Green'),
-  3 => clienttranslate('Yellow'),
-  4 => clienttranslate('Red'),
-];
-
-

@@ -64,7 +64,7 @@ class KeepCard extends GameState
 
     public function zombie(int $playerId): void
     {
-        $roundNumber = intval($this->game->getStat('roundNumber'));
+        $roundNumber = $this->bga->tableStats->get('roundNumber');
         $isFlowerPowerExpansion = $this->game->isFlowerPowerExpansion();
         $playerCards = $this->game->getCardsFromSpaces($playerId);
         $card = $this->game->getSelectedCard();

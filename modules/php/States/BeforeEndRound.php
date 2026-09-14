@@ -21,7 +21,6 @@ class BeforeEndRound extends GameState
             description: clienttranslate('Some players are seeing end round result'),
             descriptionMyTurn: clienttranslate('End round result'),
             transitions: [
-                'next' => EndRound::class,
                 'endRound' => EndRound::class,
                 'endScore' => EndScore::class,
             ],
@@ -65,6 +64,6 @@ class BeforeEndRound extends GameState
 
     public function zombie(int $playerId): void
     {
-        $this->gamestate->setPlayerNonMultiactive($playerId, 'next');
+        $this->actSeen($playerId);
     }
 }

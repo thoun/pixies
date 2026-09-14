@@ -24,6 +24,7 @@ use Bga\Games\Pixies\States\NewRound;
 use Bga\Games\Pixies\States\PlayCard;
 use Bga\Games\Pixies\Objects\DetailledScore;
 use Bga\Games\Pixies\Objects\Card;
+use Bga\Games\Pixies\Objects\Coalition;
 
 require_once('constants.inc.php');
 
@@ -35,8 +36,6 @@ class Game extends \Bga\GameFramework\Table {
     public array $CARDS;
     public array $FLOWER_POWER_CARDS;
     public array $LITTLE_GIANTS_CARDS;
-    public array $NEIGHBOURS;
-    public array $COLORS;
 
 	function __construct() {
         // Your global variables labels:
@@ -135,7 +134,7 @@ class Game extends \Bga\GameFramework\Table {
 
         $result['remainingCardsInDeck'] = $this->getRemainingCardsInDeck();
         $result['tableCards'] = $this->getCardsFromDb($this->cards->getCardsInLocation('table'));
-        $result['roundNumber'] = intval($this->getStat('roundNumber'));
+        $result['roundNumber'] = $this->bga->tableStats->get('roundNumber');
         $result['roundResult'] = [];
         for($i = 1; $i <= 3; $i++) {
             $result['roundResult'][$i] = $this->getGlobalVariable(ROUND_RESULT.$i);
@@ -321,15 +320,24 @@ class Game extends \Bga\GameFramework\Table {
         return new Card($dbCard,  $CARDS);
     }
 
-    function getCardsFromDb(array $dbCards) {
+    /**
+     * @return Card[]
+     */
+    function getCardsFromDb(array $dbCards): array {
         return array_map(fn($dbCard) => $this->getCardFromDb($dbCard), array_values($dbCards));
     }
 
-    function getCardsFromSpace(int $playerId, int $value) {
+    /**
+     * @return Card[]
+     */
+    function getCardsFromSpace(int $playerId, int $value): array {
         return $this->getCardsFromDb($this->cards->getCardsInLocation("player-$playerId-$value", null, 'location_arg'));
     }
 
-    function getCardsFromSpaces(int $playerId) {
+    /**
+     * @return array<int,Card[]>
+     */    
+    function getCardsFromSpaces(int $playerId): array {
         $spaces = [];
 
         for ($i = 1; $i <= 9; $i++) {
@@ -389,7 +397,7 @@ class Game extends \Bga\GameFramework\Table {
             'playerId' => $playerId,
             'newScore' => $this->getPlayerScore($playerId),
             'incScore' => $roundScore,
-            'round' => intval($this->getStat('roundNumber')),
+            'round' => $this->bga->tableStats->get('roundNumber'),
         ] + $args);
     }
 
@@ -397,26 +405,44 @@ class Game extends \Bga\GameFramework\Table {
         return intval($this->cards->countCardInLocation('deck'));
     }
 
-    function getColorZoneSize(array $validatedCards, $coalition, int $currentSpace) {
+
+    /**
+     * @param array<int,?Card> $validatedCards
+     */
+    function getColorZoneSize(array $validatedCards, Coalition $coalition, int $currentRow, int $currentColumn): void {
         // we check we don't count twice the same space
-        if (array_search($currentSpace, $coalition->alreadyCounted) !== false) {
+        if (array_search([$currentRow, $currentColumn], $coalition->alreadyCounted) !== false) {
             return;
         }
 
         $coalition->size++;
-        $coalition->alreadyCounted = array_merge($coalition->alreadyCounted, [$currentSpace]);
+        $coalition->alreadyCounted = array_merge($coalition->alreadyCounted, [[$currentRow, $currentColumn]]);
+
+        $neighbourValues = [];
+        foreach([[0, -1], [0, 1], [-1, 0], [1, 0]] as $neighbourShift) {
+            $iRow = $currentRow + $neighbourShift[0];
+            $iColumn = $currentColumn + $neighbourShift[1];
+            if ($iRow < 0 || $iRow > 3 || $iColumn < 0 || $iColumn > 3) {
+                continue;
+            }                
+            $neighbourValues[] = [$iRow, $iColumn];
+        }
+
 
         // we only take cards having same color
-        $filteredNeigbours = array_filter($this->NEIGHBOURS[$currentSpace], fn($neighbour) =>
-            $validatedCards[$neighbour] && in_array($coalition->color, $validatedCards[$neighbour]->colors)
+        $filteredNeigbours = array_filter($neighbourValues, fn($neighbour) =>
+            array_any($validatedCards, fn($validatedCard) => $validatedCard !== null && $validatedCard->getRow() === $neighbour[0] && $validatedCard->getColumn() === $neighbour[1] && in_array($coalition->color, $validatedCard->colors))
         );
 
         foreach ($filteredNeigbours as $filteredNeigbour) {
-            $this->getColorZoneSize($validatedCards, $coalition, $filteredNeigbour);
+            $this->getColorZoneSize($validatedCards, $coalition, $filteredNeigbour[0], $filteredNeigbour[1]);
         }
     }
 
-    function getLargestColorZone(array $visibleCards) {
+    /**
+     * @param array<int,?Card> $visibleCards
+     */
+    function getLargestColorZone(array $visibleCards): int {
         $topCoalition = null;
 
         for ($space = 1; $space <= 9; $space++) {
@@ -424,12 +450,8 @@ class Game extends \Bga\GameFramework\Table {
 
             if ($cardInSpace) {
                 foreach ($cardInSpace->colors as $color) {
-                    $coalition = new \stdClass();
-                    $coalition->space = $space;
-                    $coalition->size = 0;
-                    $coalition->color = $color;
-                    $coalition->alreadyCounted = [];
-                    $this->getColorZoneSize($visibleCards, $coalition, $space);
+                    $coalition = new Coalition($cardInSpace->getRow(), $cardInSpace->getColumn(), $color);
+                    $this->getColorZoneSize($visibleCards, $coalition, $cardInSpace->getRow(), $cardInSpace->getColumn());
                     
                     if (!$topCoalition || $coalition->size > $topCoalition->size) {
                         $topCoalition = $coalition;
@@ -443,7 +465,9 @@ class Game extends \Bga\GameFramework\Table {
 
     function getDetailledScore(array $spaces, int $roundNumber, bool $isFlowerPowerExpansion): DetailledScore {
         $detailledScore = new DetailledScore();
+        /** @var array<int,?Card> */
         $validatedCards = array_map(fn($space) => count($space) == 2 ? $space[1] : null, $spaces);
+        /** @var array<int,?Card> */
         $visibleCards = array_map(fn($space) => count($space) == 2 ? $space[1] : (count($space) == 1 && $space[0]->value !== null ? $space[0] : null), $spaces);
         $facedownCardsCount = $isFlowerPowerExpansion ? $this->countFacedownCards($spaces) : 0;
         $colorsCounts = [
@@ -568,13 +592,23 @@ class Game extends \Bga\GameFramework\Table {
                 'log' => '${color1}/${color2}',
                 'args' => [
                     'i18n' => ['color1', 'color2'],
-                    'color1' => $this->COLORS[intdiv($card->type, 10)],
-                    'color2' => $this->COLORS[$card->type % 10],
+                    'color1' => $this->getColorName(intdiv($card->type, 10)),
+                    'color2' => $this->getColorName($card->type % 10),
                 ]
-            ] : $this->COLORS[$card->type];
+            ] : $this->getColorName($card->type);
         }
 
         return $args;
+    }
+
+    private function getColorName(int $color): string {
+        return match ($color) {
+            0 => clienttranslate('Multicolor'),
+            1 => clienttranslate('Blue'),
+            2 => clienttranslate('Green'),
+            3 => clienttranslate('Yellow'),
+            4 => clienttranslate('Red'),
+        };
     }
 
 ///////////////////////////////////////////////////////////////////////////////////:
