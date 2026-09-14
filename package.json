@@ -5,7 +5,7 @@
   "main": "pixies.js",
   "scripts": {
     "build:ts": "tsc",
-    "build:scss": "sass --no-source-map src/pixies.scss pixies.css"
+    "build:scss": "sass --no-source-map src/scss/pixies.scss pixies.css"
   },
   "author": "",
   "license": "ISC",

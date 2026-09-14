@@ -1,21 +1,12 @@
-declare const loadBgaGameLib;
-
 const ANIMATION_MS = 500;
-const ACTION_TIMER_DURATION = 5;
 
 const LOCAL_STORAGE_ZOOM_KEY = 'Pixies-zoom';
 
-// @ts-ignore
-GameGui = (function () { // this hack required so we fake extend GameGui
-  function GameGui() {}
-  return GameGui;
-})();
-
-class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
+class Pixies implements PixiesGame {
     public animationManager: AnimationManager;
     public cardsManager: CardsManager;
 
-    private zoomManager: ZoomManager;
+    private zoomManager: InstanceType<typeof BgaZoom.Manager>;
     public gamedatas: PixiesGamedatas;
     private tableCenter: TableCenter;
     private playersTables: PlayerTable[] = [];
@@ -23,8 +14,9 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
     
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
 
+    public bga: Bga<PixiesPlayer, PixiesGamedatas>;
+
     constructor() {
-        super();
     }
     
     /*
@@ -44,13 +36,13 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
         log( "Starting game setup" );
 
         if (gamedatas.flowerPowerExpansion) {
-            (this as any).dontPreloadImage('background.jpg');
+            this.bga.images.dontPreloadImage('background.jpg');
             document.getElementsByTagName('html')[0].classList.add('flower-power-expansion');
         } else {
-            (this as any).dontPreloadImage('background-expansion.jpg');
+            this.bga.images.dontPreloadImage('background-expansion.jpg');
         }
 
-        (this as any).getGameAreaElement().insertAdjacentHTML('beforeend', `
+        this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', `
             <div id="result"></div>
 
             <div id="full-table">
@@ -142,7 +134,7 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
     }
     
     private onEnteringChooseCard(args: EnteringChooseCardArgs) {
-        if ((this as any).isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.tableCenter.makeCardsSelectable(true);
         }
     }
@@ -150,7 +142,7 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
     private onEnteringPlayCard(args: EnteringPlayCardArgs) {
         this.tableCenter.setSelectedCard(args.selectedCard);
         
-        if ((this as any).isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.getCurrentPlayerTable()?.setSelectableSpaces(args.spaces);
         }
     }
@@ -192,10 +184,10 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
     //                        action status bar (ie: the HTML links in the status bar).
     //
     public onUpdateActionButtons(stateName: string, args: any) {
-        if ((this as any).isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'playCard':
-                    (this as any).statusBar.addActionButton(_('Cancel'), () => (this as any).bgaPerformAction('actCancel'), { color: 'secondary' });
+                    this.bga.statusBar.addActionButton(_('Cancel'), () => this.bga.actions.performAction('actCancel'), { color: 'secondary' });
                     break;
                 case 'keepCard':
                     const labels = [
@@ -203,13 +195,13 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
                         _("Keep the new card"),
                     ];
                     [0, 1].forEach(index => {
-                        (this as any).statusBar.addActionButton(`${labels[index]}<br><div id="keepCard${index}"></div>`, () => (this as any).bgaPerformAction('actKeepCard', { index }), { id: `keepCard${index}_button` });
+                        this.bga.statusBar.addActionButton(`${labels[index]}<br><div id="keepCard${index}"></div>`, () => this.bga.actions.performAction('actKeepCard', { index }), { id: `keepCard${index}_button` });
                         this.cardsManager.setForHelp(args.cards[index], `keepCard${index}`);
                     });
-                    (this as any).statusBar.addActionButton(_('Cancel'), () => (this as any).bgaPerformAction('actCancel'), { color: 'secondary' });
+                    this.bga.statusBar.addActionButton(_('Cancel'), () => this.bga.actions.performAction('actCancel'), { color: 'secondary' });
                     break;
                 case 'beforeEndRound':
-                    (this as any).statusBar.addActionButton(_("Seen"), () => (this as any).bgaPerformAction('actSeen'));
+                    this.bga.statusBar.addActionButton(_("Seen"), () => this.bga.actions.performAction('actSeen'));
                     break;
             }
         }
@@ -222,14 +214,14 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
     ///////////////////////////////////////////////////
 
     public setTooltip(id: string, html: string) {
-        (this as any).addTooltipHtml(id, html, this.TOOLTIP_DELAY);
+        this.bga.gameui.addTooltipHtml(id, html, this.TOOLTIP_DELAY);
     }
     public setTooltipToClass(className: string, html: string) {
-        (this as any).addTooltipHtmlToClass(className, html, this.TOOLTIP_DELAY);
+        this.bga.gameui.addTooltipHtmlToClass(className, html, this.TOOLTIP_DELAY);
     }
 
     public getPlayerId(): number {
-        return Number((this as any).player_id);
+        return this.bga.players.getCurrentPlayerId();
     }
 
     public getPlayerColor(playerId: number): string {
@@ -250,7 +242,7 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
 
     private getOrderedPlayers(gamedatas: PixiesGamedatas) {
         const players = Object.values(gamedatas.players).sort((a, b) => a.playerNo - b.playerNo);
-        const playerIndex = players.findIndex(player => Number(player.id) === Number((this as any).player_id));
+        const playerIndex = players.findIndex(player => Number(player.id) === this.bga.players.getCurrentPlayerId());
         const orderedPlayers = playerIndex > 0 ? [...players.slice(playerIndex), ...players.slice(0, playerIndex)] : players;
         return orderedPlayers;
     }
@@ -273,7 +265,7 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
     }
 
     public onSpaceClick(space: number): void {
-        (this as any).bgaPerformAction('actPlayCard', { space });
+        this.bga.actions.performAction('actPlayCard', { space });
     }
 
     private getHelpHtml() {
@@ -359,9 +351,9 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
     }
 
     public chooseCard(id: number) {
-        (this as any).bgaPerformAction('actChooseCard', {
+        this.bga.actions.performAction('actChooseCard', {
             id,
-            autoplace: (this as any).getGameUserPreference(201) === 1
+            autoplace: this.bga.userPreferences.get(201) === 1
         });
     }
 
@@ -380,7 +372,7 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
     setupNotifications() {
         //log( 'notifications subscriptions setup' );
 
-        (this as any).bgaSetupPromiseNotifications();
+        this.bga.notifications.setupPromiseNotifications();
     }
 
     async notif_newRound(args: NotifNewRoundArgs) {
@@ -389,7 +381,7 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
         const { round } = args;
         this.roundCounter.toValue(round);
 
-        await (this as any).wait(ANIMATION_MS);
+        await this.bga.gameui.wait(ANIMATION_MS);
     }
 
     async notif_newTurn(args: NotifNewTurnArgs) {
@@ -423,11 +415,11 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
         const { playerId, newScore, detailledScore, round } = args;
         this.bga.playerPanels.getScoreCounter(playerId).toValue(newScore);
 
-        (this as any).displayScoring(`player-table-${playerId}-cards`, this.getPlayerColor(playerId), detailledScore.points, ANIMATION_MS * 3);
+        this.bga.gameui.displayScoring(`player-table-${playerId}-cards`, this.getPlayerColor(playerId), detailledScore.points, ANIMATION_MS * 3);
         
         this.setRoundResultForPlayer(playerId, detailledScore, round);
 
-        await (this as any).wait(ANIMATION_MS * 3);
+        await this.bga.gameui.wait(ANIMATION_MS * 3);
     }
 
     async notif_roundResult(args: NotifRoundResultArgs) {
@@ -448,7 +440,7 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
 
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */
-    public format_string_recursive(log: string, args: any) {
+    public bgaFormatText(log: string, args: any) {
         try {
             if (log && args && !args.processed) {
                 ['roundNumber', 'value', 'incScore'].forEach(field => {
@@ -461,6 +453,6 @@ class Pixies extends GameGui<PixiesGamedatas> implements PixiesGame {
         } catch (e) {
             console.error(log,args,"Exception thrown", e.stack);
         }
-        return (this as any).inherited(arguments);
+        return { log, args };
     }
 }

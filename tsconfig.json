@@ -10,7 +10,7 @@
     },
     "files": [
         "bga-framework.d.ts",
-        "src/bga-zoom.d.ts",
+        "bga-zoom.d.ts",
         "node_modules/bga-help/src/help-manager.ts",
         "node_modules/bga-animations/src/framework.d.ts",
         "node_modules/bga-animations/src/animations.ts",
@@ -30,11 +30,11 @@
         "node_modules/bga-cards/src/stocks/void-stock.ts",
         "node_modules/bga-cards/src/card-manager.ts",
         "node_modules/bga-cards/src/sort.ts",
-        "src/pixies.d.ts",
-        "src/cards.ts",
-        "src/table-center.ts",
-        "src/player-table.ts",
-        "src/pixies.ts",
-        "src/define.ts"
+        "src/ts/types.d.ts",
+        "src/ts/cards.ts",
+        "src/ts/table-center.ts",
+        "src/ts/player-table.ts",
+        "src/ts/Game.ts",
+        "src/ts/define.ts"
     ]
 }

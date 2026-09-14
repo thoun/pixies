@@ -8,15 +8,19 @@ interface ZoomControls {
      */
     visible?: boolean;
     /**
-     * Set the position of the zoom controls.
-     * Default : 'top-right'.
+     * Set the position of the zoom controls. Start is left for LTR and right for LTR.
+     * Default : 'top-end'.
      */
-    position?: 'top-left' | 'top-right';
+    position?: 'top-start' | 'top-end';
     /**
      * Set the color of the zoom controls.
-     * Default : 'black'.
+     * Default : ['black', 'rgb(229, 231, 235)']
+     * If it's a single value (string) it will set this color no matter the theme.
+     * If it is an array, it's [light theme color, for dark theme color].
+     *
+     * Remember the color should contrast on the background, and the background should be on the tones of the theme, so you must set a dark color for light theme and light color for dark theme.
      */
-    color?: 'black' | 'white';
+    color?: string[] | string;
     /**
      * Function to customize the button (add classes or inline style, inner HTML, ...). If set, the default icon (and color parameter) is ignored.
      */
@@ -44,10 +48,6 @@ interface ZoomManagerSettings {
      * The element that can be zoomed in/out.
      */
     element: HTMLElement;
-    /**
-     * Smooth transition when changing zoom level. Default true.
-     */
-    smooth?: boolean;
     /**
      * Default zoom, used at setup. If a zoom if stored in localStorage, the default zoom is ignored.
      */
@@ -85,12 +85,6 @@ interface ZoomManagerSettings {
      */
     throttleTime?: number;
 }
-declare const DEFAULT_ZOOM_LEVELS: number[];
-declare function throttle(callback: Function, delay: number): () => void;
-declare const advThrottle: (func: any, delay: any, options?: {
-    leading: boolean;
-    trailing: boolean;
-}) => (...args: any[]) => void;
 declare class ZoomManager {
     protected settings: ZoomManagerSettings;
     /**
@@ -126,6 +120,7 @@ declare class ZoomManager {
      * @param zoom zool level
      */
     setZoom(zoom?: number): void;
+    private syncZoomState;
     /**
      * Call this method for the browsers not supporting ResizeObserver, everytime the table height changes, if you know it.
      * If the browsert is recent enough (>= Safari 13.1) it will just be ignored.
@@ -147,7 +142,7 @@ declare class ZoomManager {
     /**
      * Changes the color of the zoom controls.
      */
-    setZoomControlsColor(color: 'black' | 'white'): void;
+    setZoomControlsColor(color: string | string[] | undefined | null): void;
     /**
      * Set-up the zoom controls
      * @param settings a `ZoomManagerSettings` object.
@@ -160,4 +155,9 @@ declare class ZoomManager {
      */
     protected wrapElement(wrapper: HTMLElement, element: HTMLElement): void;
 }
-declare const define: any;
+
+declare const BgaZoom: {
+    Manager: typeof ZoomManager;
+};
+
+//export { BgaZoom, ZoomManager as Manager };
