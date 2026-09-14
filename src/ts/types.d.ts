@@ -9,9 +9,10 @@ interface Card {
     type: number;
     colors: number[];
     index: number;
-    value: number;
     spirals: number;
     crosses: number;
+    row?: number;
+    column?: number;
 }
 
 interface DetailledScore {
@@ -24,7 +25,7 @@ interface DetailledScore {
 
 interface PixiesPlayer extends Player {
     playerNo: number;
-    cards: { [slot: number]: Card[] };
+    cards: { [coordinates: string]: Card[] };
 }
 
 interface PixiesGamedatas extends Gamedatas<PixiesPlayer> {
@@ -42,7 +43,7 @@ interface EnteringChooseCardArgs {
 
 interface EnteringPlayCardArgs {
     selectedCard: Card;
-    spaces: number[];
+    spaces: string[];
 }
 
 interface EnteringKeepCardArgs {
@@ -62,6 +63,8 @@ interface NotifPlayCardArgs {
     playerId: number;
     card: Card;
     space: number;
+    row: number;
+    column: number;
 }
 
 interface NotifKeepCardArgs {
@@ -69,6 +72,8 @@ interface NotifKeepCardArgs {
     hiddenCard: Card;
     visibleCard: Card;
     space: number;
+    row: number;
+    column: number;
 }
 
 interface NotifScoreArgs {

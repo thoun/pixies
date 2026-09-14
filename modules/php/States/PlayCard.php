@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace Bga\Games\Pixies\States;
 
+use Bga\GameFramework\Helpers\Collection;
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\GameFramework\StateType;
+use Bga\GameFramework\UserException;
 use Bga\Games\Pixies\Game;
+use Bga\Games\Pixies\Objects\Card;
+
+use function Bga\Games\Pixies\debug;
 
 class PlayCard extends GameState
 {
@@ -20,33 +25,40 @@ class PlayCard extends GameState
             name: 'playCard',
             description: clienttranslate('${actplayer} must place the card'),
             descriptionMyTurn: clienttranslate('${you} must place the card'),
-            transitions: [
-                'next' => NextPlayer::class,
-                'cancel' => ChooseCard::class,
-                'zombiePass' => NextPlayer::class,
-            ],
         );
     }
 
-    public function getArgs(): array
+    public function getArgs(int $activePlayerId): array
     {
-        return $this->game->argPlayCard();
+        return $this->game->argPlayCard($activePlayerId);
+    }
+
+    public function onEnteringState(int $activePlayerId) {
+        if ($this->bga->userPreferences->get($activePlayerId, 201) !== 1) {
+            return; // no autoplace
+        }
+        $args = $this->game->argPlayCard($activePlayerId);
+        if (count($args['spaces']) !== 1) {
+            return; // more than one space available
+        }
+        $coordinate = array_map(fn($n) => intval($n), explode('-', $args['spaces'][0]));
+        return $this->actPlayCard($coordinate[0], $coordinate[1], $activePlayerId, $args);
     }
 
     #[PossibleAction]
-    public function actChooseCard(int $id, bool $autoplace): void
+    public function actChooseCard(int $id, int $activePlayerId): void
     {
-        $this->game->actChooseCard($id, $autoplace);
+        $this->game->actChooseCard($id, $activePlayerId);
     }
 
     #[PossibleAction]
-    public function actPlayCard(int $space, int $activePlayerId, array $args): void
+    public function actPlayCard(int $row, int $column, int $activePlayerId, array $args): void
     {
-        if (!in_array($space, $args['spaces'])) {
-            throw new \BgaUserException('Invalid space');
+        if (!in_array($row.'-'.$column, $args['spaces'])) {
+            throw new UserException('Invalid space');
         }
 
-        $this->game->applyPlayCard($activePlayerId, $space);
+        $this->game->applyPlayCard($activePlayerId, $row, $column);
     }
 
     #[PossibleAction]
@@ -59,39 +71,49 @@ class PlayCard extends GameState
     {
         $roundNumber = $this->bga->tableStats->get('roundNumber');
         $isFlowerPowerExpansion = $this->game->isFlowerPowerExpansion();
-        $playerCards = $this->game->getCardsFromSpaces($playerId);
-        $card = $this->game->getSelectedCard();
-        $possibleSpaces = $this->game->getPossibleSpacesForCard($playerCards, $card);
+        $playerCards = $this->game->cardManager->getCardsFromSpaces($playerId);
+        $card = $this->game->cardManager->getSelectedCard();
+        $possibleSpaces = $this->game->cardManager->getPossibleSpacesForCard($playerCards, $card);
 
         $possibleAnswerPoints = [];
         foreach ($possibleSpaces as $choice) {
+            $choiceSplit = explode('-', $choice);
+            $row = intval($choiceSplit[0]);
+            $column = intval($choiceSplit[1]);
             $possibleAnswerPoints[$choice] = self::getPointsFromZombieChoice(
                 $this->game,
                 $playerCards,
                 $roundNumber,
                 $isFlowerPowerExpansion,
                 $card,
-                $choice,
+                $row,
+                $column,
             );
         }
 
         $maxPoints = max($possibleAnswerPoints);
         $maxPointsAnswers = array_keys($possibleAnswerPoints, $maxPoints);
         $zombieChoice = $maxPointsAnswers[bga_rand(0, count($maxPointsAnswers) - 1)];
-
-        $this->game->applyPlayCard($playerId, $zombieChoice);
+        $zombieChoiceSplit = explode('-', $zombieChoice);
+        $row = intval($zombieChoiceSplit[0]);
+        $column = intval($zombieChoiceSplit[1]);
+        $this->game->applyPlayCard($playerId, $row, $column);
     }
 
+    /**
+     * @param array<string,Card[]> $playerCards
+     */
     public static function getPointsFromZombieChoice(
         Game $game,
         array $playerCards,
         int $roundNumber,
         bool $isFlowerPowerExpansion,
-        $card,
-        int $choice,
+        Card $card,
+        int $row,
+        int $column,
     ): int {
-        $playerCards[$choice] = array_merge($playerCards[$choice], [$card]);
+        $playerCards[$row.'-'.$column] = array_merge($playerCards[$row.'-'.$column], [$card]);
 
-        return $game->getDetailledScore($playerCards, $roundNumber, $isFlowerPowerExpansion)->points;
+        return $game->cardManager->getDetailledScore($playerCards, $roundNumber, $isFlowerPowerExpansion)->points;
     }
 }

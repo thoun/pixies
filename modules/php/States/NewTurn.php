@@ -16,23 +16,13 @@ class NewTurn extends GameState
             $game,
             id: \ST_NEW_TURN,
             type: StateType::GAME,
-            name: 'newTurn',
             updateGameProgression: true,
         );
     }
 
     public function onEnteringState(): string
     {
-        $playerCount = $this->game->getPlayerCount();
-        $cardCount = $playerCount === 2 ? 4 : $playerCount;
-
-        $cards = $this->game->getCardsFromDb(
-            $this->game->cards->pickCardsForLocation($cardCount, 'deck', 'table'),
-        );
-
-        $this->bga->notify->all('newTurn', '', [
-            'cards' => $cards,
-        ]);
+        $this->game->cardManager->pickNewTableCards();
 
         return ChooseCard::class;
     }

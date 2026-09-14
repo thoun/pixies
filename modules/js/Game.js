@@ -205,9 +205,12 @@ class PlayerTable {
                 <span class="name" style="color: #${player.color};" data-color="${player.color}">${player.name}</span>
             </div>
             <div id="player-table-${this.playerId}-cards" class="player-cards">`;
-        for (let i = 1; i <= 9; i++) {
-            html += `
-                <div id="player-table-${this.playerId}-cards-${i}" class="space" style="--value: '${i}';"></div>`;
+        for (let row = 1; row <= 3; row++) {
+            for (let column = 1; column <= 3; column++) {
+                const value = (row - 1) * 3 + column;
+                html += `
+                    <div id="player-table-${this.playerId}-cards-${row}-${column}" class="space" style="--value: '${value}';"></div>`;
+            }
         }
         html += `
             </div>
@@ -218,42 +221,49 @@ class PlayerTable {
             slotsIds: [0, 1],
             mapCardToSlot: card => card.locationArg,
         };
-        for (let i = 1; i <= 9; i++) {
-            const spaceDiv = document.getElementById(`player-table-${this.playerId}-cards-${i}`);
-            spaceDiv.addEventListener('click', () => {
-                if (spaceDiv.classList.contains('selectable')) {
-                    this.game.onSpaceClick(i);
-                }
-            });
-            this.tableCards[i] = new BgaCards.SlotStock /*<Card>*/(this.game.cardsManager, spaceDiv, stockSettings);
-            this.tableCards[i].addCards(player.cards[i]);
+        for (let row = 1; row <= 3; row++) {
+            for (let column = 1; column <= 3; column++) {
+                const value = (row - 1) * 3 + column;
+                const spaceDiv = document.getElementById(`player-table-${this.playerId}-cards-${row}-${column}`);
+                spaceDiv.addEventListener('click', () => {
+                    if (spaceDiv.classList.contains('selectable')) {
+                        this.game.onSpaceClick(row, column);
+                    }
+                });
+                this.tableCards[`${row}-${column}`] = new BgaCards.SlotStock /*<Card>*/(this.game.cardsManager, spaceDiv, stockSettings);
+                this.tableCards[`${row}-${column}`].addCards(player.cards[`${row}-${column}`]);
+            }
         }
     }
     getAllCards() {
         const cards = [];
-        for (let i = 1; i <= 9; i++) {
-            cards.push(...this.tableCards[i].getCards());
+        for (let row = 1; row <= 3; row++) {
+            for (let column = 1; column <= 3; column++) {
+                cards.push(...this.tableCards[`${row}-${column}`].getCards());
+            }
         }
         return cards;
     }
-    async playCard(card, space) {
-        await this.tableCards[space].addCard(card);
+    async playCard(card, row, column) {
+        await this.tableCards[`${row}-${column}`].addCard(card);
     }
-    async keepCard(hiddenCard, visibleCard, space) {
+    async keepCard(hiddenCard, visibleCard, row, column) {
         this.game.cardsManager.updateCardInformations(hiddenCard);
         await Promise.all([
-            this.tableCards[space].addCard(hiddenCard),
+            this.tableCards[`${row}-${column}`].addCard(hiddenCard),
             this.game.animationManager.animationsActive() ? this.game.bga.gameui.wait(ANIMATION_MS$1) : Promise.resolve(true),
         ]);
         this.game.cardsManager.updateCardInformations(visibleCard);
         await Promise.all([
-            this.tableCards[space].addCard(visibleCard),
+            this.tableCards[`${row}-${column}`].addCard(visibleCard),
             this.game.animationManager.animationsActive() ? this.game.bga.gameui.wait(ANIMATION_MS$1) : Promise.resolve(true),
         ]);
     }
     setSelectableSpaces(spaces) {
-        for (let i = 1; i <= 9; i++) {
-            document.getElementById(`player-table-${this.playerId}-cards-${i}`).classList.toggle('selectable', spaces.includes(i));
+        for (let row = 1; row <= 3; row++) {
+            for (let column = 1; column <= 3; column++) {
+                document.getElementById(`player-table-${this.playerId}-cards-${row}-${column}`).classList.toggle('selectable', spaces.includes(`${row}-${column}`));
+            }
         }
     }
 }
@@ -501,8 +511,8 @@ class Game {
     onTableCardClick(card) {
         this.chooseCard(card.id);
     }
-    onSpaceClick(space) {
-        this.bga.actions.performAction('actPlayCard', { space });
+    onSpaceClick(row, column) {
+        this.bga.actions.performAction('actPlayCard', { row, column });
     }
     getHelpHtml() {
         let html = `
@@ -576,10 +586,7 @@ class Game {
         document.getElementById(`result`).insertAdjacentHTML('beforeend', html);
     }
     chooseCard(id) {
-        this.bga.actions.performAction('actChooseCard', {
-            id,
-            autoplace: this.bga.userPreferences.get(201) === 1
-        });
+        this.bga.actions.performAction('actChooseCard', { id });
     }
     ///////////////////////////////////////////////////
     //// Reaction to cometD notifications
@@ -608,14 +615,14 @@ class Game {
         await this.tableCenter.newTurn(cards);
     }
     async notif_playCard(args) {
-        const { playerId, card, space } = args;
+        const { playerId, card, row, column } = args;
         const playerTable = this.getPlayerTable(playerId);
-        await playerTable.playCard(card, space);
+        await playerTable.playCard(card, row, column);
     }
     async notif_keepCard(args) {
-        const { playerId, hiddenCard, visibleCard, space } = args;
+        const { playerId, hiddenCard, visibleCard, row, column } = args;
         const playerTable = this.getPlayerTable(playerId);
-        await playerTable.keepCard(hiddenCard, visibleCard, space);
+        await playerTable.keepCard(hiddenCard, visibleCard, row, column);
     }
     /**
      * Show last turn banner.

@@ -32,7 +32,7 @@ class EndRound extends GameState
         $this->game->cards->shuffle('deck');
 
         $this->bga->notify->all('endRound', '', [
-            'remainingCardsInDeck' => $this->game->getRemainingCardsInDeck(),
+            'remainingCardsInDeck' => $this->game->cardManager->getRemainingCardsInDeck(),
         ]);
 
         return NewRound::class;

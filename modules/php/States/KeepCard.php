@@ -7,8 +7,10 @@ namespace Bga\Games\Pixies\States;
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\GameFramework\StateType;
+use Bga\GameFramework\UserException;
 use Bga\Games\Pixies\Game;
-use Bga\Games\Pixies\Objects\OldCard;
+use Bga\Games\Pixies\Objects\Card;
+use Bga\GameFramework\Helpers\Collection;
 
 class KeepCard extends GameState
 {
@@ -21,18 +23,14 @@ class KeepCard extends GameState
             name: 'keepCard',
             description: clienttranslate('${actplayer} must choose a card to keep'),
             descriptionMyTurn: clienttranslate('${you} must choose a card to keep'),
-            transitions: [
-                'next' => NextPlayer::class,
-                'cancel' => ChooseCard::class,
-                'zombiePass' => NextPlayer::class,
-            ],
         );
     }
 
     public function getArgs(int $activePlayerId): array
     {
-        $card = $this->game->getSelectedCard();
-        $spaceCards = $this->game->getCardsFromSpace($activePlayerId, $card->value);
+        $card = $this->game->cardManager->getSelectedCard();
+        [$row, $column] = Game::getRowColumnFromValue($card->value);
+        $spaceCards = $this->game->cardManager->getCardsFromSpace($activePlayerId, $row, $column);
 
         return [
             'selectedCard' => $card,
@@ -41,16 +39,16 @@ class KeepCard extends GameState
     }
 
     #[PossibleAction]
-    public function actChooseCard(int $id, bool $autoplace): void
+    public function actChooseCard(int $id, int $activePlayerId): void
     {
-        $this->game->actChooseCard($id, $autoplace);
+        $this->game->actChooseCard($id, $activePlayerId);
     }
 
     #[PossibleAction]
     public function actKeepCard(int $index, int $activePlayerId): void
     {
         if (!in_array($index, [0, 1])) {
-            throw new \BgaUserException('Invalid index');
+            throw new UserException('Invalid index');
         }
 
         $this->applyKeepCard($activePlayerId, $index);
@@ -66,8 +64,8 @@ class KeepCard extends GameState
     {
         $roundNumber = $this->bga->tableStats->get('roundNumber');
         $isFlowerPowerExpansion = $this->game->isFlowerPowerExpansion();
-        $playerCards = $this->game->getCardsFromSpaces($playerId);
-        $card = $this->game->getSelectedCard();
+        $playerCards = $this->game->cardManager->getCardsFromSpaces($playerId);
+        $card = $this->game->cardManager->getSelectedCard();
 
         $possibleAnswerPoints = array_map(
             fn($choice) => self::getPointsFromZombieChoice(
@@ -88,26 +86,31 @@ class KeepCard extends GameState
         $this->applyKeepCard($playerId, $zombieChoice);
     }
 
+    /**
+     * @param array<string,Card[]> $playerCards
+     */    
     public static function getPointsFromZombieChoice(
         Game $game,
         array $playerCards,
         int $roundNumber,
         bool $isFlowerPowerExpansion,
-        $card,
-        int $choice,
+        Card $card,
+        int $choice, // 0|1
     ): int {
-        $space = $card->value;
-        $playerCards[$space] = $choice === 0
-            ? [OldCard::onlyId($card), $playerCards[$space][0]]
-            : [OldCard::onlyId($playerCards[$space][0]), $card];
+        [$row, $column] = Game::getRowColumnFromValue($card->value);
+        $coordinate = $row.'-'.$column;
+        $playerCards[$coordinate] = $choice === 0
+            ? [Card::onlyId($card), $playerCards[$coordinate][0]]
+            : [Card::onlyId($playerCards[$coordinate][0]), $card];
 
-        return $game->getDetailledScore($playerCards, $roundNumber, $isFlowerPowerExpansion)->points;
+        return $game->cardManager->getDetailledScore($playerCards, $roundNumber, $isFlowerPowerExpansion)->points;
     }
 
     public function applyKeepCard(int $playerId, int $index) {
-        $card = $this->game->getSelectedCard();
+        $card = $this->game->cardManager->getSelectedCard();
         $space = $card->value;
-        $spaceCard = $this->game->getCardsFromSpace($playerId, $space)[0];
+        [$row, $column] = Game::getRowColumnFromValue($space);
+        $spaceCard = $this->game->cardManager->getCardsFromSpace($playerId, $row, $column)[0];
 
         $hiddenCard = $index == 0 ? $card : $spaceCard;
         $visibleCard = $index == 1 ? $card : $spaceCard;
@@ -120,13 +123,15 @@ class KeepCard extends GameState
 
         $this->notify->all('keepCard', clienttranslate('${player_name} keeps the ${color} card on space ${value}'), [
             'playerId' => $playerId,
-            'hiddenCard' => OldCard::onlyId($hiddenCard),
+            'hiddenCard' => Card::onlyId($hiddenCard),
             'visibleCard' => $visibleCard,
             'space' => $space,
+            'row' => $spaceCard->row,
+            'column' => $spaceCard->column,
         ]);
         
         $this->bga->playerStats->inc('validatedCard', 1, $playerId, updateTableStat: true);
 
-        $this->gamestate->nextState('next');
+        $this->gamestate->jumpToState(NextPlayer::class);
     }
 }

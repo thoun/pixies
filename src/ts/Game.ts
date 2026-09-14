@@ -272,8 +272,8 @@ export class Game {
         this.chooseCard(card.id);
     }
 
-    public onSpaceClick(space: number): void {
-        this.bga.actions.performAction('actPlayCard', { space });
+    public onSpaceClick(row: number, column: number): void {
+        this.bga.actions.performAction('actPlayCard', { row, column });
     }
 
     private getHelpHtml() {
@@ -359,10 +359,7 @@ export class Game {
     }
 
     public chooseCard(id: number) {
-        this.bga.actions.performAction('actChooseCard', {
-            id,
-            autoplace: this.bga.userPreferences.get(201) === 1
-        });
+        this.bga.actions.performAction('actChooseCard', { id });
     }
 
     ///////////////////////////////////////////////////
@@ -398,15 +395,15 @@ export class Game {
     }
 
     async notif_playCard(args: NotifPlayCardArgs) {
-        const { playerId, card, space } = args;
+        const { playerId, card, row, column } = args;
         const playerTable = this.getPlayerTable(playerId);
-        await playerTable.playCard(card, space);
+        await playerTable.playCard(card, row, column);
     }
 
     async notif_keepCard(args: NotifKeepCardArgs) {
-        const { playerId, hiddenCard, visibleCard, space } = args;
+        const { playerId, hiddenCard, visibleCard, row, column } = args;
         const playerTable = this.getPlayerTable(playerId);
-        await playerTable.keepCard(hiddenCard, visibleCard, space);
+        await playerTable.keepCard(hiddenCard, visibleCard, row, column);
     }
     
     /** 

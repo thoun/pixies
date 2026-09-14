@@ -32,6 +32,23 @@ class Card extends CardType
     /** @var int[] */
     public array $colors;
 
+    public ?int $row;
+    public ?int $column;
+
+    public static function onlyId(?Card $card) {
+        if ($card == null) {
+            return null;
+        }
+        $copy = new Card();
+        $copy->setup([
+            'card_id' => $card->id,
+            'card_location' => $card->location,
+            'card_location_arg' => $card->locationArg,
+            'card_type' => null
+        ]);
+        return $copy;
+    }
+
     public function setup(array $dbCard) {
         $CARDS_TYPE = Game::$CARDS + Game::$FLOWER_POWER_CARDS;
         for ($i = 0; $i <= 4; $i++) {
@@ -61,6 +78,39 @@ class Card extends CardType
         } else {
             $this->value = null;
         }
+
+        $this->row = $this->getRow();
+        $this->column = $this->getColumn();
+    }
+    
+    public function getRow(): ?int {
+        $locationSplit = explode('-', $this->location);
+        if (count($locationSplit) === 3) {
+            if (str_starts_with($locationSplit[2], 'row')) {
+                return intval(str_replace($locationSplit[2], 'row', ''));
+            }
+            if (str_starts_with($locationSplit[2], 'column')) {
+                return 0;
+            }
+
+            return Game::getRowFromValue(intval($locationSplit[2]));
+        }
+        return null;
+    }
+
+    public function getColumn(): ?int {
+        $locationSplit = explode('-', $this->location);
+        if (count($locationSplit) === 3) {
+            if (str_starts_with($locationSplit[2], 'row')) {
+                return 0;
+            }
+            if (str_starts_with($locationSplit[2], 'column')) {
+                return intval(str_replace($locationSplit[2], 'column', ''));
+            }
+
+            return Game::getColumnFromValue(intval($locationSplit[2]));
+        }
+        return null;
     }
 }
 

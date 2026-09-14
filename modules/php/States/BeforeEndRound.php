@@ -30,7 +30,7 @@ class BeforeEndRound extends GameState
     public function onEnteringState(): ?string
     {
         $roundNumber = $this->bga->tableStats->get('roundNumber');
-        $scoreRound = $this->game->scoreRound();
+        $scoreRound = $this->scoreRound();
 
         foreach ($scoreRound as $playerId => $detailledScore) {
             $this->game->incPlayerScore(
@@ -65,5 +65,26 @@ class BeforeEndRound extends GameState
     public function zombie(int $playerId): void
     {
         $this->actSeen($playerId);
+    }
+    
+    private function scoreRound() {
+        $roundNumber = $this->bga->tableStats->get('roundNumber');
+        $playersIds = $this->game->getPlayersIds();
+        $result = [];
+        $isFlowerPowerExpansion = $this->game->isFlowerPowerExpansion();
+
+        foreach ($playersIds as $playerId) {
+            $playerCards = $this->game->cardManager->getCardsFromSpaces($playerId);
+            $detailledScore = $this->game->cardManager->getDetailledScore($playerCards, $roundNumber, $isFlowerPowerExpansion);
+            $result[$playerId] = $detailledScore;  
+        
+            $this->bga->playerStats->inc('pointsValidatedCard', $detailledScore->validatedCardPoints, $playerId, updateTableStat: true);
+            $this->bga->playerStats->inc('pointsSpirals', $detailledScore->spiralsPoints, $playerId, updateTableStat: true);
+            $this->bga->playerStats->inc('pointsLostCrosses', $detailledScore->crossesPoints, $playerId, updateTableStat: true);
+            $this->bga->playerStats->inc('pointsColorZone', $detailledScore->largestColorZonePoints, $playerId, updateTableStat: true);
+            $this->bga->playerStats->inc('pointsFacedownCards', $detailledScore->facedownCardsPoints, $playerId, updateTableStat: true);
+        }
+
+        return $result;
     }
 }

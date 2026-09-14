@@ -8,6 +8,9 @@ use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\GameFramework\StateType;
 use Bga\Games\Pixies\Game;
+use Bga\Games\Pixies\Objects\Card;
+use Bga\GameFramework\Helpers\Collection;
+use Bga\GameFramework\UserException;
 
 class ChooseCard extends GameState
 {
@@ -23,7 +26,6 @@ class ChooseCard extends GameState
             transitions: [
                 'playCard' => PlayCard::class,
                 'keepCard' => KeepCard::class,
-                'zombiePass' => NextPlayer::class,
             ],
         );
     }
@@ -34,17 +36,22 @@ class ChooseCard extends GameState
     }
 
     #[PossibleAction]
-    public function actChooseCard(int $id, bool $autoplace): void
+    public function actChooseCard(int $id, int $activePlayerId)
     {
-        $this->game->actChooseCard($id, $autoplace);
+        $card = $this->game->cardManager->getTableCards()->find(fn($c) => $c->id === $id);
+        if (!$card) {
+            throw new UserException("You cannot choose this card");
+        }
+
+        return $this->game->applyChooseCard($activePlayerId, $card);
     }
 
     public function zombie(int $playerId)
     {
         $roundNumber = $this->bga->tableStats->get('roundNumber');
         $isFlowerPowerExpansion = $this->game->isFlowerPowerExpansion();
-        $playerCards = $this->game->getCardsFromSpaces($playerId);
-        $tableCards = $this->game->getCardsFromDb($this->game->cards->getCardsInLocation('table'));
+        $playerCards = $this->game->cardManager->getCardsFromSpaces($playerId);
+        $tableCards = $this->game->cardManager->getTableCards();
 
         $possibleAnswerPoints = [];
         foreach ($tableCards as $choice => $card) {
@@ -63,13 +70,18 @@ class ChooseCard extends GameState
         return $this->game->applyChooseCard($playerId, $tableCards[$zombieChoice]);
     }
 
+    /**
+     * @param array<string,Card[]> $playerCards
+     */    
     private function getPointsFromChoice(
         array $playerCards,
         int $roundNumber,
         bool $isFlowerPowerExpansion,
-        $card,
+        Card $card,
     ): int {
-        if (count($playerCards[$card->value]) === 1 && $playerCards[$card->value][0]->value === $card->value) {
+        [$row, $column] = Game::getRowColumnFromValue($card->value);
+        $coordinate = $row.'-'.$column;
+        if (count($playerCards[$coordinate]) === 1 && $playerCards[$coordinate][0]->value === $card->value) {
             $possibleAnswerPoints = array_map(
                 fn($choice) => KeepCard::getPointsFromZombieChoice(
                     $this->game,
@@ -85,16 +97,20 @@ class ChooseCard extends GameState
             return max($possibleAnswerPoints);
         }
 
-        $possibleSpaces = $this->game->getPossibleSpacesForCard($playerCards, $card);
+        $possibleSpaces = $this->game->cardManager->getPossibleSpacesForCard($playerCards, $card);
         $possibleAnswerPoints = [];
         foreach ($possibleSpaces as $choice) {
+            $choiceSplit = explode('-', $choice);
+            $row = intval($choiceSplit[0]);
+            $column = intval($choiceSplit[1]);
             $possibleAnswerPoints[$choice] = PlayCard::getPointsFromZombieChoice(
                 $this->game,
                 $playerCards,
                 $roundNumber,
                 $isFlowerPowerExpansion,
                 $card,
-                $choice,
+                $row,
+                $column,
             );
         }
 

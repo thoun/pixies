@@ -24,9 +24,8 @@ use Bga\Games\Pixies\Objects\Card;
 use Bga\Games\Pixies\States\KeepCard;
 use Bga\Games\Pixies\States\NewRound;
 use Bga\Games\Pixies\States\PlayCard;
-use Bga\Games\Pixies\Objects\DetailledScore;
-use Bga\Games\Pixies\Objects\OldCard;
-use Bga\Games\Pixies\Objects\Coalition;
+use Bga\Games\Pixies\States\ChooseCard;
+use Bga\Games\Pixies\States\NextPlayer;
 
 require_once('constants.inc.php');
 
@@ -135,10 +134,10 @@ class Game extends \Bga\GameFramework\Table {
 
         foreach($result['players'] as $playerId => &$player) {
             $player['playerNo'] = intval($player['playerNo']);
-            $player['cards'] = $this->getCardsFromSpaces($playerId);
+            $player['cards'] = $this->cardManager->getCardsFromSpaces($playerId);
         }
 
-        $result['remainingCardsInDeck'] = $this->getRemainingCardsInDeck();
+        $result['remainingCardsInDeck'] = $this->cardManager->getRemainingCardsInDeck();
         $result['tableCards'] = $this->cardManager->getTableCards()->values();
         $result['roundNumber'] = $this->bga->tableStats->get('roundNumber');
         $result['roundResult'] = [];
@@ -167,7 +166,7 @@ class Game extends \Bga\GameFramework\Table {
         $maxCards = 0;
 
         foreach ($playersIds as $playerId) {
-            $playerCardCount = $this->getPlayerCardCount($playerId);
+            $playerCardCount = $this->cardManager->getPlayerCardCount($playerId);
 
             if ($playerCardCount > $maxCards) {
                 $maxCards = $playerCardCount;
@@ -177,30 +176,12 @@ class Game extends \Bga\GameFramework\Table {
 
         return ($roundNumber - 1 + $inRoundProgress) * 100 / 3;
     }
-
-    function getPossibleSpacesForCard(array $playerCards, $card): array {
-        $spaceCards = $playerCards[$card->value];
-        $spaces = [];
-        if (count($spaceCards) < 2) {
-            $spaces[] = $card->value;
-        } else {
-            for ($i = 1; $i <= 9; $i++) {
-                if ($i != $card->value && count($playerCards[$i]) == 0) {
-                    $spaces[] = $i;
-                }
-            }
-        }
-
-        return $spaces;
-    }
    
-    function argPlayCard() {
-        $playerId = intval($this->getActivePlayerId());
+    function argPlayCard(int $activePlayerId) {
+        $card = $this->cardManager->getSelectedCard();
+        $playerCards = $this->cardManager->getCardsFromSpaces($activePlayerId);
 
-        $card = $this->getSelectedCard();
-        $playerCards = $this->getCardsFromSpaces($playerId);
-
-        $spaces = $this->getPossibleSpacesForCard($playerCards, $card);
+        $spaces = $this->cardManager->getPossibleSpacesForCard($playerCards, $card);
     
         return [
             'selectedCard' => $card,
@@ -208,37 +189,26 @@ class Game extends \Bga\GameFramework\Table {
         ];
     }
 
-    public function actChooseCard(int $id, bool $autoplace): string {        
-        $playerId = intval($this->getActivePlayerId());
-
-        $card = $this->getCardFromDb($this->cards->getCard($id));
-        if ($card->location != 'table') {
+    public function actChooseCard(int $id, int $activePlayerId): string { 
+        $card = $this->cardManager->getTableCards()->find(fn($c) => $c->id === $id);
+        if (!$card) {
             throw new UserException("You cannot choose this card");
         }
         
         $stateName = $this->gamestate->getCurrentMainState()->name; 
         $isChangeOfCard = $stateName === 'playCard' || $stateName === 'keepCard';
         if ($isChangeOfCard) {
-            $this->gamestate->nextState('cancel');
+            $this->gamestate->jumpToState(ChooseCard::class);
         }
 
-        $newState = $this->applyChooseCard($playerId, $card);
-        $this->gamestate->jumpToState($newState);
-
-        if ($autoplace && $this->gamestate->getCurrentMainState()->name === 'playCard') {
-            $spaces = $this->argPlayCard()['spaces'];
-            if (count($spaces) == 1) {
-                $this->applyPlayCard($playerId, $spaces[0]);
-            }
-        }
-
-        return $newState;
+        return $this->applyChooseCard($activePlayerId, $card);
     }
 
-    function applyChooseCard(int $playerId, OldCard $card): string {
+    function applyChooseCard(int $playerId, Card $card): string {
         $this->setGlobalVariable(SELECTED_CARD_ID, $card->id);
 
-        $spaceCards = $this->getCardsFromSpace($playerId, $card->value);
+        [$row, $column] = Game::getRowColumnFromValue($card->value);
+        $spaceCards = $this->cardManager->getCardsFromSpace($playerId, $row, $column);
 
         if (count($spaceCards) == 1 && $spaceCards[0]->value == $card->value) {
             return KeepCard::class;
@@ -247,25 +217,29 @@ class Game extends \Bga\GameFramework\Table {
         }
     }
 
-    public function applyPlayCard(int $playerId, int $space) {
-        $card = $this->getSelectedCard();
+    public function applyPlayCard(int $playerId, int $row, int $column) {
+        $card = $this->cardManager->getSelectedCard();
+        $space = Game::getValueFromRowColumn($row, $column);
 
         $count = intval($this->cards->countCardInLocation("player-$playerId-$space"));
         $this->cards->moveCard($card->id, "player-$playerId-$space", $count);
         $card->locationArg = $count;
+        $card->row = $row;
+        $card->column = $column;
 
         $statName = $space == $card->value ? 'cardPlayedEmptySpaceVisible' : 'cardPlayedEmptySpaceHidden';
-        $this->incStat(1, $statName);
-        $this->incStat(1, $statName, $playerId);
+        $this->playerStats->inc($statName, 1, $playerId, updateTableStat: true);
 
-        $this->notify->all('playCard', clienttranslate('${player_name} plays a ${color} card on space ${value}'), [
+        $this->bga->notify->all('playCard', clienttranslate('${player_name} plays a ${color} card on space ${value}'), [
             'playerId' => $playerId,
-            'card' => $space == $card->value ? $card : OldCard::onlyId($card),
+            'card' => $space == $card->value ? $card : Card::onlyId($card),
             'space' => $space,
+            'row' => $row,
+            'column' => $column,
             'visibleCard' => $card, // only used for logs
         ]);
 
-        if (!boolval($this->getGameStateValue((string)\LAST_TURN)) && $this->getPlayerCardCount($playerId) >= 9) {
+        if (!boolval($this->getGameStateValue((string)\LAST_TURN)) && $this->cardManager->getPlayerCardCount($playerId) >= 9) {
             $this->setGameStateValue((string)\LAST_TURN, 1);
 
             $this->notify->all('lastTurn', clienttranslate('${player_name} has filled all 9 of their spaces, triggering the end of the round!'), [
@@ -273,7 +247,7 @@ class Game extends \Bga\GameFramework\Table {
             ]);
         }
 
-        $this->gamestate->nextState('next');
+        $this->gamestate->jumpToState(NextPlayer::class);
     }
 
     function setGlobalVariable(string $name, mixed $obj) {
@@ -314,59 +288,6 @@ class Game extends \Bga\GameFramework\Table {
         return $this->tableOptions->get(102) === 1;
     }
 
-    function getCardFromDb(?array $dbCard) {
-        if ($dbCard == null) {
-            return null;
-        }
-        return new OldCard($dbCard);
-    }
-
-    /**
-     * @return OldCard[]
-     */
-    function getCardsFromDb(array $dbCards): array {
-        return array_map(fn($dbCard) => $this->getCardFromDb($dbCard), array_values($dbCards));
-    }
-
-    /**
-     * @return OldCard[]
-     */
-    function getCardsFromSpace(int $playerId, int $value): array {
-        return $this->getCardsFromDb($this->cards->getCardsInLocation("player-$playerId-$value", null, 'location_arg'));
-    }
-
-    /**
-     * @return array<int,OldCard[]>
-     */    
-    function getCardsFromSpaces(int $playerId): array {
-        $spaces = [];
-
-        for ($i = 1; $i <= 9; $i++) {
-            $spaces[$i] = $this->getCardsFromSpace($playerId, $i);
-            if (count($spaces[$i]) == 2 || (count($spaces[$i]) == 1 && $spaces[$i][0]->value != $i)) {
-                $spaces[$i][0] = OldCard::onlyId($spaces[$i][0]);
-            }
-        }
-
-        return $spaces;
-    }
-
-    function countFacedownCards(array $spaces): int {
-        $result = 0;
-
-        foreach ($spaces as $space) {
-            if (count($space) == 1 && $space[0]->value === null) {
-                $result++;
-            }
-        }
-
-        return $result;
-    }
-
-    function getSelectedCard() {
-        return $this->getCardFromDb($this->cards->getCard($this->getGlobalVariable(SELECTED_CARD_ID)));
-    }
-
     function setupCards() {
         $cardsToGenerate = [];
         $CARDS = self::$CARDS;
@@ -401,182 +322,6 @@ class Game extends \Bga\GameFramework\Table {
             'round' => $this->bga->tableStats->get('roundNumber'),
         ] + $args);
     }
-
-    function getRemainingCardsInDeck() {
-        return intval($this->cards->countCardInLocation('deck'));
-    }
-
-
-    /**
-     * @param array<int,?OldCard> $validatedCards
-     */
-    function getColorZoneSize(array $validatedCards, Coalition $coalition, int $currentRow, int $currentColumn): void {
-        // we check we don't count twice the same space
-        if (array_search([$currentRow, $currentColumn], $coalition->alreadyCounted) !== false) {
-            return;
-        }
-
-        $coalition->size++;
-        $coalition->alreadyCounted = array_merge($coalition->alreadyCounted, [[$currentRow, $currentColumn]]);
-
-        $neighbourValues = [];
-        foreach([[0, -1], [0, 1], [-1, 0], [1, 0]] as $neighbourShift) {
-            $iRow = $currentRow + $neighbourShift[0];
-            $iColumn = $currentColumn + $neighbourShift[1];
-            if ($iRow < 0 || $iRow > 3 || $iColumn < 0 || $iColumn > 3) {
-                continue;
-            }                
-            $neighbourValues[] = [$iRow, $iColumn];
-        }
-
-
-        // we only take cards having same color
-        $filteredNeigbours = array_filter($neighbourValues, fn($neighbour) =>
-            array_any($validatedCards, fn($validatedCard) => $validatedCard !== null && $validatedCard->getRow() === $neighbour[0] && $validatedCard->getColumn() === $neighbour[1] && in_array($coalition->color, $validatedCard->colors))
-        );
-
-        foreach ($filteredNeigbours as $filteredNeigbour) {
-            $this->getColorZoneSize($validatedCards, $coalition, $filteredNeigbour[0], $filteredNeigbour[1]);
-        }
-    }
-
-    /**
-     * @param array<int,?OldCard> $visibleCards
-     */
-    function getLargestColorZone(array $visibleCards): int {
-        $topCoalition = null;
-
-        for ($space = 1; $space <= 9; $space++) {
-            $cardInSpace = $visibleCards[$space];
-
-            if ($cardInSpace) {
-                foreach ($cardInSpace->colors as $color) {
-                    $coalition = new Coalition($cardInSpace->getRow(), $cardInSpace->getColumn(), $color);
-                    $this->getColorZoneSize($visibleCards, $coalition, $cardInSpace->getRow(), $cardInSpace->getColumn());
-                    
-                    if (!$topCoalition || $coalition->size > $topCoalition->size) {
-                        $topCoalition = $coalition;
-                    }
-                }
-            }
-        }
-
-        return $topCoalition->size;
-    }
-
-    function getDetailledScore(array $spaces, int $roundNumber, bool $isFlowerPowerExpansion): DetailledScore {
-        $detailledScore = new DetailledScore();
-        /** @var array<int,?OldCard> */
-        $validatedCards = array_map(fn($space) => count($space) == 2 ? $space[1] : null, $spaces);
-        /** @var array<int,?OldCard> */
-        $visibleCards = array_map(fn($space) => count($space) == 2 ? $space[1] : (count($space) == 1 && $space[0]->value !== null ? $space[0] : null), $spaces);
-        $facedownCardsCount = $isFlowerPowerExpansion ? $this->countFacedownCards($spaces) : 0;
-        $colorsCounts = [
-            1 => 0,
-            2 => 0,
-            3 => 0,
-            4 => 0,
-        ];
-        foreach ($visibleCards as $visibleCard) {
-            if ($visibleCard?->type !== null) {
-                foreach ($visibleCard->colors as $color) {
-                    $colorsCounts[$color]++;
-                }
-            }
-        }
-
-        $detailledScore->validatedCardPoints = 0;
-        $spiralsPoints = 0;
-        $crossesPoints = 0;
-        $largestColorZone = 0;
-        $detailledScore->largestColorZonePoints = 0;
-        $facedownCardsPoints = $facedownCardsCount * 5;
-
-        foreach ($validatedCards as $space => $card) {
-            if ($card) {
-                $detailledScore->validatedCardPoints += $space;
-            }
-        }
-
-        foreach ($visibleCards as $space => $card) {
-            if ($card) {
-                if ($card->spirals != 0) {
-                    if ($card->spirals == -1) {
-                        $spiralsPoints += $colorsCounts[$card->colors[0]]; // spiral -1 is always of the single color of the card
-                    } else {
-                        $spiralsPoints += $card->spirals;
-                    }
-                }
-                if ($card->crosses != 0) {
-                    if ($card->crosses < 0) {
-                        $crossesPoints += $colorsCounts[-$card->crosses]; // X per color is coded as negative cross
-                    } else {
-                        $crossesPoints += $card->crosses;
-                    }
-                }
-                if ($card->spiralsPerFacedownCard > 0) {
-                    $facedownCardsPoints += $card->spiralsPerFacedownCard * $facedownCardsCount;
-                }
-                $colorZone = $this->getLargestColorZone($visibleCards);
-                if ($colorZone > $largestColorZone) {
-                    $largestColorZone = $colorZone;
-                }
-            }
-        }
-
-        // largest zone must be 2 cards min to score
-        if ($largestColorZone == 1) {
-            $largestColorZone = 0;
-        }
-
-        $detailledScore->spiralsAndCrossesPoints = $spiralsPoints - $crossesPoints;
-        $detailledScore->largestColorZonePoints = $largestColorZone * ($roundNumber + 1);
-        if ($isFlowerPowerExpansion) {
-            $detailledScore->facedownCardsPoints = $facedownCardsPoints;
-        }
-
-        $detailledScore->points = 
-            $detailledScore->validatedCardPoints + 
-            $detailledScore->spiralsAndCrossesPoints + 
-            $detailledScore->largestColorZonePoints;
-        if ($isFlowerPowerExpansion) {
-            $detailledScore->points += $detailledScore->facedownCardsPoints;
-        }
-        return $detailledScore;
-    }
-    
-    function scoreRound() {
-        $roundNumber = $this->bga->tableStats->get('roundNumber');
-        $playersIds = $this->getPlayersIds();
-        $result = [];
-        $isFlowerPowerExpansion = $this->isFlowerPowerExpansion();
-
-        foreach ($playersIds as $playerId) {
-            $playerCards = $this->getCardsFromSpaces($playerId);
-            $detailledScore = $this->getDetailledScore($playerCards, $roundNumber, $isFlowerPowerExpansion);
-            $result[$playerId] = $detailledScore;  
-        
-            $this->incStat($detailledScore->validatedCardPoints, 'pointsValidatedCard');
-            $this->incStat($detailledScore->validatedCardPoints, 'pointsValidatedCard', $playerId);
-            $this->incStat($detailledScore->spiralsPoints, 'pointsSpirals');
-            $this->incStat($detailledScore->spiralsPoints, 'pointsSpirals', $playerId);
-            $this->incStat($detailledScore->crossesPoints, 'pointsLostCrosses');
-            $this->incStat($detailledScore->crossesPoints, 'pointsLostCrosses', $playerId);
-            $this->incStat($detailledScore->largestColorZonePoints, 'pointsColorZone');
-            $this->incStat($detailledScore->largestColorZonePoints, 'pointsColorZone', $playerId);
-            $this->incStat($detailledScore->facedownCardsPoints, 'pointsFacedownCards');
-            $this->incStat($detailledScore->facedownCardsPoints, 'pointsFacedownCards', $playerId);
-        }
-
-        return $result;
-    }
-
-    function getPlayerCardCount(int $playerId) {
-        $playerCards = $this->getCardsFromSpaces($playerId);
-        $playerCardCount = array_reduce(array_map(fn($cards) => count($cards) > 0 ? 1 : 0, $playerCards), fn($a, $b) => $a + $b, 0);
-
-        return $playerCardCount;
-    }
     
     public function decorateNotifArgs(string $message, array $args): array {
         if (isset($args['playerId']) && !isset($args['player_name']) && str_contains($message, '${player_name}')) {
@@ -610,6 +355,24 @@ class Game extends \Bga\GameFramework\Table {
             3 => clienttranslate('Yellow'),
             4 => clienttranslate('Red'),
         };
+    }
+
+    public static function getRowFromValue(?int $value): int {
+        return $value === null || $value < 1 || $value > 9 ? null : (intdiv($value - 1, 3) + 1);
+    }
+
+    public static function getColumnFromValue(?int $value): int {
+        return $value === null || $value < 1 || $value > 9 ? null : ((($value - 1) % 3) + 1);
+    }
+
+    public static function getValueFromRowColumn(int $row, int $column): ?int {
+        return $row < 1 || $row > 3 || $column < 1 || $column > 3 ? null : (($row-1) * 3 + $column);
+    }
+    public static function getRowColumnFromValue(?int $value): array {
+        return [
+            self::getRowFromValue($value),
+            self::getColumnFromValue($value),
+        ];
     }
 
 ///////////////////////////////////////////////////////////////////////////////////:

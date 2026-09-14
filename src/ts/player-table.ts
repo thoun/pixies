@@ -21,9 +21,12 @@ export class PlayerTable {
                 <span class="name" style="color: #${player.color};" data-color="${player.color}">${player.name}</span>
             </div>
             <div id="player-table-${this.playerId}-cards" class="player-cards">`;
-        for (let i = 1; i <= 9; i++) {
-            html += `
-                <div id="player-table-${this.playerId}-cards-${i}" class="space" style="--value: '${i}';"></div>`;
+        for (let row = 1; row <= 3; row++) {
+            for (let column = 1; column <= 3; column++) {
+                const value = (row-1)*3 + column;
+                html += `
+                    <div id="player-table-${this.playerId}-cards-${row}-${column}" class="space" style="--value: '${value}';"></div>`;
+            }
         }
         html += `
             </div>
@@ -36,48 +39,55 @@ export class PlayerTable {
             mapCardToSlot: card => card.locationArg,
         }
 
-        for (let i = 1; i <= 9; i++) {
-            const spaceDiv = document.getElementById(`player-table-${this.playerId}-cards-${i}`);
-            spaceDiv.addEventListener('click', () => {
-                if (spaceDiv.classList.contains('selectable')) {
-                    this.game.onSpaceClick(i);
-                }
-            })
-            this.tableCards[i] = new BgaCards.SlotStock/*<Card>*/(this.game.cardsManager, spaceDiv, stockSettings);
-            this.tableCards[i].addCards(player.cards[i]);
+        for (let row = 1; row <= 3; row++) {
+            for (let column = 1; column <= 3; column++) {
+                const value = (row-1)*3 + column;
+                const spaceDiv = document.getElementById(`player-table-${this.playerId}-cards-${row}-${column}`);
+                spaceDiv.addEventListener('click', () => {
+                    if (spaceDiv.classList.contains('selectable')) {
+                        this.game.onSpaceClick(row, column);
+                    }
+                })
+                this.tableCards[`${row}-${column}`] = new BgaCards.SlotStock/*<Card>*/(this.game.cardsManager, spaceDiv, stockSettings);
+                this.tableCards[`${row}-${column}`].addCards(player.cards[`${row}-${column}`]);
+            }
         }
     }
     
     public getAllCards(): Card[] {
         const cards = [];
 
-        for (let i = 1; i <= 9; i++) {
-            cards.push(...this.tableCards[i].getCards());
+        for (let row = 1; row <= 3; row++) {
+            for (let column = 1; column <= 3; column++) {
+                cards.push(...this.tableCards[`${row}-${column}`].getCards());
+            }
         }
 
         return cards;
     }
     
-    public async playCard(card: Card, space: number): Promise<any> {
-        await this.tableCards[space].addCard(card);
+    public async playCard(card: Card, row: number, column: number) {
+        await this.tableCards[`${row}-${column}`].addCard(card);
     }
     
-    public async keepCard(hiddenCard: Card, visibleCard: Card, space: number): Promise<any> {
+    public async keepCard(hiddenCard: Card, visibleCard: Card, row: number, column: number) {
         this.game.cardsManager.updateCardInformations(hiddenCard);
         await Promise.all([
-            this.tableCards[space].addCard(hiddenCard),
+            this.tableCards[`${row}-${column}`].addCard(hiddenCard),
             this.game.animationManager.animationsActive() ? this.game.bga.gameui.wait(ANIMATION_MS) : Promise.resolve(true),
         ]);
         this.game.cardsManager.updateCardInformations(visibleCard);
         await Promise.all([
-            this.tableCards[space].addCard(visibleCard),
+            this.tableCards[`${row}-${column}`].addCard(visibleCard),
             this.game.animationManager.animationsActive() ? this.game.bga.gameui.wait(ANIMATION_MS) : Promise.resolve(true),
         ]);
     }
     
-    public setSelectableSpaces(spaces: number[]) {
-        for (let i = 1; i <= 9; i++) {
-            document.getElementById(`player-table-${this.playerId}-cards-${i}`).classList.toggle('selectable', spaces.includes(i));
+    public setSelectableSpaces(spaces: string[]) {
+        for (let row = 1; row <= 3; row++) {
+            for (let column = 1; column <= 3; column++) {
+                document.getElementById(`player-table-${this.playerId}-cards-${row}-${column}`).classList.toggle('selectable', spaces.includes(`${row}-${column}`));
+            }
         }
     }
 }
