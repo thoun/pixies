@@ -1,15 +1,19 @@
-class TableCenter {
-    public deck: Deck<Card>;
+import { Game } from "./Game";
+import { BgaCards } from "./libs";
 
-    private tableCards: LineStock<Card>;
+export class TableCenter {
+    // @ts-ignore
+    public deck:  BgaCards.Deck<Card>;
+    // @ts-ignore
+    private tableCards:  BgaCards.LineStock<Card>;
 
-    constructor(private game: PixiesGame, gamedatas: PixiesGamedatas) {
+    constructor(private game: Game, gamedatas: PixiesGamedatas) {
         const tableCardsDiv = document.getElementById(`table-cards`);
-        this.tableCards = new LineStock<Card>(this.game.cardsManager, tableCardsDiv);
+        this.tableCards = new BgaCards.LineStock/*<Card>*/(this.game.cardsManager, tableCardsDiv);
         this.tableCards.onCardClick = card => this.game.onTableCardClick(card);
         this.tableCards.addCards(gamedatas.tableCards);
 
-        this.deck = new Deck<Card>(this.game.cardsManager, document.getElementById('deck'), {
+        this.deck = new BgaCards.Deck/*<Card>*/(this.game.cardsManager, document.getElementById('deck'), {
             cardNumber: gamedatas.remainingCardsInDeck,
             /*counter: {
                 extraClasses: 'pile-counter',

@@ -160,4 +160,4 @@ declare const BgaZoom: {
     Manager: typeof ZoomManager;
 };
 
-//export { BgaZoom, ZoomManager as Manager };
+export { BgaZoom, ZoomManager as Manager };

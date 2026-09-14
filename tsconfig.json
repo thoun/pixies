@@ -1,40 +1,16 @@
 {
-    "rootDir": ".", 
-    "compilerOptions": {
-      "target": "es5",
-      "module": "none",
-      "lib": ["dom", "esnext"],  
-      "sourceMap": false,
-      "outFile": "pixies.js",
-      "strict": false
-    },
-    "files": [
-        "bga-framework.d.ts",
-        "bga-zoom.d.ts",
-        "node_modules/bga-help/src/help-manager.ts",
-        "node_modules/bga-animations/src/framework.d.ts",
-        "node_modules/bga-animations/src/animations.ts",
-        "node_modules/bga-animations/src/animations/attach-with-animation.ts",
-        "node_modules/bga-animations/src/animations/cumulated-animations.ts",
-        "node_modules/bga-animations/src/animations/pause-animation.ts",
-        "node_modules/bga-animations/src/animations/show-screen-center-animation.ts",
-        "node_modules/bga-animations/src/animations/slide-animation.ts",
-        "node_modules/bga-animations/src/animations/slide-to-animation.ts",
-        "node_modules/bga-animations/src/animations-utils.ts",
-        "node_modules/bga-animations/src/animation-manager.ts",
-        "node_modules/bga-cards/src/animations.ts",
-        "node_modules/bga-cards/src/stocks/card-stock.ts",
-        "node_modules/bga-cards/src/stocks/deck.ts",
-        "node_modules/bga-cards/src/stocks/line-stock.ts",
-        "node_modules/bga-cards/src/stocks/slot-stock.ts",
-        "node_modules/bga-cards/src/stocks/void-stock.ts",
-        "node_modules/bga-cards/src/card-manager.ts",
-        "node_modules/bga-cards/src/sort.ts",
-        "src/ts/types.d.ts",
-        "src/ts/cards.ts",
-        "src/ts/table-center.ts",
-        "src/ts/player-table.ts",
-        "src/ts/Game.ts",
-        "src/ts/define.ts"
-    ]
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "lib": ["dom", "esnext"],
+    "sourceMap": false,
+    "rootDir": "src",
+    "strict": false
+  },
+  "include": [
+    "*.d.ts",
+    "src/ts/**/*.d.ts",
+    "src/ts/**/*.ts"
+  ]
 }

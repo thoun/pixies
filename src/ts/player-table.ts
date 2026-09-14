@@ -1,18 +1,17 @@
-const isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;;
-const log = isDebug ? console.log.bind(window.console) : function () { };
+import { Game } from "./Game";
+import { BgaCards } from "./libs";
 
-function sleep(ms: number){
-    return new Promise((r) => setTimeout(r, ms));
-}
+const ANIMATION_MS = 500;
 
-class PlayerTable {
+export class PlayerTable {
     public playerId: number;
 
     private currentPlayer: boolean;
 
-    private tableCards: SlotStock<Card>[] = [];
+    // @ts-ignore
+    private tableCards: BgaCards.SlotStock<Card>[] = [];
 
-    constructor(private game: PixiesGame, player: PixiesPlayer) {
+    constructor(private game: Game, player: PixiesPlayer) {
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
 
@@ -31,7 +30,8 @@ class PlayerTable {
         </div>`;
         document.getElementById('tables').insertAdjacentHTML('beforeend', html);
 
-        const stockSettings: SlotStockSettings<Card> = {
+        // @ts-ignore
+        const stockSettings: BgaCards.SlotStockSettings<Card> = {
             slotsIds: [0, 1],
             mapCardToSlot: card => card.locationArg,
         }
@@ -43,7 +43,7 @@ class PlayerTable {
                     this.game.onSpaceClick(i);
                 }
             })
-            this.tableCards[i] = new SlotStock<Card>(this.game.cardsManager, spaceDiv, stockSettings);
+            this.tableCards[i] = new BgaCards.SlotStock/*<Card>*/(this.game.cardsManager, spaceDiv, stockSettings);
             this.tableCards[i].addCards(player.cards[i]);
         }
     }
@@ -66,12 +66,12 @@ class PlayerTable {
         this.game.cardsManager.updateCardInformations(hiddenCard);
         await Promise.all([
             this.tableCards[space].addCard(hiddenCard),
-            this.game.animationManager.animationsActive() ? sleep(ANIMATION_MS) : Promise.resolve(true),
+            this.game.animationManager.animationsActive() ? this.game.bga.gameui.wait(ANIMATION_MS) : Promise.resolve(true),
         ]);
         this.game.cardsManager.updateCardInformations(visibleCard);
         await Promise.all([
             this.tableCards[space].addCard(visibleCard),
-            this.game.animationManager.animationsActive() ? sleep(ANIMATION_MS) : Promise.resolve(true),
+            this.game.animationManager.animationsActive() ? this.game.bga.gameui.wait(ANIMATION_MS) : Promise.resolve(true),
         ]);
     }
     

@@ -1,19 +1,10 @@
-interface Card {
-    id: number;
-    location: string;
-    locationArg: number;
-    type: number;
-    colors: number[];
-    index: number;
-    value: number;
-    spirals: number;
-    crosses: number;
-}
+import { Game } from "./Game";
+import { BgaCards } from "./libs";
 
-class CardsManager extends CardManager<Card> {
+export class CardsManager extends BgaCards.CardManager<Card> {
     private COLORS: string[];
     
-    constructor (public game: PixiesGame) {
+    constructor (public game: Game) {
         super(game, {
             getId: (card) => `card-${card.id}`,
             setupDiv: (card: Card, div: HTMLElement) => {
@@ -138,7 +129,7 @@ class CardsManager extends CardManager<Card> {
     }
 
     // gameui.cards.debugSeeAllCards()
-    private debugSeeAllCards() {
+    /*private debugSeeAllCards() {
         let html = `<div id="all-cards">`;
         html += `</div>`;
         dojo.place(html, 'full-table', 'before');
@@ -164,7 +155,7 @@ class CardsManager extends CardManager<Card> {
                 debugStock.addCard(card);
             })
         );
-    }
+    }*/
 
     public getColor(color: number): string {
         switch (color) {

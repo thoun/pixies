@@ -2,6 +2,18 @@
  * Your game interfaces
  */
 
+interface Card {
+    id: number;
+    location: string;
+    locationArg: number;
+    type: number;
+    colors: number[];
+    index: number;
+    value: number;
+    spirals: number;
+    crosses: number;
+}
+
 interface DetailledScore {
     validatedCardPoints: number;
     largestColorZonePoints: number;
@@ -15,18 +27,7 @@ interface PixiesPlayer extends Player {
     cards: { [slot: number]: Card[] };
 }
 
-interface PixiesGamedatas {
-    current_player_id: string;
-    decision: {decision_type: string};
-    game_result_neutralized: string;
-    gamestate: Gamestate;
-    gamestates: { [gamestateId: number]: Gamestate };
-    neutralized_player_id: string;
-    notifications: {last_packet_id: string, move_nbr: string}
-    playerorder: (string | number)[];
-    players: { [playerId: number]: PixiesPlayer };
-    tablespeed: string;
-
+interface PixiesGamedatas extends Gamedatas<PixiesPlayer> {
     // Add here variables you set up in getAllDatas
     remainingCardsInDeck: number;
     tableCards: Card[];
@@ -34,18 +35,6 @@ interface PixiesGamedatas {
     roundNumber: number;
     lastTurn: boolean;
     flowerPowerExpansion: boolean;
-}
-
-interface PixiesGame extends Game {
-    animationManager: AnimationManager;
-    cardsManager: CardsManager;
-
-    getPlayerId(): number;
-    getPlayerColor(playerId: number): string;
-
-    setTooltip(id: string, html: string): void;
-    onTableCardClick(card: Card): void;
-    onSpaceClick(space: number): void;
 }
 
 interface EnteringChooseCardArgs {

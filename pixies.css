@@ -798,7 +798,6 @@ html[data-theme=light] #popin_bgaHelpDialog {
 
 html[data-theme=dark] #popin_bgaHelpDialog {
   color: black;
-  background: unset;
 }
 html[data-theme=dark] #help-popin h1 {
   color: #b8e599;
