@@ -19,11 +19,13 @@ declare(strict_types=1);
 
 namespace Bga\Games\Pixies;
 
+use Bga\GameFramework\UserException;
+use Bga\Games\Pixies\Objects\Card;
 use Bga\Games\Pixies\States\KeepCard;
 use Bga\Games\Pixies\States\NewRound;
 use Bga\Games\Pixies\States\PlayCard;
 use Bga\Games\Pixies\Objects\DetailledScore;
-use Bga\Games\Pixies\Objects\Card;
+use Bga\Games\Pixies\Objects\OldCard;
 use Bga\Games\Pixies\Objects\Coalition;
 
 require_once('constants.inc.php');
@@ -33,9 +35,11 @@ class Game extends \Bga\GameFramework\Table {
 
     public \Bga\GameFramework\Components\Deck $cards;
 
-    public array $CARDS;
-    public array $FLOWER_POWER_CARDS;
-    public array $LITTLE_GIANTS_CARDS;
+    public CardManager $cardManager;
+
+    public static array $CARDS = [];
+    public static array $FLOWER_POWER_CARDS = [];
+    public static array $LITTLE_GIANTS_CARDS = [];
 
 	function __construct() {
         // Your global variables labels:
@@ -52,6 +56,7 @@ class Game extends \Bga\GameFramework\Table {
             LAST_TURN => LAST_TURN,
         ]);  
 
+        $this->cardManager = new CardManager($this);
         $this->cards = $this->deckFactory->createDeck("card");
 	}
 
@@ -99,6 +104,7 @@ class Game extends \Bga\GameFramework\Table {
             }
         }
 
+        $this->cardManager->initDb();
         // setup the initial game situation here
         $this->setupCards();
 
@@ -133,7 +139,7 @@ class Game extends \Bga\GameFramework\Table {
         }
 
         $result['remainingCardsInDeck'] = $this->getRemainingCardsInDeck();
-        $result['tableCards'] = $this->getCardsFromDb($this->cards->getCardsInLocation('table'));
+        $result['tableCards'] = $this->cardManager->getTableCards()->values();
         $result['roundNumber'] = $this->bga->tableStats->get('roundNumber');
         $result['roundResult'] = [];
         for($i = 1; $i <= 3; $i++) {
@@ -207,7 +213,7 @@ class Game extends \Bga\GameFramework\Table {
 
         $card = $this->getCardFromDb($this->cards->getCard($id));
         if ($card->location != 'table') {
-            throw new \BgaUserException("You cannot choose this card");
+            throw new UserException("You cannot choose this card");
         }
         
         $stateName = $this->gamestate->getCurrentMainState()->name; 
@@ -229,7 +235,7 @@ class Game extends \Bga\GameFramework\Table {
         return $newState;
     }
 
-    function applyChooseCard(int $playerId, Card $card): string {
+    function applyChooseCard(int $playerId, OldCard $card): string {
         $this->setGlobalVariable(SELECTED_CARD_ID, $card->id);
 
         $spaceCards = $this->getCardsFromSpace($playerId, $card->value);
@@ -254,7 +260,7 @@ class Game extends \Bga\GameFramework\Table {
 
         $this->notify->all('playCard', clienttranslate('${player_name} plays a ${color} card on space ${value}'), [
             'playerId' => $playerId,
-            'card' => $space == $card->value ? $card : Card::onlyId($card),
+            'card' => $space == $card->value ? $card : OldCard::onlyId($card),
             'space' => $space,
             'visibleCard' => $card, // only used for logs
         ]);
@@ -312,30 +318,25 @@ class Game extends \Bga\GameFramework\Table {
         if ($dbCard == null) {
             return null;
         }
-
-        $CARDS = $this->CARDS + $this->FLOWER_POWER_CARDS;
-        for ($i = 0; $i <= 4; $i++) {
-            $CARDS[$i] += $this->LITTLE_GIANTS_CARDS[$i];
-        }  
-        return new Card($dbCard,  $CARDS);
+        return new OldCard($dbCard);
     }
 
     /**
-     * @return Card[]
+     * @return OldCard[]
      */
     function getCardsFromDb(array $dbCards): array {
         return array_map(fn($dbCard) => $this->getCardFromDb($dbCard), array_values($dbCards));
     }
 
     /**
-     * @return Card[]
+     * @return OldCard[]
      */
     function getCardsFromSpace(int $playerId, int $value): array {
         return $this->getCardsFromDb($this->cards->getCardsInLocation("player-$playerId-$value", null, 'location_arg'));
     }
 
     /**
-     * @return array<int,Card[]>
+     * @return array<int,OldCard[]>
      */    
     function getCardsFromSpaces(int $playerId): array {
         $spaces = [];
@@ -343,7 +344,7 @@ class Game extends \Bga\GameFramework\Table {
         for ($i = 1; $i <= 9; $i++) {
             $spaces[$i] = $this->getCardsFromSpace($playerId, $i);
             if (count($spaces[$i]) == 2 || (count($spaces[$i]) == 1 && $spaces[$i][0]->value != $i)) {
-                $spaces[$i][0] = Card::onlyId($spaces[$i][0]);
+                $spaces[$i][0] = OldCard::onlyId($spaces[$i][0]);
             }
         }
 
@@ -368,13 +369,13 @@ class Game extends \Bga\GameFramework\Table {
 
     function setupCards() {
         $cardsToGenerate = [];
-        $CARDS = $this->CARDS;
+        $CARDS = self::$CARDS;
         if ($this->isFlowerPowerExpansion()) {
-            $CARDS += $this->FLOWER_POWER_CARDS;
+            $CARDS += self::$FLOWER_POWER_CARDS;
         }
         if ($this->isLittleGiantsExpansion()) {
             for ($i = 0; $i <= 4; $i++) {
-                $CARDS[$i] += $this->LITTLE_GIANTS_CARDS[$i];
+                $CARDS[$i] += self::$LITTLE_GIANTS_CARDS[$i];
             }            
         }
         foreach ($CARDS as $type => $cardsTypes) {
@@ -407,7 +408,7 @@ class Game extends \Bga\GameFramework\Table {
 
 
     /**
-     * @param array<int,?Card> $validatedCards
+     * @param array<int,?OldCard> $validatedCards
      */
     function getColorZoneSize(array $validatedCards, Coalition $coalition, int $currentRow, int $currentColumn): void {
         // we check we don't count twice the same space
@@ -440,7 +441,7 @@ class Game extends \Bga\GameFramework\Table {
     }
 
     /**
-     * @param array<int,?Card> $visibleCards
+     * @param array<int,?OldCard> $visibleCards
      */
     function getLargestColorZone(array $visibleCards): int {
         $topCoalition = null;
@@ -465,9 +466,9 @@ class Game extends \Bga\GameFramework\Table {
 
     function getDetailledScore(array $spaces, int $roundNumber, bool $isFlowerPowerExpansion): DetailledScore {
         $detailledScore = new DetailledScore();
-        /** @var array<int,?Card> */
+        /** @var array<int,?OldCard> */
         $validatedCards = array_map(fn($space) => count($space) == 2 ? $space[1] : null, $spaces);
-        /** @var array<int,?Card> */
+        /** @var array<int,?OldCard> */
         $visibleCards = array_map(fn($space) => count($space) == 2 ? $space[1] : (count($space) == 1 && $space[0]->value !== null ? $space[0] : null), $spaces);
         $facedownCardsCount = $isFlowerPowerExpansion ? $this->countFacedownCards($spaces) : 0;
         $colorsCounts = [
@@ -631,10 +632,15 @@ class Game extends \Bga\GameFramework\Table {
         // For example, if the game was running with a release of your game named "140430-1345",
         // $from_version is equal to 1404301345
         
-        if ($from_version <= 2305281437) {
-            // ! important ! Use DBPREFIX_<table_name> for all tables
-            $this->applyDbUpgradeToAllDB("ALTER TABLE DBPREFIX_card MODIFY COLUMN `card_location` varchar(25) NOT NULL");
-        }
+        if ($from_version <= 2609141115) {
+            $sql = "ALTER TABLE `DBPREFIX_card` ADD `order` INT DEFAULT 0, MODIFY `card_location_arg` INT NULL";
+            $this->applyDbUpgradeToAllDB($sql);
 
+            $sql = "UPDATE `DBPREFIX_card` SET `order` = `card_location_arg` WHERE `card_location` = 'deck'";
+            $this->applyDbUpgradeToAllDB($sql);
+
+            $sql = "UPDATE `DBPREFIX_card` SET `card_location_arg` = NULL WHERE `card_location` = 'deck'";
+            $this->applyDbUpgradeToAllDB($sql);
+        }
     }    
 }

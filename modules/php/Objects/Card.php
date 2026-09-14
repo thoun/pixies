@@ -3,22 +3,48 @@ declare(strict_types=1);
 
 namespace Bga\Games\Pixies\Objects;
 
-class Card extends CardType {
+use Bga\GameFramework\Components\ItemManager\Item;
+use Bga\GameFramework\Components\ItemManager\ItemField;
+use Bga\GameFramework\Components\ItemManager\ItemFieldKind;
+use Bga\Games\Pixies\Game;
+
+#[Item('card')]
+class Card extends CardType
+{
+    #[ItemField(kind: ItemFieldKind::ID, dbField: 'card_id')]
     public int $id;
+
+    #[ItemField(kind: ItemFieldKind::LOCATION, locationIndex: 0, dbField: 'card_location')]
     public string $location;
-    public int $locationArg;
-    public ?int $type = null; // for hidden cards
-    /** @var int[] */
-    public array $colors;
+
+    #[ItemField(kind: ItemFieldKind::LOCATION, locationIndex: 1, dbField: 'card_location_arg')]
+    public ?int $locationArg;
+
+    #[ItemField(kind: ItemFieldKind::ORDER)]
+    public int $order = 0;
+
+    #[ItemField(dbField: 'card_type')]
+    public ?int $type;
+
+    #[ItemField(dbField: 'card_type_arg')]
     public int $index;
 
-    public function __construct($dbCard, $CARDS_TYPE) {
-        $this->id = intval($dbCard['id']);
-        $this->location = $dbCard['location'];
-        $this->locationArg = intval($dbCard['location_arg']);
-        if ($dbCard['type'] !== null) {
-            $this->type = intval($dbCard['type']);
-            $this->index = intval($dbCard['type_arg']);
+    /** @var int[] */
+    public array $colors;
+
+    public function setup(array $dbCard) {
+        $CARDS_TYPE = Game::$CARDS + Game::$FLOWER_POWER_CARDS;
+        for ($i = 0; $i <= 4; $i++) {
+            $CARDS_TYPE[$i] += Game::$LITTLE_GIANTS_CARDS[$i];
+        }  
+
+
+        $this->id = intval($dbCard['card_id']);
+        $this->location = $dbCard['card_location'];
+        $this->locationArg = intval($dbCard['card_location_arg']);
+        if ($dbCard['card_type'] !== null) {
+            $this->type = intval($dbCard['card_type']);
+            $this->index = intval($dbCard['card_type_arg']);
 
             $cardType = $CARDS_TYPE[$this->type][$this->index];
             $this->value = $cardType->value;
@@ -35,73 +61,7 @@ class Card extends CardType {
         } else {
             $this->value = null;
         }
-    } 
-
-    public static function onlyId(?Card $card) {
-        if ($card == null) {
-            return null;
-        }
-        
-        return new Card([
-            'id' => $card->id,
-            'location' => $card->location,
-            'location_arg' => $card->locationArg,
-            'type' => null
-        ], null);
-    }
-
-    public static function onlyIds(array $cards) {
-        return array_map(fn($card) => self::onlyId($card), $cards);
-    }
-    
-    public function getRow(): ?int {
-        $locationSplit = explode('-', $this->location);
-        if (count($locationSplit) === 3) {
-            if (str_starts_with($locationSplit[2], 'row')) {
-                return intval(str_replace($locationSplit[2], 'row', ''));
-            }
-            if (str_starts_with($locationSplit[2], 'column')) {
-                return 0;
-            }
-        }
-
-        return match(intval($locationSplit[2])) {
-            1 => 1,
-            2 => 1,
-            3 => 1,
-            4 => 2,
-            5 => 2,
-            6 => 2,
-            7 => 3,
-            8 => 3,
-            9 => 3,
-            default => null,
-        };
-    }
-
-    public function getColumn(): ?int {
-        $locationSplit = explode('-', $this->location);
-        if (count($locationSplit) === 3) {
-            if (str_starts_with($locationSplit[2], 'row')) {
-                return 0;
-            }
-            if (str_starts_with($locationSplit[2], 'column')) {
-                return intval(str_replace($locationSplit[2], 'column', ''));
-            }
-        }
-
-        return match(intval($locationSplit[2])) {
-            1 => 1,
-            2 => 2,
-            3 => 3,
-            4 => 1,
-            5 => 2,
-            6 => 3,
-            7 => 1,
-            8 => 2,
-            9 => 3,
-            default => null,
-        };
     }
 }
+
 ?>

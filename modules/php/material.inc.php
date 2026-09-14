@@ -20,7 +20,7 @@
  */
 use Bga\Games\Pixies\Objects\CardType;
 
-$this->CARDS = [
+self::$CARDS = [
   0 => [ // all colors
     1 => new CardType(2),
     2 => new CardType(3),
@@ -107,7 +107,7 @@ $this->CARDS = [
   ],
 ];
 
-$this->FLOWER_POWER_CARDS = [
+self::$FLOWER_POWER_CARDS = [
   12 => [ // Blue and Green
     1 => new CardType(8, spiralsPerFacedownCard: 1, crosses: 1),
     2 => new CardType(2, spirals: 6, crosses: -3),
@@ -137,7 +137,7 @@ $this->FLOWER_POWER_CARDS = [
 
 ];
 
-$this->LITTLE_GIANTS_CARDS = [
+self::$LITTLE_GIANTS_CARDS = [
   0 => [ // all colors
     107 => new CardType(columnEffect: 7),
     114 => new CardType(rowEffect: 7),

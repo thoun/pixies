@@ -8,7 +8,7 @@ use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\GameFramework\StateType;
 use Bga\Games\Pixies\Game;
-use Bga\Games\Pixies\Objects\Card;
+use Bga\Games\Pixies\Objects\OldCard;
 
 class KeepCard extends GameState
 {
@@ -98,8 +98,8 @@ class KeepCard extends GameState
     ): int {
         $space = $card->value;
         $playerCards[$space] = $choice === 0
-            ? [Card::onlyId($card), $playerCards[$space][0]]
-            : [Card::onlyId($playerCards[$space][0]), $card];
+            ? [OldCard::onlyId($card), $playerCards[$space][0]]
+            : [OldCard::onlyId($playerCards[$space][0]), $card];
 
         return $game->getDetailledScore($playerCards, $roundNumber, $isFlowerPowerExpansion)->points;
     }
@@ -120,7 +120,7 @@ class KeepCard extends GameState
 
         $this->notify->all('keepCard', clienttranslate('${player_name} keeps the ${color} card on space ${value}'), [
             'playerId' => $playerId,
-            'hiddenCard' => Card::onlyId($hiddenCard),
+            'hiddenCard' => OldCard::onlyId($hiddenCard),
             'visibleCard' => $visibleCard,
             'space' => $space,
         ]);
