@@ -30,11 +30,13 @@ class Card extends CardType
     #[ItemField(dbField: 'card_type_arg')]
     public int $index;
 
+    #[ItemField]
+    public ?int $row;
+    #[ItemField]
+    public ?int $column;
+
     /** @var int[] */
     public array $colors;
-
-    public ?int $row;
-    public ?int $column;
 
     public static function onlyId(?Card $card) {
         if ($card == null) {

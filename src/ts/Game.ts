@@ -47,7 +47,10 @@ export class Game {
             this.bga.images.dontPreloadImage('background.jpg');
             document.getElementsByTagName('html')[0].classList.add('flower-power-expansion');
         } else {
-            this.bga.images.dontPreloadImage('background-expansion.jpg');
+            this.bga.images.dontPreloadImages(['background-expansion.jpg', 'flower-power-cards.jpg']);
+        }
+        if (!gamedatas.littleGiantsExpansion) {
+            this.bga.images.dontPreloadImages(['little-giants-cards.webp']);
         }
 
         this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', `

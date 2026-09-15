@@ -135,6 +135,7 @@ class Game extends \Bga\GameFramework\Table {
         }
         $result['lastTurn'] = !$isEndScore && boolval($this->getGameStateValue((string)LAST_TURN));
         $result['flowerPowerExpansion'] = $this->isFlowerPowerExpansion();
+        $result['littleGiantsExpansion'] = $this->isLittleGiantsExpansion();
   
         return $result;
     }
@@ -328,6 +329,11 @@ class Game extends \Bga\GameFramework\Table {
 
             $sql = "UPDATE `DBPREFIX_card` SET `card_location_arg` = NULL WHERE `card_location` = 'deck'";
             $this->applyDbUpgradeToAllDB($sql);
+        }
+        
+        if ($from_version <= 2609151200) {
+            $this->cardManager->cards->upgradeTableDbAddColumns(['row']);
+            $this->cardManager->cards->upgradeTableDbAddColumns(['column']);
         }
     }    
 }

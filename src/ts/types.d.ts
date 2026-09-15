@@ -36,6 +36,7 @@ interface PixiesGamedatas extends Gamedatas<PixiesPlayer> {
     roundNumber: number;
     lastTurn: boolean;
     flowerPowerExpansion: boolean;
+    littleGiantsExpansion: boolean;
 }
 
 interface EnteringChooseCardArgs {
