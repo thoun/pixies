@@ -8,6 +8,7 @@ use Bga\GameFramework\Components\ItemManager\ItemLocation;
 use Bga\GameFramework\Components\ItemManager\ItemManager;
 use Bga\GameFramework\Helpers\Collection;
 use Bga\Games\Pixies\Objects\Card;
+use Bga\Games\Pixies\Objects\CardType;
 use Bga\Games\Pixies\Objects\Coalition;
 use Bga\Games\Pixies\Objects\DetailledScore;
 
@@ -16,8 +17,155 @@ class CardManager
     /** @var ItemManager<Card> */
     public ItemManager $cards;
 
+    public static array $CARDS = [];
+    public static array $FLOWER_POWER_CARDS = [];
+    public static array $LITTLE_GIANTS_CARDS = [];
+
     public function __construct(private Game $game)
     {
+        self::$CARDS = [
+            0 => [ // all colors
+                1 => new CardType(2),
+                2 => new CardType(3),
+                3 => new CardType(4),
+                4 => new CardType(6, crosses: 1),
+                5 => new CardType(7, crosses: 1),
+                6 => new CardType(8, crosses: 1),
+            ],
+
+            1 => [ // blue
+                1 => new CardType(1, 6),
+                2 => new CardType(2, 4),
+                3 => new CardType(3, 3),
+                4 => new CardType(3, 1),
+                5 => new CardType(4, 1),
+                6 => new CardType(4, -1),
+                7 => new CardType(4),
+                8 => new CardType(5),
+                9 => new CardType(5, crosses: 2),
+                10 => new CardType(5, -1),
+                11 => new CardType(6, 1),
+                12 => new CardType(6, crosses: 1),
+                13 => new CardType(7, crosses: 3),
+                14 => new CardType(8, crosses: 3),
+                15 => new CardType(9, crosses: 6),
+                16 => new CardType(9, crosses: 1),
+            ],
+
+            2 => [ // green
+                1 => new CardType(1, 5),
+                2 => new CardType(2, 3),
+                3 => new CardType(3, 2),
+                4 => new CardType(3, -1),
+                5 => new CardType(4, 4),
+                6 => new CardType(4, crosses: 1),
+                7 => new CardType(5),
+                8 => new CardType(5, crosses: 1),
+                9 => new CardType(5, -1),
+                10 => new CardType(6, crosses: 4),
+                11 => new CardType(6, crosses: 1),
+                12 => new CardType(6, 1),
+                13 => new CardType(7, crosses: 2),
+                14 => new CardType(7),
+                15 => new CardType(8, crosses: 2),
+                16 => new CardType(9, crosses: 4),
+            ],
+
+            3 => [ // yellow
+                1 => new CardType(1, 4),
+                2 => new CardType(2, 2),
+                3 => new CardType(2, -1),
+                4 => new CardType(3, 5),
+                5 => new CardType(3),
+                6 => new CardType(4, 3),
+                7 => new CardType(4, crosses: 1),
+                8 => new CardType(5, crosses: 2),
+                9 => new CardType(5),
+                10 => new CardType(5, -1),
+                11 => new CardType(6, crosses: 3),
+                12 => new CardType(6),
+                13 => new CardType(7, crosses: 5),
+                14 => new CardType(7, 1),
+                15 => new CardType(8, crosses: 1),
+                16 => new CardType(9, crosses: 2),
+            ],
+
+            4 => [ // red
+                1 => new CardType(1, 3),
+                2 => new CardType(1, -1),
+                3 => new CardType(2, 5),
+                4 => new CardType(3, 4),
+                5 => new CardType(4, 2),
+                6 => new CardType(4),
+                7 => new CardType(5, crosses: 1),
+                8 => new CardType(5, -1),
+                9 => new CardType(5),
+                10 => new CardType(6, crosses: 2),
+                11 => new CardType(6),
+                12 => new CardType(7, crosses: 4),
+                13 => new CardType(7, crosses: 1),
+                14 => new CardType(8, crosses: 5),
+                15 => new CardType(8),
+                16 => new CardType(9),
+            ],
+        ];
+
+        self::$FLOWER_POWER_CARDS = [
+            12 => [ // Blue and Green
+                1 => new CardType(8, spiralsPerFacedownCard: 1, crosses: 1),
+                2 => new CardType(2, spirals: 6, crosses: -3),
+            ],
+            13 => [ // Blue and Yellow
+                1 => new CardType(5, spiralsPerFacedownCard: 2),
+                2 => new CardType(1, spirals: 7, crosses: -4),
+                3 => new CardType(8, spirals: 1, crosses: -4),
+            ],
+            14 => [ // Blue and Red
+                1 => new CardType(2, spiralsPerFacedownCard: 3, crosses: 1),
+                2 => new CardType(7, spirals: 2, crosses: -2),
+            ],
+            23 => [ // Green and Yellow
+                1 => new CardType(1, spiralsPerFacedownCard: 3),
+                2 => new CardType(9, crosses: -1),
+            ],
+            24 => [ // Green and Red
+                1 => new CardType(5, spiralsPerFacedownCard: 2, crosses: 1),
+                2 => new CardType(3, spirals: 5, crosses: -1),
+                3 => new CardType(6, spirals: 3, crosses: -3),
+            ],
+            34 => [ // Yellow and Red
+                1 => new CardType(9, spiralsPerFacedownCard: 1, crosses: 2),
+                2 => new CardType(4, spirals: 4, crosses: -2),
+            ],
+        ];
+
+        self::$LITTLE_GIANTS_CARDS = [
+            0 => [ // all colors
+                107 => new CardType(columnEffect: 7),
+                114 => new CardType(rowEffect: 7),
+            ],
+            1 => [ // blue
+                104 => new CardType(columnEffect: 4),
+                110 => new CardType(rowEffect: 3),
+                111 => new CardType(rowEffect: 4),
+            ],
+            2 => [ // green
+                101 => new CardType(columnEffect: 1),
+                102 => new CardType(columnEffect: 2),
+                113 => new CardType(rowEffect: 6),
+            ],
+            3 => [ // yellow
+                103 => new CardType(columnEffect: 3),
+                108 => new CardType(rowEffect: 1),
+                109 => new CardType(rowEffect: 2),
+            ],
+            4 => [ // red
+                105 => new CardType(columnEffect: 5),
+                106 => new CardType(columnEffect: 6),
+                112 => new CardType(rowEffect: 5),
+            ],
+        ];
+
         $this->cards = $game->bga->itemManagerFactory->createItemManager(
             Card::class,
             locations: [
@@ -33,20 +181,27 @@ class CardManager
         $this->cards->initDb();
     }
 
-    /*public function setup(): void
+    public function setup(): void
     {
-        $cards = [];
-        foreach ($this->game->card_types['suites'] as $suit => $suitInfo) {
-            foreach ($this->game->card_types['types'] as $value => $valueInfo) {
-                $cards[] = [
-                    'location' => 'deck',
-                    'suit' => $suit,
-                    'value' => $value,
-                ];
+
+        $cardsToGenerate = [];
+        $CARDS = self::$CARDS;
+        if ($this->game->isFlowerPowerExpansion()) {
+            $CARDS += self::$FLOWER_POWER_CARDS;
+        }
+        if ($this->game->isLittleGiantsExpansion()) {
+            for ($i = 0; $i <= 4; $i++) {
+                $CARDS[$i] += self::$LITTLE_GIANTS_CARDS[$i];
+            }            
+        }
+        foreach ($CARDS as $type => $cardsTypes) {
+            foreach ($cardsTypes as $index => $cardType) {
+                $cardsToGenerate[] = [ 'location' => 'deck', 'type' => $type, 'index' => $index ];
             }
         }
-        $this->cards->createItems($cards);
-    }*/
+        $this->cards->createItems($cardsToGenerate);
+        $this->cards->shuffle(['deck']);
+    }
 
     /** @return Collection<Card> */
     public function getTableCards(): Collection
@@ -260,7 +415,7 @@ class CardManager
     /**
      * @param array<string,?Card> $validatedCards
      */
-    function getColorZoneSize(array $validatedCards, Coalition $coalition, int $currentRow, int $currentColumn): void {
+    private function getColorZoneSize(array $validatedCards, Coalition $coalition, int $currentRow, int $currentColumn): void {
         // we check we don't count twice the same space
         if (array_search([$currentRow, $currentColumn], $coalition->alreadyCounted) !== false) {
             return;
@@ -290,10 +445,19 @@ class CardManager
         }
     }
 
-    function getPlayerCardCount(int $playerId): int {
+    public function getPlayerCardCount(int $playerId): int {
         $playerCards = $this->getCardsFromSpaces($playerId);
         $playerCardCount = array_reduce(array_map(fn($cards) => count($cards) > 0 ? 1 : 0, $playerCards), fn($a, $b) => $a + $b, 0);
 
         return $playerCardCount;
+    }
+    
+    public function playCard(int $playerId, Card $card, int $row, int $column): void {
+        $count = count($this->getCardsFromSpace($playerId, $row, $column));
+        $card->location = "player-$playerId-".Game::getValueFromRowColumn($row, $column);
+        $card->locationArg = $count;
+        $this->cards->moveItem($card->id, [$card->location, $card->locationArg]);
+        $card->row = $row;
+        $card->column = $column;
     }
 }

@@ -24,7 +24,7 @@ class EndTurn extends GameState
     {
         $this->bga->tableStats->inc('turnsNumber', 1);
 
-        if (intval($this->game->cards->countCardInLocation('deck')) < $this->game->getPlayerCount()) {
+        if ($this->game->cardManager->getRemainingCardsInDeck() < $this->game->getPlayerCount()) {
             $this->notify->all('log', clienttranslate('The deck is empty, so the round must end'), []);
             $this->game->setGameStateValue((string)\LAST_TURN, 1);
         }

@@ -24,7 +24,7 @@ class NextPlayer extends GameState
     {
         $this->game->giveExtraTime($activePlayerId);
 
-        $tableCount = intval($this->game->cards->countCardInLocation('table'));
+        $tableCount = $this->game->cardManager->getTableCards()->count();
         $endTurn = $tableCount === 0;
 
         $playersIds = $this->game->getPlayersIds();

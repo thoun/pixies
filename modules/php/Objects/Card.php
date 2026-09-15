@@ -6,6 +6,7 @@ namespace Bga\Games\Pixies\Objects;
 use Bga\GameFramework\Components\ItemManager\Item;
 use Bga\GameFramework\Components\ItemManager\ItemField;
 use Bga\GameFramework\Components\ItemManager\ItemFieldKind;
+use Bga\Games\Pixies\CardManager;
 use Bga\Games\Pixies\Game;
 
 #[Item('card')]
@@ -50,9 +51,9 @@ class Card extends CardType
     }
 
     public function setup(array $dbCard) {
-        $CARDS_TYPE = Game::$CARDS + Game::$FLOWER_POWER_CARDS;
+        $CARDS_TYPE = CardManager::$CARDS + CardManager::$FLOWER_POWER_CARDS;
         for ($i = 0; $i <= 4; $i++) {
-            $CARDS_TYPE[$i] += Game::$LITTLE_GIANTS_CARDS[$i];
+            $CARDS_TYPE[$i] += CardManager::$LITTLE_GIANTS_CARDS[$i];
         }  
 
 

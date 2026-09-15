@@ -36,10 +36,6 @@ class Game extends \Bga\GameFramework\Table {
 
     public CardManager $cardManager;
 
-    public static array $CARDS = [];
-    public static array $FLOWER_POWER_CARDS = [];
-    public static array $LITTLE_GIANTS_CARDS = [];
-
 	function __construct() {
         // Your global variables labels:
         //  Here, you can assign labels to global variables you are using for this game.
@@ -48,8 +44,6 @@ class Game extends \Bga\GameFramework\Table {
         //  the corresponding ID in gameoptions.inc.php.
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
-
-        include 'material.inc.php';
         
         $this->initGameStateLabels([
             LAST_TURN => LAST_TURN,
@@ -92,20 +86,15 @@ class Game extends \Bga\GameFramework\Table {
         
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
-        $this->initStat('table', 'roundNumber', 0); 
-        $this->initStat('table', 'turnsNumber', 0);
-        foreach(['table', 'player'] as $statType) {
-            foreach([
-                'cardPlayedEmptySpaceVisible', 'cardPlayedEmptySpaceHidden', 'validatedCard', 
-                'pointsValidatedCard', 'pointsSpirals', 'pointsLostCrosses', 'pointsColorZone', 'pointsFacedownCards',
-            ] as $statName) {
-                $this->initStat($statType, $statName, 0);
-            }
-        }
+        $this->bga->tableStats->init(['roundNumber', 'turnsNumber'], 0); 
+        $this->bga->playerStats->init([
+            'cardPlayedEmptySpaceVisible', 'cardPlayedEmptySpaceHidden', 'validatedCard', 
+            'pointsValidatedCard', 'pointsSpirals', 'pointsLostCrosses', 'pointsColorZone', 'pointsFacedownCards',
+        ], 0, updateTableStat: true);
 
         $this->cardManager->initDb();
         // setup the initial game situation here
-        $this->setupCards();
+        $this->cardManager->setup();
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
@@ -176,18 +165,6 @@ class Game extends \Bga\GameFramework\Table {
 
         return ($roundNumber - 1 + $inRoundProgress) * 100 / 3;
     }
-   
-    function argPlayCard(int $activePlayerId) {
-        $card = $this->cardManager->getSelectedCard();
-        $playerCards = $this->cardManager->getCardsFromSpaces($activePlayerId);
-
-        $spaces = $this->cardManager->getPossibleSpacesForCard($playerCards, $card);
-    
-        return [
-            'selectedCard' => $card,
-            'spaces' => $spaces,
-        ];
-    }
 
     public function actChooseCard(int $id, int $activePlayerId): string { 
         $card = $this->cardManager->getTableCards()->find(fn($c) => $c->id === $id);
@@ -215,39 +192,6 @@ class Game extends \Bga\GameFramework\Table {
         } else  {
             return PlayCard::class;
         }
-    }
-
-    public function applyPlayCard(int $playerId, int $row, int $column) {
-        $card = $this->cardManager->getSelectedCard();
-        $space = Game::getValueFromRowColumn($row, $column);
-
-        $count = intval($this->cards->countCardInLocation("player-$playerId-$space"));
-        $this->cards->moveCard($card->id, "player-$playerId-$space", $count);
-        $card->locationArg = $count;
-        $card->row = $row;
-        $card->column = $column;
-
-        $statName = $space == $card->value ? 'cardPlayedEmptySpaceVisible' : 'cardPlayedEmptySpaceHidden';
-        $this->playerStats->inc($statName, 1, $playerId, updateTableStat: true);
-
-        $this->bga->notify->all('playCard', clienttranslate('${player_name} plays a ${color} card on space ${value}'), [
-            'playerId' => $playerId,
-            'card' => $space == $card->value ? $card : Card::onlyId($card),
-            'space' => $space,
-            'row' => $row,
-            'column' => $column,
-            'visibleCard' => $card, // only used for logs
-        ]);
-
-        if (!boolval($this->getGameStateValue((string)\LAST_TURN)) && $this->cardManager->getPlayerCardCount($playerId) >= 9) {
-            $this->setGameStateValue((string)\LAST_TURN, 1);
-
-            $this->notify->all('lastTurn', clienttranslate('${player_name} has filled all 9 of their spaces, triggering the end of the round!'), [
-                'playerId' => $playerId,
-            ]);
-        }
-
-        $this->gamestate->jumpToState(NextPlayer::class);
     }
 
     function setGlobalVariable(string $name, mixed $obj) {
@@ -286,26 +230,6 @@ class Game extends \Bga\GameFramework\Table {
 
     function isLittleGiantsExpansion(): bool {
         return $this->tableOptions->get(102) === 1;
-    }
-
-    function setupCards() {
-        $cardsToGenerate = [];
-        $CARDS = self::$CARDS;
-        if ($this->isFlowerPowerExpansion()) {
-            $CARDS += self::$FLOWER_POWER_CARDS;
-        }
-        if ($this->isLittleGiantsExpansion()) {
-            for ($i = 0; $i <= 4; $i++) {
-                $CARDS[$i] += self::$LITTLE_GIANTS_CARDS[$i];
-            }            
-        }
-        foreach ($CARDS as $type => $cardsTypes) {
-            foreach ($cardsTypes as $index => $cardType) {
-                $cardsToGenerate[] = [ 'type' => $type, 'type_arg' => $index, 'nbr' => 1 ];
-            }
-        }
-        $this->cards->createCards($cardsToGenerate, 'deck');
-        $this->cards->shuffle('deck');
     }
 
     function getPlayerScore(int $playerId) {

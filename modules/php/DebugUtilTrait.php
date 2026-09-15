@@ -28,35 +28,17 @@ trait DebugUtilTrait {
       $this->DbQuery("UPDATE card SET card_type = $type, card_type_arg = $typeArg WHERE card_id = $id" );
     }
 
-    function d() {
-        $this->debug_setCard(2343492, 4, 2);
-        $this->debug_setCard(2343492, 3, 2);
-        $this->debug_setCard(2343492, 3, 4);
-        $this->debug_setCard(2343492, 4, 5);
-        $this->debug_setCard(2343492, 3, 10);
-        $this->debug_setCard(2343492, 3, 12);
-        $this->debug_setCard(2343492, 1, 14);
-        $this->debug_setCard(2343492, 3, 16);
-
-        $card7 = $this->debugGetCardByTypes(3, 14);
-        $this->cards->moveCard($card7->id, 'table');
-    }
-
-    private function debugGetCardByTypes(int $color, int $index) {
-        return $this->getCardsFromDb($this->cards->getCardsOfType($color, $index))[0];
-    }
-
-    private function debug_setCard(int $playerId, int $color, int $index, ?int $space = null, ?int $locationArg = null) {
+    /*private function debug_setCard(int $playerId, int $color, int $index, ?int $space = null, ?int $locationArg = null) {
         $card = $this->debugGetCardByTypes($color, $index);
         if ($space === null) {
             $space = $card->value;
         }
         $location = "player-$playerId-$space";
         if ($locationArg === null) {
-            $locationArg = intval($this->cards->countCardInLocation("player-$playerId-$space"));
+            $locationArg = count($this->cardManager->getCardsFromSpace($playerId, $row, $column));
         }        
         $this->cards->moveCard($card->id, $location, $locationArg);
-    }
+    }*/
 
     function debug_emptyDeck() {
       $this->cards->moveAllCardsInLocation('deck', 'void');

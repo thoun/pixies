@@ -30,14 +30,22 @@ class PlayCard extends GameState
 
     public function getArgs(int $activePlayerId): array
     {
-        return $this->game->argPlayCard($activePlayerId);
+        $card = $this->game->cardManager->getSelectedCard();
+        $playerCards = $this->game->cardManager->getCardsFromSpaces($activePlayerId);
+
+        $spaces = $this->game->cardManager->getPossibleSpacesForCard($playerCards, $card);
+    
+        return [
+            'selectedCard' => $card,
+            'spaces' => $spaces,
+        ];
     }
 
     public function onEnteringState(int $activePlayerId) {
         if ($this->bga->userPreferences->get($activePlayerId, 201) !== 1) {
             return; // no autoplace
         }
-        $args = $this->game->argPlayCard($activePlayerId);
+        $args = $this->getArgs($activePlayerId);
         if (count($args['spaces']) !== 1) {
             return; // more than one space available
         }
@@ -58,7 +66,7 @@ class PlayCard extends GameState
             throw new UserException('Invalid space');
         }
 
-        $this->game->applyPlayCard($activePlayerId, $row, $column);
+        $this->applyPlayCard($activePlayerId, $row, $column);
     }
 
     #[PossibleAction]
@@ -97,7 +105,7 @@ class PlayCard extends GameState
         $zombieChoiceSplit = explode('-', $zombieChoice);
         $row = intval($zombieChoiceSplit[0]);
         $column = intval($zombieChoiceSplit[1]);
-        $this->game->applyPlayCard($playerId, $row, $column);
+        $this->applyPlayCard($playerId, $row, $column);
     }
 
     /**
@@ -115,5 +123,34 @@ class PlayCard extends GameState
         $playerCards[$row.'-'.$column] = array_merge($playerCards[$row.'-'.$column], [$card]);
 
         return $game->cardManager->getDetailledScore($playerCards, $roundNumber, $isFlowerPowerExpansion)->points;
+    }
+
+    private function applyPlayCard(int $playerId, int $row, int $column) {
+        $card = $this->game->cardManager->getSelectedCard();
+        $space = Game::getValueFromRowColumn($row, $column);
+
+        $this->game->cardManager->playCard($playerId, $card, $row, $column);
+
+        $statName = $space == $card->value ? 'cardPlayedEmptySpaceVisible' : 'cardPlayedEmptySpaceHidden';
+        $this->playerStats->inc($statName, 1, $playerId, updateTableStat: true);
+
+        $this->bga->notify->all('playCard', clienttranslate('${player_name} plays a ${color} card on space ${value}'), [
+            'playerId' => $playerId,
+            'card' => $space == $card->value ? $card : Card::onlyId($card),
+            'space' => $space,
+            'row' => $row,
+            'column' => $column,
+            'visibleCard' => $card, // only used for logs
+        ]);
+
+        if (!boolval($this->game->getGameStateValue((string)\LAST_TURN)) && $this->game->cardManager->getPlayerCardCount($playerId) >= 9) {
+            $this->game->setGameStateValue((string)\LAST_TURN, 1);
+
+            $this->notify->all('lastTurn', clienttranslate('${player_name} has filled all 9 of their spaces, triggering the end of the round!'), [
+                'playerId' => $playerId,
+            ]);
+        }
+
+        $this->gamestate->jumpToState(NextPlayer::class);
     }
 }
