@@ -114,12 +114,7 @@ class KeepCard extends GameState
 
         $hiddenCard = $index == 0 ? $card : $spaceCard;
         $visibleCard = $index == 1 ? $card : $spaceCard;
-
-        $hiddenCard->locationArg = 0;
-        $visibleCard->locationArg = 1;
-
-        $this->game->cards->moveCard($hiddenCard->id, "player-$playerId-$space", $hiddenCard->locationArg);
-        $this->game->cards->moveCard($visibleCard->id, "player-$playerId-$space", $visibleCard->locationArg);
+        $this->game->cardManager->keepCard($playerId, $hiddenCard, $visibleCard, $row, $column);
 
         $this->notify->all('keepCard', clienttranslate('${player_name} keeps the ${color} card on space ${value}'), [
             'playerId' => $playerId,

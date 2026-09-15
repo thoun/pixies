@@ -459,5 +459,28 @@ class CardManager
         $this->cards->moveItem($card->id, [$card->location, $card->locationArg]);
         $card->row = $row;
         $card->column = $column;
+        $this->cards->updateItem($card, ['row', 'column']);
+    }
+    
+    public function keepCard(int $playerId, Card $hiddenCard, Card $visibleCard, int $row, int $column): void {
+        $location = "player-$playerId-".Game::getValueFromRowColumn($row, $column);
+        $hiddenCard->location = $location;
+        $hiddenCard->locationArg = 0;
+        $hiddenCard->row = $row;
+        $hiddenCard->column = $column;
+        $visibleCard->location = $location;
+        $visibleCard->locationArg = 1;
+        $visibleCard->row = $row;
+        $visibleCard->column = $column;
+
+        $this->cards->moveItem($hiddenCard->id, [$hiddenCard->location, $hiddenCard->locationArg]);
+        $this->cards->moveItem($visibleCard->id, [$visibleCard->location, $visibleCard->locationArg]);
+        $this->cards->updateItem($hiddenCard, ['row', 'column']);
+        $this->cards->updateItem($visibleCard, ['row', 'column']);
+    }
+
+    public function reshuffleAllCardsToDeck() {
+        $this->cards->moveAllItemsInLocation(null, ['deck']);
+        $this->cards->shuffle(['deck']);
     }
 }

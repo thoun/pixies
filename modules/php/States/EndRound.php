@@ -28,8 +28,7 @@ class EndRound extends GameState
             return EndScore::class;
         }
 
-        $this->game->cards->moveAllCardsInLocation(null, 'deck');
-        $this->game->cards->shuffle('deck');
+        $this->game->cardManager->reshuffleAllCardsToDeck();
 
         $this->bga->notify->all('endRound', '', [
             'remainingCardsInDeck' => $this->game->cardManager->getRemainingCardsInDeck(),

@@ -25,14 +25,11 @@ use Bga\Games\Pixies\States\KeepCard;
 use Bga\Games\Pixies\States\NewRound;
 use Bga\Games\Pixies\States\PlayCard;
 use Bga\Games\Pixies\States\ChooseCard;
-use Bga\Games\Pixies\States\NextPlayer;
 
 require_once('constants.inc.php');
 
 class Game extends \Bga\GameFramework\Table {
     use DebugUtilTrait;
-
-    public \Bga\GameFramework\Components\Deck $cards;
 
     public CardManager $cardManager;
 
@@ -50,7 +47,6 @@ class Game extends \Bga\GameFramework\Table {
         ]);  
 
         $this->cardManager = new CardManager($this);
-        $this->cards = $this->deckFactory->createDeck("card");
 	}
 
     /*
