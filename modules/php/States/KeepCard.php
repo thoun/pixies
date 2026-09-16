@@ -30,7 +30,7 @@ class KeepCard extends GameState
     {
         $card = $this->game->cardManager->getSelectedCard();
         [$row, $column] = Game::getRowColumnFromValue($card->value);
-        $spaceCards = $this->game->cardManager->getCardsFromSpace($activePlayerId, $row, $column);
+        $spaceCards = $this->game->cardManager->getCardsFromSpaces($activePlayerId)[$row.'-'.$column];
 
         return [
             'selectedCard' => $card,
@@ -64,11 +64,11 @@ class KeepCard extends GameState
     {
         $roundNumber = $this->bga->tableStats->get('roundNumber');
         $isFlowerPowerExpansion = $this->game->isFlowerPowerExpansion();
-        $playerCards = $this->game->cardManager->getCardsFromSpaces($playerId);
+        $playerCards = $this->game->cardManager->getPlayerCards($playerId);
         $card = $this->game->cardManager->getSelectedCard();
 
         $possibleAnswerPoints = array_map(
-            fn($choice) => self::getPointsFromZombieChoice(
+            fn($choice) => $this->game->cardManager->getPointsFromZombieKeepCardChoice(
                 $this->game,
                 $playerCards,
                 $roundNumber,
@@ -86,31 +86,11 @@ class KeepCard extends GameState
         $this->applyKeepCard($playerId, $zombieChoice);
     }
 
-    /**
-     * @param array<string,Card[]> $playerCards
-     */    
-    public static function getPointsFromZombieChoice(
-        Game $game,
-        array $playerCards,
-        int $roundNumber,
-        bool $isFlowerPowerExpansion,
-        Card $card,
-        int $choice, // 0|1
-    ): int {
-        [$row, $column] = Game::getRowColumnFromValue($card->value);
-        $coordinate = $row.'-'.$column;
-        $playerCards[$coordinate] = $choice === 0
-            ? [Card::onlyId($card), $playerCards[$coordinate][0]]
-            : [Card::onlyId($playerCards[$coordinate][0]), $card];
-
-        return $game->cardManager->getDetailledScore($playerCards, $roundNumber, $isFlowerPowerExpansion)->points;
-    }
-
     public function applyKeepCard(int $playerId, int $index) {
         $card = $this->game->cardManager->getSelectedCard();
         $space = $card->value;
         [$row, $column] = Game::getRowColumnFromValue($space);
-        $spaceCard = $this->game->cardManager->getCardsFromSpace($playerId, $row, $column)[0];
+        $spaceCard = $this->game->cardManager->getCardsFromSpaces($playerId)[$row.'-'.$column][0];
 
         $hiddenCard = $index == 0 ? $card : $spaceCard;
         $visibleCard = $index == 1 ? $card : $spaceCard;

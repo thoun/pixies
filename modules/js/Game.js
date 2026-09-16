@@ -13,7 +13,7 @@ class CardsManager extends BgaCards.CardManager {
                 div.dataset.cardId = '' + card.id;
             },
             setupFrontDiv: (card, div) => this.setupFrontDiv(card, div),
-            isCardVisible: card => Boolean(card.index),
+            isCardVisible: card => Boolean(card.index) && !card.flipped,
             animationManager: game.animationManager,
             cardWidth: 149,
             cardHeight: 208,
@@ -200,16 +200,26 @@ class PlayerTable {
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
         let html = `
-        <div id="player-table-${this.playerId}" class="player-table" style="border-color: #${player.color};">
+        <div id="player-table-${this.playerId}" class="player-table" style="border-color: #${player.color}; --grid-size: ${this.game.gamedatas.littleGiantsExpansion ? 4 : 3};">
             <div class="name-wrapper">
                 <span class="name" style="color: #${player.color};" data-color="${player.color}">${player.name}</span>
             </div>
             <div id="player-table-${this.playerId}-cards" class="player-cards">`;
-        for (let row = 1; row <= 3; row++) {
-            for (let column = 1; column <= 3; column++) {
-                const value = (row - 1) * 3 + column;
+        const min = this.game.gamedatas.littleGiantsExpansion ? 0 : 1;
+        for (let row = min; row <= 3; row++) {
+            for (let column = min; column <= 3; column++) {
+                let value = `${(row - 1) * 3 + column}`;
+                if (row === 0 && column === 0) {
+                    value = '';
+                }
+                else if (row === 0) {
+                    value = '🠷';
+                }
+                else if (column === 0) {
+                    value = '🠶';
+                }
                 html += `
-                    <div id="player-table-${this.playerId}-cards-${row}-${column}" class="space" style="--value: '${value}';"></div>`;
+                    <div id="player-table-${this.playerId}-cards-${row}-${column}" class="${row === 0 && column === 0 ? '' : 'space'}" style="--value: '${value}';"></div>`;
             }
         }
         html += `
@@ -221,9 +231,11 @@ class PlayerTable {
             slotsIds: [0, 1],
             mapCardToSlot: card => card.locationArg,
         };
-        for (let row = 1; row <= 3; row++) {
-            for (let column = 1; column <= 3; column++) {
-                const value = (row - 1) * 3 + column;
+        for (let row = min; row <= 3; row++) {
+            for (let column = min; column <= 3; column++) {
+                if (row === 0 && column === 0) {
+                    continue;
+                }
                 const spaceDiv = document.getElementById(`player-table-${this.playerId}-cards-${row}-${column}`);
                 spaceDiv.addEventListener('click', () => {
                     if (spaceDiv.classList.contains('selectable')) {
@@ -231,14 +243,18 @@ class PlayerTable {
                     }
                 });
                 this.tableCards[`${row}-${column}`] = new BgaCards.SlotStock /*<Card>*/(this.game.cardsManager, spaceDiv, stockSettings);
-                this.tableCards[`${row}-${column}`].addCards(player.cards[`${row}-${column}`]);
+                this.tableCards[`${row}-${column}`].addCards(player.cards.filter(card => card.row === row && card.column === column));
             }
         }
     }
     getAllCards() {
         const cards = [];
-        for (let row = 1; row <= 3; row++) {
-            for (let column = 1; column <= 3; column++) {
+        const min = this.game.gamedatas.littleGiantsExpansion ? 0 : 1;
+        for (let row = min; row <= 3; row++) {
+            for (let column = min; column <= 3; column++) {
+                if (row === 0 && column === 0) {
+                    continue;
+                }
                 cards.push(...this.tableCards[`${row}-${column}`].getCards());
             }
         }
@@ -260,8 +276,12 @@ class PlayerTable {
         ]);
     }
     setSelectableSpaces(spaces) {
-        for (let row = 1; row <= 3; row++) {
-            for (let column = 1; column <= 3; column++) {
+        const min = this.game.gamedatas.littleGiantsExpansion ? 0 : 1;
+        for (let row = min; row <= 3; row++) {
+            for (let column = min; column <= 3; column++) {
+                if (row === 0 && column === 0) {
+                    continue;
+                }
                 document.getElementById(`player-table-${this.playerId}-cards-${row}-${column}`).classList.toggle('selectable', spaces.includes(`${row}-${column}`));
             }
         }

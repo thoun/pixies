@@ -50,7 +50,7 @@ class ChooseCard extends GameState
     {
         $roundNumber = $this->bga->tableStats->get('roundNumber');
         $isFlowerPowerExpansion = $this->game->isFlowerPowerExpansion();
-        $playerCards = $this->game->cardManager->getCardsFromSpaces($playerId);
+        $playerCards = $this->game->cardManager->getPlayerCards($playerId);
         $tableCards = $this->game->cardManager->getTableCards();
 
         $possibleAnswerPoints = [];
@@ -71,30 +71,32 @@ class ChooseCard extends GameState
     }
 
     /**
-     * @param array<string,Card[]> $playerCards
+     * @param Collection<Card> $playerCards
      */    
     private function getPointsFromChoice(
-        array $playerCards,
+        Collection $playerCards,
         int $roundNumber,
         bool $isFlowerPowerExpansion,
         Card $card,
     ): int {
-        [$row, $column] = Game::getRowColumnFromValue($card->value);
-        $coordinate = $row.'-'.$column;
-        if (count($playerCards[$coordinate]) === 1 && $playerCards[$coordinate][0]->value === $card->value) {
-            $possibleAnswerPoints = array_map(
-                fn($choice) => KeepCard::getPointsFromZombieChoice(
-                    $this->game,
-                    $playerCards,
-                    $roundNumber,
-                    $isFlowerPowerExpansion,
-                    $card,
-                    $choice,
-                ),
-                [0, 1],
-            );
+        if ($card->value !== null) {
+            [$row, $column] = Game::getRowColumnFromValue($card->value);
+            $spaceCards = $playerCards->filter(fn($c) => $c->row === $row && $c->column === $column);
+            if ($spaceCards->count() === 1 && $spaceCards->first()->value === $card->value) {
+                $possibleAnswerPoints = array_map(
+                    fn($choice) => $this->game->cardManager->getPointsFromZombieKeepCardChoice(
+                        $this->game,
+                        $playerCards,
+                        $roundNumber,
+                        $isFlowerPowerExpansion,
+                        $card,
+                        $choice,
+                    ),
+                    [0, 1],
+                );
 
-            return max($possibleAnswerPoints);
+                return max($possibleAnswerPoints);
+            }
         }
 
         $possibleSpaces = $this->game->cardManager->getPossibleSpacesForCard($playerCards, $card);
@@ -114,6 +116,6 @@ class ChooseCard extends GameState
             );
         }
 
-        return max($possibleAnswerPoints);
+        return count($possibleAnswerPoints) ? max($possibleAnswerPoints) : -1;
     }
 }

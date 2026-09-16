@@ -19,6 +19,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\Pixies;
 
+use Bga\GameFramework\Table;
 use Bga\GameFramework\UserException;
 use Bga\Games\Pixies\Objects\Card;
 use Bga\Games\Pixies\States\KeepCard;
@@ -119,7 +120,7 @@ class Game extends \Bga\GameFramework\Table {
 
         foreach($result['players'] as $playerId => &$player) {
             $player['playerNo'] = intval($player['playerNo']);
-            $player['cards'] = $this->cardManager->getCardsFromSpaces($playerId);
+            $player['cards'] = $this->cardManager->getPlayerCards($playerId)->values();
         }
 
         $result['remainingCardsInDeck'] = $this->cardManager->getRemainingCardsInDeck();
@@ -181,8 +182,12 @@ class Game extends \Bga\GameFramework\Table {
     function applyChooseCard(int $playerId, Card $card): string {
         $this->setGlobalVariable(SELECTED_CARD_ID, $card->id);
 
+        if (!$card->value) {
+            return PlayCard::class;
+        }
+
         [$row, $column] = Game::getRowColumnFromValue($card->value);
-        $spaceCards = $this->cardManager->getCardsFromSpace($playerId, $row, $column);
+        $spaceCards = $this->cardManager->getCardsFromSpaces($playerId)[$row.'-'.$column];
 
         if (count($spaceCards) == 1 && $spaceCards[0]->value == $card->value) {
             return KeepCard::class;
@@ -226,7 +231,7 @@ class Game extends \Bga\GameFramework\Table {
     }
 
     function isLittleGiantsExpansion(): bool {
-        return $this->tableOptions->get(102) === 1;
+        return $this->tableOptions->get(102) === 1 /*|| Table::getBgaEnvironment() === 'studio'*/;
     }
 
     function getPlayerScore(int $playerId) {
@@ -328,8 +333,11 @@ class Game extends \Bga\GameFramework\Table {
         }
         
         if ($from_version <= 2609151200) {
-            $this->cardManager->cards->upgradeTableDbAddColumns(['row']);
-            $this->cardManager->cards->upgradeTableDbAddColumns(['column']);
+            $this->cardManager->cards->upgradeTableDbAddColumns(['row', 'column']);
+        }
+        
+        if ($from_version <= 2609151232) {
+            $this->cardManager->cards->upgradeTableDbAddColumns(['flipped']);
         }
     }    
 }

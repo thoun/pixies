@@ -12,8 +12,6 @@ use Bga\GameFramework\UserException;
 use Bga\Games\Pixies\Game;
 use Bga\Games\Pixies\Objects\Card;
 
-use function Bga\Games\Pixies\debug;
-
 class PlayCard extends GameState
 {
     public function __construct(protected Game $game)
@@ -31,7 +29,7 @@ class PlayCard extends GameState
     public function getArgs(int $activePlayerId): array
     {
         $card = $this->game->cardManager->getSelectedCard();
-        $playerCards = $this->game->cardManager->getCardsFromSpaces($activePlayerId);
+        $playerCards = $this->game->cardManager->getPlayerCards($activePlayerId);
 
         $spaces = $this->game->cardManager->getPossibleSpacesForCard($playerCards, $card);
     
@@ -79,7 +77,7 @@ class PlayCard extends GameState
     {
         $roundNumber = $this->bga->tableStats->get('roundNumber');
         $isFlowerPowerExpansion = $this->game->isFlowerPowerExpansion();
-        $playerCards = $this->game->cardManager->getCardsFromSpaces($playerId);
+        $playerCards = $this->game->cardManager->getPlayerCards($playerId);
         $card = $this->game->cardManager->getSelectedCard();
         $possibleSpaces = $this->game->cardManager->getPossibleSpacesForCard($playerCards, $card);
 
@@ -109,34 +107,43 @@ class PlayCard extends GameState
     }
 
     /**
-     * @param array<string,Card[]> $playerCards
+     * @param Collection<Card> $playerCards
      */
     public static function getPointsFromZombieChoice(
         Game $game,
-        array $playerCards,
+        Collection $playerCards,
         int $roundNumber,
         bool $isFlowerPowerExpansion,
         Card $card,
         int $row,
         int $column,
     ): int {
-        $playerCards[$row.'-'.$column] = array_merge($playerCards[$row.'-'.$column], [$card]);
-
-        return $game->cardManager->getDetailledScore($playerCards, $roundNumber, $isFlowerPowerExpansion)->points;
+        $placedCard = clone $card;
+        $placedCard->row = $row;
+        $placedCard->column = $column;
+        return $game->cardManager->getDetailledScore($playerCards->add($placedCard), $roundNumber, $isFlowerPowerExpansion)->points;
     }
 
     private function applyPlayCard(int $playerId, int $row, int $column) {
         $card = $this->game->cardManager->getSelectedCard();
-        $space = Game::getValueFromRowColumn($row, $column);
 
         $this->game->cardManager->playCard($playerId, $card, $row, $column);
 
-        $statName = $space == $card->value ? 'cardPlayedEmptySpaceVisible' : 'cardPlayedEmptySpaceHidden';
+        $space = Game::getValueFromRowColumn($row, $column);
+        $playedVisible = $card->value ? $space == $card->value : $card->row === 0 || $card->column === 0;
+        $statName = $playedVisible ? 'cardPlayedEmptySpaceVisible' : 'cardPlayedEmptySpaceHidden';
         $this->playerStats->inc($statName, 1, $playerId, updateTableStat: true);
 
-        $this->bga->notify->all('playCard', clienttranslate('${player_name} plays a ${color} card on space ${value}'), [
+        $message = clienttranslate('${player_name} plays a ${color} card on space ${value}');
+        if ($card->rowEffect) {
+            $message = clienttranslate('${player_name} plays a ${color} card on row ${row}');
+        } else if ($card->columnEffect) {
+            $message = clienttranslate('${player_name} plays a ${color} card on column ${column}');
+        }
+
+        $this->bga->notify->all('playCard', $message, [
             'playerId' => $playerId,
-            'card' => $space == $card->value ? $card : Card::onlyId($card),
+            'card' => $playedVisible ? $card : Card::onlyId($card),
             'space' => $space,
             'row' => $row,
             'column' => $column,

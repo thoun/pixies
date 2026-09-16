@@ -31,9 +31,12 @@ class Card extends CardType
     public int $index;
 
     #[ItemField]
-    public ?int $row;
+    public ?int $row = null;
     #[ItemField]
-    public ?int $column;
+    public ?int $column = null;
+
+    #[ItemField]
+    public ?bool $flipped = false;
 
     /** @var int[] */
     public array $colors;
@@ -49,6 +52,9 @@ class Card extends CardType
             'card_location_arg' => $card->locationArg,
             'card_type' => null
         ]);
+        $copy->row = $card->row;
+        $copy->column = $card->column;
+        $copy->flipped = true;
         return $copy;
     }
 
@@ -71,6 +77,8 @@ class Card extends CardType
             $this->spirals = $cardType->spirals;
             $this->crosses = $cardType->crosses;
             $this->spiralsPerFacedownCard = $cardType->spiralsPerFacedownCard;
+            $this->rowEffect = $cardType->rowEffect;
+            $this->columnEffect = $cardType->columnEffect;
             
             $this->colors = [$this->type];
             if ($this->type === 0) {
@@ -82,8 +90,14 @@ class Card extends CardType
             $this->value = null;
         }
 
-        $this->row = $this->getRow();
-        $this->column = $this->getColumn();
+        /*
+        if (!isset($this->row)) {
+            $this->row = $this->getRow();
+        }
+        if (!isset($this->column)) {
+            $this->column = $this->getColumn();
+        }
+        */
     }
     
     public function getRow(): ?int {

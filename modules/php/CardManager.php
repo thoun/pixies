@@ -7,6 +7,7 @@ namespace Bga\Games\Pixies;
 use Bga\GameFramework\Components\ItemManager\ItemLocation;
 use Bga\GameFramework\Components\ItemManager\ItemManager;
 use Bga\GameFramework\Helpers\Collection;
+use Bga\GameFramework\SystemException;
 use Bga\Games\Pixies\Objects\Card;
 use Bga\Games\Pixies\Objects\CardType;
 use Bga\Games\Pixies\Objects\Coalition;
@@ -209,6 +210,28 @@ class CardManager
         return $this->cards->getItemsInLocation(['table']);
     }
 
+    /** @return Collection<Card> */
+    public function getPlayerCards(int $playerId): Collection
+    {
+        $cards = $this->cards->getItemsInLocation(["player-$playerId-%"], sortByField: 'locationArg');
+        foreach ($cards as $id => $card) {
+            if ($card->locationArg === 0 && !$card->flipped) {
+                $hasCardOver = $cards->count(fn($c) => $c->row === $card->row && $c->column === $card->column && $c->locationArg > 0);
+                if ($hasCardOver) {
+                    $card->flipped = true;
+                } else if ($card->value !== null && $card->value !== Game::getValueFromRowColumn($card->row, $card->column)) {
+                    $card->flipped = true;
+                } else if ($card->value === null && ($card->row > 0 && $card->column > 0)) {
+                    $card->flipped = true;
+                }
+                if ($card->flipped) {
+                    $cards[$id] = Card::onlyId($card);
+                }
+            }
+        }
+        return $cards;
+    }
+
     public function getSelectedCard(): Card {
         return $this->cards->getItemById($this->game->getGlobalVariable(\SELECTED_CARD_ID));
     }
@@ -230,25 +253,21 @@ class CardManager
     }
 
     /**
-     * @return Card[]
-     */
-    public function getCardsFromSpace(int $playerId, int $row, int $column): array {
-        $value = Game::getValueFromRowColumn($row, $column);
-        return $this->cards->getItemsInLocation(["player-$playerId-$value"])->sort(fn($a, $b) => $a->locationArg <=> $b->locationArg)->values();
-    }
-
-    /**
      * @return array<string,Card[]>
      */    
     public function getCardsFromSpaces(int $playerId): array {
         $spaces = [];
 
-        for ($row = 1; $row <= 3; $row++) {
-            for ($column = 1; $column <= 3; $column++) {
+        $min = $this->game->isLittleGiantsExpansion() ? 0 : 1;
+        for ($row = $min; $row <= 3; $row++) {
+            for ($column = $min; $column <= 3; $column++) {
+                if ($row === 0 && $column === 0) {
+                    continue;
+                }
                 $coordinate = $row.'-'.$column;
-                $i = Game::getValueFromRowColumn($row, $column);
-                $spaces[$coordinate] = $this->getCardsFromSpace($playerId, $row, $column);
-                if (count($spaces[$coordinate]) == 2 || (count($spaces[$coordinate]) == 1 && $spaces[$coordinate][0]->value != $i)) {
+                $value = Game::getValueFromRowColumn($row, $column);
+                $spaces[$coordinate] = $this->cards->getItemsInLocation(["player-$playerId-$value"])->sort(fn($a, $b) => $a->locationArg <=> $b->locationArg)->values();
+                if (count($spaces[$coordinate]) == 2 || (count($spaces[$coordinate]) == 1 && $spaces[$coordinate][0]->value != $value)) {
                     $spaces[$coordinate][0] = Card::onlyId($spaces[$coordinate][0]);
                 }
             }
@@ -258,24 +277,46 @@ class CardManager
     }
 
     /**
-     * @param array<string,Card[]> $playerCards
+     * @param Collection<Card> $playerCards
      * @param Card $card
      * @return string[]
      */
-    public function getPossibleSpacesForCard(array $playerCards, Card $card): array {
-        [$cardRow, $cardColumn] = Game::getRowColumnFromValue($card->value);
-        $spaceCards = $playerCards[$cardRow.'-'.$cardColumn];
+    public function getPossibleSpacesForCard(Collection $playerCards, Card $card): array {
         $spaces = [];
-        if (count($spaceCards) < 2) {
-            // can play the card on the value
-            $spaces[] = $cardRow.'-'.$cardColumn;
-            return $spaces;
+        $playerCardsFlat = $playerCards->values();
+
+        if ($card->rowEffect !== null) {
+            for ($row = 1; $row <= 3; $row++) {
+                if (!array_any($playerCardsFlat, fn($c) => $c->column === 0 && $c->row === $row)) {
+                    $spaces[] = $row.'-0';
+                }
+            }
+            if (count($spaces) > 0) {
+                return $spaces;
+            }
+        } else if ($card->columnEffect !== null) {
+            for ($column = 1; $column <= 3; $column++) {
+                if (!array_any($playerCardsFlat, fn($c) => $c->row === 0 && $c->column === $column)) {
+                    $spaces[] = '0-'.$column;
+                }
+            }
+            if (count($spaces) > 0) {
+                return $spaces;
+            }
+        } else {
+            [$cardRow, $cardColumn] = Game::getRowColumnFromValue($card->value);
+            $spaceCards = $playerCards->filter(fn($c) => $c->row === $cardRow && $c->column === $cardColumn);
+            if (count($spaceCards) < 2) {
+                // can play the card on the value
+                $spaces[] = $cardRow.'-'.$cardColumn;
+                return $spaces;
+            }
         }
          
         // must place on any other empty spot
         for ($row = 1; $row <= 3; $row++) {
             for ($column = 1; $column <= 3; $column++) {
-                if ($card->value != Game::getValueFromRowColumn($row, $column) && count($playerCards[$row.'-'.$column]) == 0) {
+                if ($playerCards->count(fn($c) => $c->row === $row && $c->column === $column) == 0 && ($card->value === null || $card->value != Game::getValueFromRowColumn($row, $column))) {
                     $spaces[] = $row.'-'.$column;
                 }
             }
@@ -284,30 +325,55 @@ class CardManager
     }
 
     /**
-     * @param array<string,Card[]> $spaces
+     * @param Collection<Card> $playerCards
      */
-    private function countFacedownCards(array $spaces): int {
-        $result = 0;
+    public function getDetailledScore(Collection $playerCards, int $roundNumber, bool $isFlowerPowerExpansion): DetailledScore {
+        $detailledScore = new DetailledScore();
 
-        foreach ($spaces as $space) {
-            if (count($space) == 1 && $space[0]->value === null) {
-                $result++;
+        $facedownCardsCount = 0;
+        /** @var array<int,?Card> */
+        $validatedCards = [];
+        /** @var array<string,?Card> */
+        $visibleCards = [];
+        $min = $this->game->isLittleGiantsExpansion() ? 0 : 1;
+        for ($row = $min; $row <= 3; $row++) {
+            for ($column = $min; $column <= 3; $column++) {
+                if ($row === 0 && $column === 0) {
+                    continue;
+                }
+                $spaceCards = $playerCards->filter(fn($c) => $c->row === $row && $c->column === $column);
+                $visibleCards[$row.'-'.$column] = null;
+                if ($spaceCards->count() > 0) {
+                    $topCard = $spaceCards->last();
+
+                    if ($topCard->value) {
+                        if ($topCard->value === Game::getValueFromRowColumn($row, $column)) {
+                            $visibleCards[$row.'-'.$column] = $topCard;
+                        } else {
+                            if ($isFlowerPowerExpansion) {
+                                $facedownCardsCount++;
+                            }
+                        }
+                    } else { // row/column card
+                        if ($row === 0 || $column === 0) {
+                            $visibleCards[$row.'-'.$column] = $topCard;
+                        } else {
+                            if ($isFlowerPowerExpansion) {
+                                $facedownCardsCount++;
+                            }
+                        }
+                    }
+                }
+
+                if ($row > 0 && $column > 0) {
+                    $value = ($row-1) * 3 + $column;
+                    if ($spaceCards->count() >= 2) {
+                        $validatedCards[$value] = $spaceCards->last();
+                    }
+                }
             }
         }
-
-        return $result;
-    }
-
-    /**
-     * @param array<string,Card[]> $spaces
-     */
-    public function getDetailledScore(array $spaces, int $roundNumber, bool $isFlowerPowerExpansion): DetailledScore {
-        $detailledScore = new DetailledScore();
-        /** @var array<string,?Card> */
-        $validatedCards = array_map(fn($space) => count($space) == 2 ? $space[1] : null, $spaces);
-        /** @var array<string,?Card> */
-        $visibleCards = array_map(fn($space) => count($space) == 2 ? $space[1] : (count($space) == 1 && $space[0]->value !== null ? $space[0] : null), $spaces);
-        $facedownCardsCount = $isFlowerPowerExpansion ? $this->countFacedownCards($spaces) : 0;
+        
         $colorsCounts = [
             1 => 0,
             2 => 0,
@@ -329,10 +395,8 @@ class CardManager
         $detailledScore->largestColorZonePoints = 0;
         $facedownCardsPoints = $facedownCardsCount * 5;
 
-        foreach ($validatedCards as $coordinateStr => $card) {
+        foreach ($validatedCards as $value => $card) {
             if ($card) {
-                $coordinate = array_map(fn($n) => intval($n), explode('-', $coordinateStr));
-                $value = Game::getValueFromRowColumn($coordinate[0], $coordinate[1]);
                 $detailledScore->validatedCardPoints += $value;
             }
         }
@@ -390,9 +454,12 @@ class CardManager
     private function getLargestColorZone(array $visibleCards): int {
         $topCoalition = null;
 
-
-        for ($row = 1; $row <= 3; $row++) {
-            for ($column = 1; $column <= 3; $column++) {
+        $min = $this->game->isLittleGiantsExpansion() ? 0 : 1;
+        for ($row = $min; $row <= 3; $row++) {
+            for ($column = $min; $column <= 3; $column++) {
+                if ($row === 0 && $column === 0) {
+                    continue;
+                }
                 $cardInSpace = $visibleCards[$row.'-'.$column];
 
                 if ($cardInSpace) {
@@ -453,8 +520,14 @@ class CardManager
     }
     
     public function playCard(int $playerId, Card $card, int $row, int $column): void {
-        $count = count($this->getCardsFromSpace($playerId, $row, $column));
-        $card->location = "player-$playerId-".Game::getValueFromRowColumn($row, $column);
+        $count = count($this->getCardsFromSpaces($playerId)[$row.'-'.$column]);
+        $locationValue = Game::getValueFromRowColumn($row, $column);
+        if ($card->rowEffect) {
+            $locationValue = "row$row";
+        } else if ($card->columnEffect) {
+            $locationValue = "column$row";
+        }
+        $card->location = "player-$playerId-".$locationValue;
         $card->locationArg = $count;
         $this->cards->moveItem($card->id, [$card->location, $card->locationArg]);
         $card->row = $row;
@@ -482,5 +555,34 @@ class CardManager
     public function reshuffleAllCardsToDeck() {
         $this->cards->moveAllItemsInLocation(null, ['deck']);
         $this->cards->shuffle(['deck']);
+    }
+
+    /**
+     * @param Collection<Card> $playerCards
+     */    
+    public function getPointsFromZombieKeepCardChoice(
+        Game $game,
+        Collection $playerCards,
+        int $roundNumber,
+        bool $isFlowerPowerExpansion,
+        Card $card,
+        int $choice, // 0|1
+    ): int {
+        if ($card->value === null) {
+            throw new SystemException('Cannot choose to keep a little giant card over another card');
+        }
+        [$row, $column] = Game::getRowColumnFromValue($card->value);
+        $existingCard = $playerCards->find(fn($c) => $c->row === $row && $c->column === $column);
+        if ($existingCard->value === null) {
+            throw new SystemException('Cannot choose to keep a card over a little giant card');
+        }
+        $newCollection = $playerCards->filter(fn($c) => $c->id !== $existingCard->id);
+        if ($choice === 0) {
+            $newCollection = $newCollection->add(Card::onlyId($card))->add($existingCard);
+        } else {
+            $newCollection = $newCollection->add(Card::onlyId($existingCard))->add($card);
+        }
+
+        return $game->cardManager->getDetailledScore($playerCards, $roundNumber, $isFlowerPowerExpansion)->points;
     }
 }

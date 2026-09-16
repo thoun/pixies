@@ -11,7 +11,7 @@ export class CardsManager extends BgaCards.CardManager<Card> {
                 div.dataset.cardId = ''+card.id;
             },
             setupFrontDiv: (card: Card, div: HTMLElement) => this.setupFrontDiv(card, div),
-            isCardVisible: card => Boolean(card.index),
+            isCardVisible: card => Boolean(card.index) && !card.flipped,
             animationManager: game.animationManager,
             cardWidth: 149,
             cardHeight: 208,

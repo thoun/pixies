@@ -74,7 +74,7 @@ class BeforeEndRound extends GameState
         $isFlowerPowerExpansion = $this->game->isFlowerPowerExpansion();
 
         foreach ($playersIds as $playerId) {
-            $playerCards = $this->game->cardManager->getCardsFromSpaces($playerId);
+            $playerCards = $this->game->cardManager->getPlayerCards($playerId);
             $detailledScore = $this->game->cardManager->getDetailledScore($playerCards, $roundNumber, $isFlowerPowerExpansion);
             $result[$playerId] = $detailledScore;  
         

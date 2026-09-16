@@ -13,6 +13,7 @@ interface Card {
     crosses: number;
     row?: number;
     column?: number;
+    flipped?: boolean;
 }
 
 interface DetailledScore {
@@ -25,7 +26,7 @@ interface DetailledScore {
 
 interface PixiesPlayer extends Player {
     playerNo: number;
-    cards: { [coordinates: string]: Card[] };
+    cards: Card[];
 }
 
 interface PixiesGamedatas extends Gamedatas<PixiesPlayer> {

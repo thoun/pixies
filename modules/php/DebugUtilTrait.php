@@ -2,6 +2,8 @@
 
 namespace Bga\Games\Pixies;
 
+use Bga\GameFramework\SystemException;
+
 function debug(...$debugData) {
     if (\Bga\GameFramework\Table::getBgaEnvironment() != 'studio') { 
         return;
@@ -35,23 +37,26 @@ trait DebugUtilTrait {
         }
         $location = "player-$playerId-$space";
         if ($locationArg === null) {
-            $locationArg = count($this->cardManager->getCardsFromSpace($playerId, $row, $column));
+            $locationArg = count($this->cardManager->getCardsFromSpaces($playerId)[$row.'-'.$column]);
         }        
         $this->cards->moveCard($card->id, $location, $locationArg);
     }*/
 
     function debug_emptyDeck() {
-      $this->cards->moveAllCardsInLocation('deck', 'void');
+      $this->cardManager->cards->moveAllItemsInLocation('deck', 'void');
     }
 
-    function debug_playToEndRound() {
-      while ($this->gamestate->getCurrentMainStateId() < ST_MULTIPLAYER_BEFORE_END_ROUND) {
-        $playerId = intval($this->getActivePlayerId());
-        $state = $this->gamestate->getCurrentMainState();
-        if ($state === null) {
-          throw new \BgaSystemException('Current game state not found');
-        }
-        $this->gamestate->runStateClassZombie($state, $playerId);
-      }
+    function debug_playToNextTurn() {
+      $round = $this->bga->tableStats->get('turnsNumber');
+      $this->debug->playUntil(fn(int $count) => $this->bga->tableStats->get('turnsNumber') > $round);
+    }
+
+    function debug_playToNextRound() {
+      $round = $this->bga->tableStats->get('roundNumber');
+      $this->debug->playUntil(fn(int $count) => $this->bga->tableStats->get('roundNumber') > $round);
+    }
+
+    function debug_playToRoundScore() {
+      $this->debug->playUntil(fn(int $count) => $this->gamestate->getCurrentMainStateId() >= ST_MULTIPLAYER_BEFORE_END_ROUND);
     }
 }

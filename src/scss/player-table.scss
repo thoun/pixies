@@ -1,5 +1,5 @@
 .player-table {
-  width: 547px; // 169 * 3 + 4 * 10
+  width: calc(169px * var(--grid-size) + (var(--grid-size) + 1) * 10px); // 169 * 3 + 4 * 10
   position: relative;
   background: #FFFFFF66;
   border: 2px solid white;
@@ -26,8 +26,8 @@
 
   .player-cards {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
+    grid-template-columns: repeat(var(--grid-size), 1fr);
+    grid-template-rows: repeat(var(--grid-size), 1fr);
     padding: 10px;
     justify-content: center;
     gap: 10px;
