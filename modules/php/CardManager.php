@@ -217,6 +217,11 @@ class CardManager
         foreach ($cards as $id => $card) {
             if ($card->locationArg === 0 && !$card->flipped) {
                 $hasCardOver = $cards->count(fn($c) => $c->row === $card->row && $c->column === $card->column && $c->locationArg > 0);
+                if ($card->value !== null && !isset($card->row)) {
+                   [$cardRow, $cardColumn] = Game::getRowColumnFromValue(intval(explode('-', $card->location)[2]));
+                   $card->row = $cardRow;
+                   $card->column = $cardColumn;
+                }
                 if ($hasCardOver) {
                     $card->flipped = true;
                 } else if ($card->value !== null && $card->value !== Game::getValueFromRowColumn($card->row, $card->column)) {
@@ -532,7 +537,10 @@ class CardManager
         $this->cards->moveItem($card->id, [$card->location, $card->locationArg]);
         $card->row = $row;
         $card->column = $column;
-        $this->cards->updateItem($card, ['row', 'column']);
+        $space = Game::getValueFromRowColumn($row, $column);
+        $playedVisible = $card->value ? $space == $card->value : $card->row === 0 || $card->column === 0;
+        $card->flipped = !$playedVisible;
+        $this->cards->updateItem($card, ['row', 'column', 'flipped']);
     }
     
     public function keepCard(int $playerId, Card $hiddenCard, Card $visibleCard, int $row, int $column): void {

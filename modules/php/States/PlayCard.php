@@ -131,6 +131,7 @@ class PlayCard extends GameState
 
         $space = Game::getValueFromRowColumn($row, $column);
         $playedVisible = $card->value ? $space == $card->value : $card->row === 0 || $card->column === 0;
+        $card->flipped = !$playedVisible;
         $statName = $playedVisible ? 'cardPlayedEmptySpaceVisible' : 'cardPlayedEmptySpaceHidden';
         $this->playerStats->inc($statName, 1, $playerId, updateTableStat: true);
 
