@@ -142,28 +142,28 @@ class CardManager
 
         self::$LITTLE_GIANTS_CARDS = [
             0 => [ // all colors
-                107 => new CardType(columnEffect: 7),
-                114 => new CardType(rowEffect: 7),
+                107 => new CardType(columnEffect: 53),
+                114 => new CardType(rowEffect: 52),
             ],
             1 => [ // blue
-                104 => new CardType(columnEffect: 4),
-                110 => new CardType(rowEffect: 3),
-                111 => new CardType(rowEffect: 4),
+                104 => new CardType(columnEffect: 13),
+                110 => new CardType(rowEffect: 31),
+                111 => new CardType(rowEffect: 40),
             ],
             2 => [ // green
-                101 => new CardType(columnEffect: 1),
-                102 => new CardType(columnEffect: 2),
-                113 => new CardType(rowEffect: 6),
+                101 => new CardType(columnEffect: 13),
+                102 => new CardType(columnEffect: 24),
+                113 => new CardType(rowEffect: 32),
             ],
             3 => [ // yellow
-                103 => new CardType(columnEffect: 3),
-                108 => new CardType(rowEffect: 1),
-                109 => new CardType(rowEffect: 2),
+                103 => new CardType(columnEffect: 13),
+                108 => new CardType(rowEffect: 33),
+                109 => new CardType(rowEffect: 40),
             ],
             4 => [ // red
-                105 => new CardType(columnEffect: 5),
-                106 => new CardType(columnEffect: 6),
-                112 => new CardType(rowEffect: 5),
+                105 => new CardType(columnEffect: 13),
+                106 => new CardType(columnEffect: 24),
+                112 => new CardType(rowEffect: 34),
             ],
         ];
 
@@ -423,7 +423,7 @@ class CardManager
                     }
                 }
                 if ($card->spiralsPerFacedownCard > 0) {
-                    $facedownCardsPoints += $card->spiralsPerFacedownCard * $facedownCardsCount;
+                    $spiralsPoints += $card->spiralsPerFacedownCard * $facedownCardsCount;
                 }
                 $colorZone = $this->getLargestColorZone($visibleCards);
                 if ($colorZone > $largestColorZone) {
@@ -563,6 +563,7 @@ class CardManager
     public function reshuffleAllCardsToDeck() {
         $this->cards->moveAllItemsInLocation(null, ['deck']);
         $this->cards->shuffle(['deck']);
+        $this->cards->updateAllItems('flipped', false);
     }
 
     /**
