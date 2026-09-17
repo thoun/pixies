@@ -11,6 +11,11 @@ class DetailledScore {
     public int $spiralsAndCrossesPoints = 0;
     public int $facedownCardsPoints = 0;
     public int $points = 0;
+
+    /** @var array<int,int> */
+    public array $computedSpiralsPerCard = [];
+    /** @var array<int,int> */
+    public array $computedCrossesPerCard = [];
   
     public function __construct() {
     } 

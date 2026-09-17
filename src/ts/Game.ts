@@ -342,9 +342,9 @@ export class Game {
         });
     }
 
-    private setRoundResult(roundResult: { [playerId: number]: DetailledScore }, round: number) {
+    private setRoundResult(roundResult: { [playerId: number]: DetailledScore }, round: number, latestRound: boolean = true) {
         if (this.gamedatas.roundResult[round - 1]) {
-            this.setRoundResult(this.gamedatas.roundResult[round - 1], round - 1);
+            this.setRoundResult(this.gamedatas.roundResult[round - 1], round - 1, false);
         }
 
         const playersIds = Object.keys(roundResult).map(Number);
@@ -359,6 +359,20 @@ export class Game {
         </table>`;
 
         document.getElementById(`result`).insertAdjacentHTML('beforeend', html);
+
+        if (latestRound) {
+            Object.values(roundResult).forEach((detailledScore: DetailledScore) => {
+                new Set([...Object.keys(detailledScore.computedSpiralsPerCard ?? []), ...Object.keys(detailledScore.computedCrossesPerCard ?? [])].map(Number)).forEach(cardId => {
+                    const cardFront = this.cardsManager.getCardElement({ id: cardId } as Card).querySelector('.front') as HTMLDivElement;
+                    cardFront.insertAdjacentHTML('beforeend', `<div class="score-detail-per-card">
+                        <div>${detailledScore.computedSpiralsPerCard[cardId] ?? ''}</div>
+                        <div>${detailledScore.computedCrossesPerCard[cardId] ?? ''}</div>
+                    </div>`);
+                });
+
+                ('.score-detail-per-card')
+            });
+        }
     }
 
     public chooseCard(id: number) {
@@ -442,6 +456,8 @@ export class Game {
 
         await this.tableCenter.deck.addCards(cards, undefined, { visible: false });
         this.tableCenter.deck.setCardNumber(args.remainingCardsInDeck);
+
+        document.querySelectorAll('.score-detail-per-card')?.forEach(elem => elem.remove());
 
         return await this.tableCenter.deck.shuffle();
     }

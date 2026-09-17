@@ -85,3 +85,40 @@
       box-shadow: 0 0 5px 3px #FFFFFF;
     }
 }
+
+.score-detail-per-card {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    gap: 40px;
+    top: 42px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    text-align: center;
+    color: white;
+    font-size: 18pt;
+    font-weight: bold;
+
+    &>div {
+        background: #00000099;
+        border-radius: 8px;
+        padding: 2px;
+
+        &:empty {
+            visibility: hidden;
+        }
+    }
+}
+
+.little-giants {
+    .score-detail-per-card {
+        grid-template-columns: 1fr;
+        left: 57px;
+        right: 57px;
+
+        &>div:empty {
+            display: none;
+        }
+    }
+
+}

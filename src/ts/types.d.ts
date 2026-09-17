@@ -14,6 +14,8 @@ interface Card {
     row?: number;
     column?: number;
     flipped?: boolean;
+    rowEffect?: number;
+    columnEffect?: number;
 }
 
 interface DetailledScore {
@@ -22,6 +24,8 @@ interface DetailledScore {
     spiralsAndCrossesPoints: number;
     facedownCardsPoints: number;
     points: number;
+    computedSpiralsPerCard?: { [cardId: number] : number};
+    computedCrossesPerCard?: { [cardId: number] : number};
 }
 
 interface PixiesPlayer extends Player {

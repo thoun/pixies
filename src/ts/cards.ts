@@ -89,7 +89,7 @@ export class CardsManager extends BgaCards.CardManager<Card> {
             let tooltip = this.getTooltip(card) + `<br><i>${card.type === 0 ? this.COLORS[0] : card.colors.map(color => this.COLORS[color]).join(' / ')}</i><br>
             <div class="card double-size">
                 <div class="card-sides">
-                    <div class="card-side front ${flowerPowerIndex !== null ? 'flower-power': ''}" data-type="${card.type}" data-index="${card.index}" ${flowerPowerIndex !== null ? `style="background-position-x: ${flowerPowerIndex * 100 / 13}%`: '' }">
+                    <div class="card-side front ${flowerPowerIndex !== null ? 'flower-power': ''}${card.index > 100 ? 'little-giants': ''}" data-type="${card.type}" data-index="${card.index}" ${flowerPowerIndex !== null ? `style="background-position-x: ${flowerPowerIndex * 100 / 13}%`: '' }${card.index > 100 ? `style="background-position-x: ${(card.index - 101) * 100 / 13}%`: '' }">
                     </div>
                 </div>
             </div>`;
@@ -98,6 +98,17 @@ export class CardsManager extends BgaCards.CardManager<Card> {
     }
 
     public getTooltip(card: Card) {
+        const fullEffect = card.rowEffect || card.columnEffect;
+        if (fullEffect) {
+            const effect = Math.floor(fullEffect / 10);
+            switch (effect) {
+                case 1: return `<div>${_('This card earns you 3 spirals for each <strong>validated</strong> card in its column.')}</div>`;
+                case 2: return `<div>${_('This card earns you 4 spirals for each faceup card in its column <strong>that has no spirals</strong>.')}</div>`;
+                case 3: return `<div>${_('This card earns you 2 spirals for each faceup card in its row that is the <strong>indicated color</strong>. It earns 2 spirals for itself, since it is of the indicated color.')}</div>`;
+                case 4: return `<div>${_('This card <strong>cancels all crosses</strong> on faceup cards in its row (regardless of where those crosses come from).')}</div>`;
+                case 5: return `<div>${_('This card earns you 2 or 3 spirals (as shown) for each faceup card in its row or column that is <strong>not validated</strong>.')}</div>`;
+            }
+        }
         return `
         <div><strong>${_("Spirals:")}</strong> ${card.spirals == -1 ? _("1 per ${color}".replace('${color}', this.COLORS[card.colors[0]])) : card.spirals}</div>
         <div><strong>${_("Crosses:")}</strong> ${card.crosses < 0 ? _("1 per ${color}".replace('${color}', this.COLORS[-card.crosses])) : card.crosses}</div>

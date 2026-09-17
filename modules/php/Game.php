@@ -231,7 +231,7 @@ class Game extends \Bga\GameFramework\Table {
     }
 
     function isLittleGiantsExpansion(): bool {
-        return $this->tableOptions->get(102) === 1 /*|| Table::getBgaEnvironment() === 'studio'*/;
+        return $this->tableOptions->get(102) === 1 || Table::getBgaEnvironment() === 'studio';
     }
 
     function getPlayerScore(int $playerId) {

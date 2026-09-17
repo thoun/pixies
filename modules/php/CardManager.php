@@ -335,6 +335,7 @@ class CardManager
     public function getDetailledScore(Collection $playerCards, int $roundNumber, bool $isFlowerPowerExpansion): DetailledScore {
         $detailledScore = new DetailledScore();
 
+        $rowsWithCancelledCrosses = [];
         $facedownCardsCount = 0;
         /** @var array<int,?Card> */
         $validatedCards = [];
@@ -376,6 +377,13 @@ class CardManager
                         $validatedCards[$value] = $spaceCards->last();
                     }
                 }
+
+                if ($column === 0 && $spaceCards->count() > 0) {
+                    $topCard = $spaceCards->last();
+                    if ($topCard->rowEffect === 40) {
+                        $rowsWithCancelledCrosses = [$row];
+                    }
+                }
             }
         }
         
@@ -406,25 +414,85 @@ class CardManager
             }
         }
 
+        if ($min === 0) {
+            for ($row = $min; $row <= 3; $row++) {
+                for ($column = $min; $column <= 3; $column++) {
+                    if (($row === 0 && $column === 0) || ($row > 0 && $column > 0)) {
+                        continue;
+                    }
+                    $spaceCards = $playerCards->filter(fn(Card $c) => $c->row === $row && $c->column === $column);
+                    if ($spaceCards->isEmpty()) {
+                        continue;
+                    }
+                    $fullEffect = 0;
+                    $card = $spaceCards->last();
+                    $concernedCards = null;
+                    if ($row === 0 && $column > 0) {
+                        $fullEffect = $card->columnEffect;
+                        $concernedCards = array_values(array_filter($visibleCards, fn(?Card $c) => $c !== null && $c->column === $column));
+                    } else if ($column === 0 && $row > 0) {
+                        $fullEffect = $card->rowEffect;
+                        $concernedCards = array_values(array_filter($visibleCards, fn(?Card $c) => $c !== null && $c->row === $row));
+                    }
+                    $effect = intdiv($fullEffect, 10);
+                    if ($effect === 4) {
+                        continue; // cancels all crosses on faceup cards in its row: handled by $rowsWithCancelledCrosses
+                    }
+                    $effectParam = $fullEffect % 10;
+                    $cardSpirals = 0;
+                    switch ($effect) {
+                        case 1: // 3 spirals for each validated card in its column.
+                            $cardSpirals = 3 * count(array_filter($concernedCards, fn(Card $c) => $c->locationArg === 1));
+                            break;
+                        case 2: // 4 spirals for each faceup card in its column that has no spirals.
+                            $cardSpirals = 4 * count(array_filter($concernedCards, fn(Card $c) => $c->id !== $card->id && ($c->spirals ?? 0) === 0 && ($c->spiralsPerFacedownCard ?? 0) === 0));
+                            break;
+                        case 3: // 2 spirals for each faceup card in its row that is the indicated color. (including itself)
+                            $cardSpirals = 2 * count(array_filter($concernedCards, fn(Card $c) => !$c->flipped && in_array($effectParam, $c->colors)));
+                            break;
+                        case 5: // 2 or 3 spirals (as shown) for each faceup card in its row or column that is not validated.
+                            $cardSpirals = $effectParam * count(array_filter($concernedCards, fn(Card $c) => $c->id !== $card->id && $c->locationArg === 0));
+                            break;
+                        default:
+                            throw new SystemException("Unknown effect");
+                    }                    
+                    $spiralsPoints += $cardSpirals;
+                    $detailledScore->computedSpiralsPerCard[$card->id] = $cardSpirals;
+                }
+            }
+        }
+
         foreach ($visibleCards as $card) {
             if ($card) {
+                $cardSpirals = null;
+                $cardCrosses = null;
                 if ($card->spirals != 0) {
                     if ($card->spirals == -1) {
-                        $spiralsPoints += $colorsCounts[$card->colors[0]]; // spiral -1 is always of the single color of the card
+                        $cardSpirals = $colorsCounts[$card->colors[0]]; // spiral -1 is always of the single color of the card
                     } else {
-                        $spiralsPoints += $card->spirals;
+                        $cardSpirals = $card->spirals;
                     }
                 }
-                if ($card->crosses != 0) {
+                if ($card->crosses != 0 && !in_array($card->row, $rowsWithCancelledCrosses)) {
                     if ($card->crosses < 0) {
-                        $crossesPoints += $colorsCounts[-$card->crosses]; // X per color is coded as negative cross
+                        $cardCrosses += $colorsCounts[-$card->crosses]; // X per color is coded as negative cross
                     } else {
-                        $crossesPoints += $card->crosses;
+                        $cardCrosses += $card->crosses;
                     }
                 }
                 if ($card->spiralsPerFacedownCard > 0) {
-                    $spiralsPoints += $card->spiralsPerFacedownCard * $facedownCardsCount;
+                    $cardSpirals = $card->spiralsPerFacedownCard * $facedownCardsCount;
                 }
+
+                $spiralsPoints += $cardSpirals;
+                if ($cardSpirals !== null && ($card->spirals < 0 || $card->spiralsPerFacedownCard > 0)) {// last conditions to only display non obvious ones
+                    $detailledScore->computedSpiralsPerCard[$card->id] = $cardSpirals;
+                }
+                $crossesPoints += $cardCrosses;
+                if ($cardCrosses !== null && $card->crosses < 0) { // last condition to only display non obvious ones
+                    $detailledScore->computedCrossesPerCard[$card->id] = $cardCrosses;
+                }
+
                 $colorZone = $this->getLargestColorZone($visibleCards);
                 if ($colorZone > $largestColorZone) {
                     $largestColorZone = $colorZone;
@@ -549,15 +617,17 @@ class CardManager
         $hiddenCard->locationArg = 0;
         $hiddenCard->row = $row;
         $hiddenCard->column = $column;
+        $hiddenCard->flipped = true;
         $visibleCard->location = $location;
         $visibleCard->locationArg = 1;
         $visibleCard->row = $row;
         $visibleCard->column = $column;
+        $visibleCard->flipped = false;
 
         $this->cards->moveItem($hiddenCard->id, [$hiddenCard->location, $hiddenCard->locationArg]);
         $this->cards->moveItem($visibleCard->id, [$visibleCard->location, $visibleCard->locationArg]);
-        $this->cards->updateItem($hiddenCard, ['row', 'column']);
-        $this->cards->updateItem($visibleCard, ['row', 'column']);
+        $this->cards->updateItem($hiddenCard, ['row', 'column', 'flipped']);
+        $this->cards->updateItem($visibleCard, ['row', 'column', 'flipped']);
     }
 
     public function reshuffleAllCardsToDeck() {
