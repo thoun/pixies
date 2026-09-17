@@ -216,12 +216,14 @@ class CardManager
         $cards = $this->cards->getItemsInLocation(["player-$playerId-%"], sortByField: 'locationArg');
         foreach ($cards as $id => $card) {
             if ($card->locationArg === 0 && !$card->flipped) {
-                $hasCardOver = $cards->count(fn($c) => $c->row === $card->row && $c->column === $card->column && $c->locationArg > 0);
+                // fix for games started before storing row/column
                 if ($card->value !== null && !isset($card->row)) {
                    [$cardRow, $cardColumn] = Game::getRowColumnFromValue(intval(explode('-', $card->location)[2]));
                    $card->row = $cardRow;
                    $card->column = $cardColumn;
                 }
+
+                $hasCardOver = $cards->count(fn($c) => $c->row === $card->row && $c->column === $card->column && $c->locationArg > 0);
                 if ($hasCardOver) {
                     $card->flipped = true;
                 } else if ($card->value !== null && $card->value !== Game::getValueFromRowColumn($card->row, $card->column)) {
