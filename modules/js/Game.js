@@ -124,17 +124,19 @@ class CardsManager extends BgaCards.CardManager {
             this.game.setTooltip(div.id, tooltip);
         }
     }
+    getEffect(effect) {
+        switch (effect) {
+            case 1: return `<div>${_('This card earns you 3 spirals for each <strong>validated</strong> card in its column.')}</div>`;
+            case 2: return `<div>${_('This card earns you 4 spirals for each faceup card in its column <strong>that has no spirals</strong>.')}</div>`;
+            case 3: return `<div>${_('This card earns you 2 spirals for each faceup card in its row that is the <strong>indicated color</strong>. It earns 2 spirals for itself, since it is of the indicated color.')}</div>`;
+            case 4: return `<div>${_('This card <strong>cancels all crosses</strong> on faceup cards in its row (regardless of where those crosses come from).')}</div>`;
+            case 5: return `<div>${_('This card earns you 2 or 3 spirals (as shown) for each faceup card in its row or column that is <strong>not validated</strong>.')}</div>`;
+        }
+    }
     getTooltip(card) {
         const fullEffect = card.rowEffect || card.columnEffect;
         if (fullEffect) {
-            const effect = Math.floor(fullEffect / 10);
-            switch (effect) {
-                case 1: return `<div>${_('This card earns you 3 spirals for each <strong>validated</strong> card in its column.')}</div>`;
-                case 2: return `<div>${_('This card earns you 4 spirals for each faceup card in its column <strong>that has no spirals</strong>.')}</div>`;
-                case 3: return `<div>${_('This card earns you 2 spirals for each faceup card in its row that is the <strong>indicated color</strong>. It earns 2 spirals for itself, since it is of the indicated color.')}</div>`;
-                case 4: return `<div>${_('This card <strong>cancels all crosses</strong> on faceup cards in its row (regardless of where those crosses come from).')}</div>`;
-                case 5: return `<div>${_('This card earns you 2 or 3 spirals (as shown) for each faceup card in its row or column that is <strong>not validated</strong>.')}</div>`;
-            }
+            return this.getEffect(Math.floor(fullEffect / 10));
         }
         return `
         <div><strong>${_("Spirals:")}</strong> ${card.spirals == -1 ? _("1 per ${color}".replace('${color}', this.COLORS[card.colors[0]])) : card.spirals}</div>
@@ -583,8 +585,17 @@ class Game {
             ${_("<strong>Note:</strong> All faceup cards are taken into account, whether they are validated or not.")}
             <br><br>
             ${_("A multi-colored card has all the colors at the same time. This means that it counts for the player’s color zone of course, but also for all their special cards as well.")}
-        </div>
         `;
+        if (this.gamedatas.littleGiantsExpansion) {
+            html += `<h1>${_("Little Giants scoring")}</h1>
+            <div class="little-giants-effects">`;
+            html += [1, 2, 3, 4, 5].map(effect => `            
+                <div class="effect-img" data-effect="${effect}"></div>
+                <div>${this.cardsManager.getEffect(effect)}</div>
+            `).join('');
+            html += `</div>`;
+        }
+        html += `</div>`;
         return html;
     }
     getColorAddHtml() {

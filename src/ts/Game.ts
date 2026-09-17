@@ -317,8 +317,19 @@ export class Game {
             ${_("<strong>Note:</strong> All faceup cards are taken into account, whether they are validated or not.")}
             <br><br>
             ${_("A multi-colored card has all the colors at the same time. This means that it counts for the player’s color zone of course, but also for all their special cards as well.")}
-        </div>
         `;
+
+        if (this.gamedatas.littleGiantsExpansion) {
+            html += `<h1>${_("Little Giants scoring")}</h1>
+            <div class="little-giants-effects">`;
+            html += [1,2,3,4,5].map(effect => `            
+                <div class="effect-img" data-effect="${effect}"></div>
+                <div>${this.cardsManager.getEffect(effect)}</div>
+            `).join('');
+            html += `</div>`;
+        }
+            
+        html += `</div>`;
         
         return html;
     }
