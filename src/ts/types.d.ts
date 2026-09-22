@@ -26,6 +26,8 @@ interface DetailledScore {
     points: number;
     computedSpiralsPerCard?: { [cardId: number] : number};
     computedCrossesPerCard?: { [cardId: number] : number};
+    largestColorZoneColor: number;
+    largestColorZoneCardCoordinates: number[][];
 }
 
 interface PixiesPlayer extends Player {

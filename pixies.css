@@ -734,6 +734,9 @@ html[data-theme=light] .player-board {
   border-radius: 10px;
   position: relative;
 }
+.player-table .player-cards .space.largest-zone-slot {
+  outline: 8px solid var(--largest-zone-color);
+}
 .player-table .player-cards .space::before {
   content: var(--value);
   position: absolute;

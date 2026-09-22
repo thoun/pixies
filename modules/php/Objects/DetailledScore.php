@@ -16,6 +16,9 @@ class DetailledScore {
     public array $computedSpiralsPerCard = [];
     /** @var array<int,int> */
     public array $computedCrossesPerCard = [];
+    public int $largestColorZoneColor = 0;
+    /** @var (int[])[] */
+    public array $largestColorZoneCardCoordinates = [];
   
     public function __construct() {
     } 

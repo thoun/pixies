@@ -39,6 +39,10 @@
       border-radius: 10px;
       position: relative;
 
+      &.largest-zone-slot {
+        outline: 8px solid var(--largest-zone-color);
+      }
+
       &::before {
         content: var(--value);
         position: absolute;

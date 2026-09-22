@@ -211,7 +211,7 @@ export class Game {
                     });
                     this.bga.statusBar.addActionButton(_('Cancel'), () => this.bga.actions.performAction('actCancel'), { color: 'secondary' });
                     break;
-                case 'beforeEndRound':
+                case 'BeforeEndRound':
                     this.bga.statusBar.addActionButton(_("Seen"), () => this.bga.actions.performAction('actSeen'));
                     break;
             }
@@ -351,6 +351,32 @@ export class Game {
                 div.innerText = `${value}`;
             }
         });
+
+        this.setRoundHighlightsForPlayer(playerId, detailledScore);
+    }
+
+    private setRoundHighlightsForPlayer(playerId: number, detailledScore: DetailledScore) {
+        new Set([...Object.keys(detailledScore.computedSpiralsPerCard ?? []), ...Object.keys(detailledScore.computedCrossesPerCard ?? [])].map(Number)).forEach(cardId => {
+            const cardFront = this.cardsManager.getCardElement({ id: cardId } as Card).querySelector('.front') as HTMLDivElement;
+            cardFront.insertAdjacentHTML('beforeend', `<div class="score-detail-per-card">
+                <div>${detailledScore.computedSpiralsPerCard[cardId] ?? ''}</div>
+                <div>${detailledScore.computedCrossesPerCard[cardId] ?? ''}</div>
+            </div>`);
+        });
+
+        if (detailledScore.largestColorZoneColor && detailledScore.largestColorZoneCardCoordinates) {
+            let color = 'transparent';
+            switch (detailledScore.largestColorZoneColor) {
+                case 1: color = '#34a7e1'; break;
+                case 2: color = '#73b82c'; break;
+                case 3: color = '#f7cc00'; break;
+                case 4: color = '#d31126'; break;
+            }
+            document.getElementById(`player-table-${playerId}-cards`).style.setProperty('--largest-zone-color', color);
+            detailledScore.largestColorZoneCardCoordinates.forEach(coordinate => 
+                document.getElementById(`player-table-${playerId}-cards-${coordinate[0]}-${coordinate[1]}`).classList.add('largest-zone-slot')
+            );            
+        }
     }
 
     private setRoundResult(roundResult: { [playerId: number]: DetailledScore }, round: number, latestRound: boolean = true) {
@@ -371,17 +397,9 @@ export class Game {
 
         document.getElementById(`result`).insertAdjacentHTML('beforeend', html);
 
-        if (latestRound) {
-            Object.values(roundResult).forEach((detailledScore: DetailledScore) => {
-                new Set([...Object.keys(detailledScore.computedSpiralsPerCard ?? []), ...Object.keys(detailledScore.computedCrossesPerCard ?? [])].map(Number)).forEach(cardId => {
-                    const cardFront = this.cardsManager.getCardElement({ id: cardId } as Card).querySelector('.front') as HTMLDivElement;
-                    cardFront.insertAdjacentHTML('beforeend', `<div class="score-detail-per-card">
-                        <div>${detailledScore.computedSpiralsPerCard[cardId] ?? ''}</div>
-                        <div>${detailledScore.computedCrossesPerCard[cardId] ?? ''}</div>
-                    </div>`);
-                });
-
-                ('.score-detail-per-card')
+        if (latestRound && roundResult) {
+            Object.entries(roundResult).filter(([playerId, detailledScore]) => !!detailledScore).forEach(([playerId, detailledScore]) => {
+                this.setRoundHighlightsForPlayer(Number(playerId), detailledScore);
             });
         }
     }
@@ -469,6 +487,7 @@ export class Game {
         this.tableCenter.deck.setCardNumber(args.remainingCardsInDeck);
 
         document.querySelectorAll('.score-detail-per-card')?.forEach(elem => elem.remove());
+        document.querySelectorAll('.largest-zone-slot')?.forEach(elem => elem.classList.remove('largest-zone-slot'));
 
         return await this.tableCenter.deck.shuffle();
     }

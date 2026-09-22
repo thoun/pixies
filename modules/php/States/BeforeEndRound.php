@@ -17,7 +17,6 @@ class BeforeEndRound extends GameState
             $game,
             id: \ST_MULTIPLAYER_BEFORE_END_ROUND,
             type: StateType::MULTIPLE_ACTIVE_PLAYER,
-            name: 'beforeEndRound',
             description: clienttranslate('Some players are seeing end round result'),
             descriptionMyTurn: clienttranslate('End round result'),
             transitions: [

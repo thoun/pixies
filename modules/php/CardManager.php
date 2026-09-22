@@ -406,7 +406,6 @@ class CardManager
         $detailledScore->validatedCardPoints = 0;
         $spiralsPoints = 0;
         $crossesPoints = 0;
-        $largestColorZone = 0;
         $detailledScore->largestColorZonePoints = 0;
         $facedownCardsPoints = $facedownCardsCount * 5;
 
@@ -494,21 +493,15 @@ class CardManager
                 if ($cardCrosses !== null && $card->crosses < 0) { // last condition to only display non obvious ones
                     $detailledScore->computedCrossesPerCard[$card->id] = $cardCrosses;
                 }
-
-                $colorZone = $this->getLargestColorZone($visibleCards);
-                if ($colorZone > $largestColorZone) {
-                    $largestColorZone = $colorZone;
-                }
             }
         }
 
-        // largest zone must be 2 cards min to score
-        if ($largestColorZone == 1) {
-            $largestColorZone = 0;
-        }
+        $largestColorZone = $this->getLargestColorZone($visibleCards);
 
         $detailledScore->spiralsAndCrossesPoints = $spiralsPoints - $crossesPoints;
-        $detailledScore->largestColorZonePoints = $largestColorZone * ($roundNumber + 1);
+        $detailledScore->largestColorZonePoints = $largestColorZone !== null ? ($largestColorZone->size * ($roundNumber + 1)) : 0;
+        $detailledScore->largestColorZoneColor = $largestColorZone?->color;
+        $detailledScore->largestColorZoneCardCoordinates = $largestColorZone?->alreadyCounted;
         if ($isFlowerPowerExpansion) {
             $detailledScore->facedownCardsPoints = $facedownCardsPoints;
         }
@@ -526,7 +519,7 @@ class CardManager
     /**
      * @param array<string,?Card> $visibleCards
      */
-    private function getLargestColorZone(array $visibleCards): int {
+    private function getLargestColorZone(array $visibleCards): ?Coalition {
         $topCoalition = null;
 
         $min = $this->game->isLittleGiantsExpansion() ? 0 : 1;
@@ -550,7 +543,8 @@ class CardManager
             }
         }
 
-        return $topCoalition->size;
+        // largest zone must be 2 cards min to score
+        return $topCoalition->size >= 2 ? $topCoalition : null;
     }
 
 
@@ -570,7 +564,7 @@ class CardManager
         foreach([[0, -1], [0, 1], [-1, 0], [1, 0]] as $neighbourShift) {
             $iRow = $currentRow + $neighbourShift[0];
             $iColumn = $currentColumn + $neighbourShift[1];
-            if ($iRow < 0 || $iRow > 3 || $iColumn < 0 || $iColumn > 3) {
+            if ($iRow < 0 || $iRow > 3 || $iColumn < 0 || $iColumn > 3 || ($iColumn === 0 && $iRow === 0)) {
                 continue;
             }                
             $neighbourValues[] = [$iRow, $iColumn];
