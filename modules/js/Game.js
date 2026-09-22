@@ -104,7 +104,7 @@ class CardsManager extends BgaCards.CardManager {
     setupFrontDiv(card, div, ignoreTooltip = false) {
         div.dataset.type = '' + card.type;
         div.dataset.index = '' + card.index;
-        if (!ignoreTooltip && card.type) {
+        if (!ignoreTooltip && card.type !== null && card.type !== undefined) {
             let flowerPowerIndex = this.getFlowerPowerIndex(card);
             if (flowerPowerIndex !== null) {
                 div.classList.add('flower-power');
