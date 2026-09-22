@@ -499,9 +499,11 @@ class CardManager
         $largestColorZone = $this->getLargestColorZone($visibleCards);
 
         $detailledScore->spiralsAndCrossesPoints = $spiralsPoints - $crossesPoints;
-        $detailledScore->largestColorZonePoints = $largestColorZone !== null ? ($largestColorZone->size * ($roundNumber + 1)) : 0;
-        $detailledScore->largestColorZoneColor = $largestColorZone?->color;
-        $detailledScore->largestColorZoneCardCoordinates = $largestColorZone?->alreadyCounted;
+        if ($largestColorZone !== null) {
+            $detailledScore->largestColorZonePoints = $largestColorZone->size * ($roundNumber + 1);
+            $detailledScore->largestColorZoneColor = $largestColorZone->color;
+            $detailledScore->largestColorZoneCardCoordinates = $largestColorZone->alreadyCounted;
+        }
         if ($isFlowerPowerExpansion) {
             $detailledScore->facedownCardsPoints = $facedownCardsPoints;
         }
