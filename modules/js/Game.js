@@ -617,8 +617,8 @@ class Game {
     }
     setRoundHighlightsForPlayer(playerId, detailledScore) {
         new Set([...Object.keys(detailledScore.computedSpiralsPerCard ?? []), ...Object.keys(detailledScore.computedCrossesPerCard ?? [])].map(Number)).forEach(cardId => {
-            const cardFront = this.cardsManager.getCardElement({ id: cardId }).querySelector('.front');
-            cardFront.insertAdjacentHTML('beforeend', `<div class="score-detail-per-card">
+            const cardFront = this.cardsManager.getCardElement({ id: cardId })?.querySelector('.front');
+            cardFront?.insertAdjacentHTML('beforeend', `<div class="score-detail-per-card">
                 <div>${detailledScore.computedSpiralsPerCard[cardId] ?? ''}</div>
                 <div>${detailledScore.computedCrossesPerCard[cardId] ?? ''}</div>
             </div>`);
@@ -640,7 +640,7 @@ class Game {
                     break;
             }
             document.getElementById(`player-table-${playerId}-cards`).style.setProperty('--largest-zone-color', color);
-            detailledScore.largestColorZoneCardCoordinates.forEach(coordinate => document.getElementById(`player-table-${playerId}-cards-${coordinate[0]}-${coordinate[1]}`).classList.add('largest-zone-slot'));
+            detailledScore.largestColorZoneCardCoordinates.forEach(coordinate => document.getElementById(`player-table-${playerId}-cards-${coordinate[0]}-${coordinate[1]}`)?.classList.add('largest-zone-slot'));
         }
     }
     setRoundResult(roundResult, round, latestRound = true) {
