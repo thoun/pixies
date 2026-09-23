@@ -260,6 +260,7 @@ class Game extends \Bga\GameFramework\Table {
 
         if ((isset($args['visibleCard']) || isset($args['card'])) && !isset($args['color']) && str_contains($message, '${color}')) {
             $card = $args['visibleCard'] ?? $args['card'];
+            $args['i18n'][] = 'color';
             $args['color'] = $card->type > 10 ? [
                 'log' => '${color1}/${color2}',
                 'args' => [

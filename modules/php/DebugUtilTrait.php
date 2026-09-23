@@ -2,6 +2,7 @@
 
 namespace Bga\Games\Pixies;
 
+use Bga\GameFramework\Actions\Debug;
 use Bga\GameFramework\SystemException;
 
 function debug(...$debugData) {
@@ -26,6 +27,7 @@ trait DebugUtilTrait {
         //$this->gamestate->changeActivePlayer(2343492);
     }
 
+    #[Debug(reload: true)]
     function debug_setCardType(int $id, int $type, int $typeArg = 0) {
       $this->DbQuery("UPDATE card SET card_type = $type, card_type_arg = $typeArg WHERE card_id = $id" );
     }

@@ -575,7 +575,7 @@ class CardManager
 
         // we only take cards having same color
         $filteredNeigbours = array_filter($neighbourValues, fn($neighbour) =>
-            array_any($validatedCards, fn($validatedCard) => $validatedCard !== null && $validatedCard->getRow() === $neighbour[0] && $validatedCard->getColumn() === $neighbour[1] && in_array($coalition->color, $validatedCard->colors))
+            array_any($validatedCards, fn($validatedCard) => $validatedCard !== null && $validatedCard->row === $neighbour[0] && $validatedCard->column === $neighbour[1] && in_array($coalition->color, $validatedCard->colors))
         );
 
         foreach ($filteredNeigbours as $filteredNeigbour) {
@@ -596,7 +596,7 @@ class CardManager
         if ($card->rowEffect) {
             $locationValue = "row$row";
         } else if ($card->columnEffect) {
-            $locationValue = "column$row";
+            $locationValue = "column$column";
         }
         $card->location = "player-$playerId-".$locationValue;
         $card->locationArg = $count;

@@ -104,7 +104,7 @@ class Card extends CardType
         $locationSplit = explode('-', $this->location);
         if (count($locationSplit) === 3) {
             if (str_starts_with($locationSplit[2], 'row')) {
-                return intval(str_replace($locationSplit[2], 'row', ''));
+                return intval(str_replace('row', '', $locationSplit[2]));
             }
             if (str_starts_with($locationSplit[2], 'column')) {
                 return 0;
@@ -122,7 +122,7 @@ class Card extends CardType
                 return 0;
             }
             if (str_starts_with($locationSplit[2], 'column')) {
-                return intval(str_replace($locationSplit[2], 'column', ''));
+                return intval(str_replace('column', '', $locationSplit[2]));
             }
 
             return Game::getColumnFromValue(intval($locationSplit[2]));
