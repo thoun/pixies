@@ -22,5 +22,27 @@
                 }
             ]
         }
+    },
+    "102": {
+        "name": "Little Giants expansion",
+        "values": {
+            "0": {
+                "name": "Disabled"
+            },
+            "1": {
+                "name": "Enabled",
+                "tmdisplay": "Little Giants expansion",
+                "description": "An additional set of 14 cards, applying a power on the row or column they are played",
+                "nobeginner": true,
+                "alpha": true
+            }
+        },
+        "default": 0,
+        "displaycondition": [
+            {
+                "type": "minplayers",
+                "value": 99
+            }
+        ]
     }
 }
