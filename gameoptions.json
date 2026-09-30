@@ -37,12 +37,6 @@
                 "alpha": true
             }
         },
-        "default": 0,
-        "displaycondition": [
-            {
-                "type": "minplayers",
-                "value": 99
-            }
-        ]
+        "default": 0
     }
 }
