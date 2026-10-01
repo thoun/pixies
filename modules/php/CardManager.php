@@ -585,7 +585,13 @@ class CardManager
 
     public function getPlayerCardCount(int $playerId): int {
         $playerCards = $this->getCardsFromSpaces($playerId);
-        $playerCardCount = array_reduce(array_map(fn($cards) => count($cards) > 0 ? 1 : 0, $playerCards), fn($a, $b) => $a + $b, 0);
+        $playerCardCount = 0;
+        // Little Giants adds edge spaces, but only the nine numbered spaces end the round.
+        for ($row = 1; $row <= 3; $row++) {
+            for ($column = 1; $column <= 3; $column++) {
+                $playerCardCount += count($playerCards[$row.'-'.$column]) > 0 ? 1 : 0;
+            }
+        }
 
         return $playerCardCount;
     }
@@ -593,9 +599,9 @@ class CardManager
     public function playCard(int $playerId, Card $card, int $row, int $column): void {
         $count = count($this->getCardsFromSpaces($playerId)[$row.'-'.$column]);
         $locationValue = Game::getValueFromRowColumn($row, $column);
-        if ($card->rowEffect) {
+        if ($column === 0) {
             $locationValue = "row$row";
-        } else if ($card->columnEffect) {
+        } else if ($row === 0) {
             $locationValue = "column$column";
         }
         $card->location = "player-$playerId-".$locationValue;
